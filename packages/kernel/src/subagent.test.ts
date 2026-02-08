@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { resolve } from "node:path";
 import { rm } from "node:fs/promises";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import { PermissionEngine } from "@openvger/permissions";
-import { MockPlanner } from "@openvger/planner";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import { PermissionEngine } from "@jarvis/permissions";
+import { MockPlanner } from "@jarvis/planner";
 import { runSubagent } from "./subagent.js";
 import type { SubagentDeps, SubagentRequest } from "./subagent.js";
-import type { ToolManifest, ApprovalDecision } from "@openvger/schemas";
+import type { ToolManifest, ApprovalDecision } from "@jarvis/schemas";
 
 const TEST_JOURNAL = resolve(import.meta.dirname ?? ".", "../../.test-subagent-journal.jsonl");
 const autoApprove = async (): Promise<ApprovalDecision> => "allow_session";

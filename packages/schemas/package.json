@@ -1,5 +1,5 @@
 {
-  "name": "@openvger/schemas",
+  "name": "@jarvis/schemas",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

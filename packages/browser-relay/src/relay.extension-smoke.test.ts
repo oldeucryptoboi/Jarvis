@@ -5,7 +5,7 @@
  *
  * No real browser needed — a fake extension WS client responds to CDP commands.
  *
- * Run with:  pnpm --filter @openvger/browser-relay test -- relay.extension-smoke
+ * Run with:  pnpm --filter @jarvis/browser-relay test -- relay.extension-smoke
  */
 import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import WebSocket from "ws";

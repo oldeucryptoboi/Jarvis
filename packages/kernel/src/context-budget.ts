@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import type { SessionCheckpointData, CheckpointFinding, Plan, StepResult } from "@openvger/schemas";
+import type { SessionCheckpointData, CheckpointFinding, Plan, StepResult } from "@jarvis/schemas";
 import type { UsageSummary } from "./usage-accumulator.js";
 
 // ─── Config ─────────────────────────────────────────────────────────

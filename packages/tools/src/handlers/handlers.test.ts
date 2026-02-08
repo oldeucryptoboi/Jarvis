@@ -3,7 +3,7 @@ import { resolve, join } from "node:path";
 import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import type { PolicyProfile } from "@openvger/schemas";
+import type { PolicyProfile } from "@jarvis/schemas";
 import { readFileHandler } from "./read-file.js";
 import { writeFileHandler } from "./write-file.js";
 import { shellExecHandler } from "./shell-exec.js";

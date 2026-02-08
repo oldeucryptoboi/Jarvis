@@ -1,7 +1,7 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import type { ToolHandler } from "../tool-runtime.js";
-import type { ExecutionMode, PolicyProfile } from "@openvger/schemas";
+import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
 import { assertPathAllowed, assertPathAllowedReal, PolicyViolationError } from "../policy-enforcer.js";
 
 export const writeFileHandler: ToolHandler = async (

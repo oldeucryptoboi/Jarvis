@@ -1,16 +1,16 @@
 import { resolve } from "node:path";
 import { realpath } from "node:fs/promises";
-import type { PolicyProfile } from "@openvger/schemas";
-import { OpenVgerError } from "@openvger/schemas";
+import type { PolicyProfile } from "@jarvis/schemas";
+import { JarvisError } from "@jarvis/schemas";
 
-export class PolicyViolationError extends OpenVgerError {
+export class PolicyViolationError extends JarvisError {
   constructor(message: string) {
     super("POLICY_VIOLATION", message);
     this.name = "PolicyViolationError";
   }
 }
 
-export class SsrfError extends OpenVgerError {
+export class SsrfError extends JarvisError {
   constructor(message: string) {
     super("POLICY_VIOLATION", message);
     this.name = "SsrfError";

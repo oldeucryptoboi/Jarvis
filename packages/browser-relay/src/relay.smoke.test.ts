@@ -2,7 +2,7 @@
  * Smoke test — launches a real headless Chromium via the relay server.
  * Skipped automatically when Playwright is not installed.
  *
- * Run with:  pnpm --filter @openvger/browser-relay test -- relay.smoke
+ * Run with:  pnpm --filter @jarvis/browser-relay test -- relay.smoke
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { resolve } from "node:path";
@@ -78,7 +78,7 @@ describe.skipIf(!available)("relay smoke test (real Chromium via HTTP)", () => {
     const result = await post("/actions", { action: "snapshot" }) as any;
     expect(result.success).toBe(true);
     expect(result.snapshot.length).toBeGreaterThan(0);
-    expect(result.snapshot).toContain("Hello OpenVger");
+    expect(result.snapshot).toContain("Hello Jarvis");
   });
 
   it("clicks a button by role", async () => {
@@ -103,7 +103,7 @@ describe.skipIf(!available)("relay smoke test (real Chromium via HTTP)", () => {
     const result = await post("/actions", {
       action: "fill",
       target: { label: "Email" },
-      value: "test@openvger.dev",
+      value: "test@jarvis.dev",
     }) as any;
     expect(result.success).toBe(true);
     expect(result.element_found).toBe(true);
@@ -128,10 +128,10 @@ describe.skipIf(!available)("relay smoke test (real Chromium via HTTP)", () => {
   it("gets text from a specific heading", async () => {
     const result = await post("/actions", {
       action: "get_text",
-      target: { role: "heading", name: "Hello OpenVger" },
+      target: { role: "heading", name: "Hello Jarvis" },
     }) as any;
     expect(result.success).toBe(true);
-    expect(result.text).toContain("Hello OpenVger");
+    expect(result.text).toContain("Hello Jarvis");
   });
 
   it("returns error for ambiguous heading target", async () => {

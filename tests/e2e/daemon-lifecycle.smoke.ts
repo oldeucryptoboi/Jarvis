@@ -3,11 +3,11 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import { PermissionEngine } from "@openvger/permissions";
-import { MockPlanner } from "@openvger/planner";
-import { ApiServer } from "@openvger/api";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import { PermissionEngine } from "@jarvis/permissions";
+import { MockPlanner } from "@jarvis/planner";
+import { ApiServer } from "@jarvis/api";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
 const TOOLS_DIR = join(ROOT, "tools/examples");
@@ -19,7 +19,7 @@ describe("Daemon Lifecycle Smoke", () => {
   let httpServer: ReturnType<typeof import("node:http").createServer> | null = null;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `openvger-e2e-daemon-${uuid()}`);
+    testDir = join(tmpdir(), `jarvis-e2e-daemon-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();

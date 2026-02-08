@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { resolve } from "node:path";
 import type { ToolHandler } from "../tool-runtime.js";
-import type { ExecutionMode, PolicyProfile } from "@openvger/schemas";
+import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
 import { assertCommandAllowed, assertPathAllowed } from "../policy-enforcer.js";
 
 const SENSITIVE_ENV_PREFIXES = ["AWS_", "AZURE_", "GCP_", "GOOGLE_", "OPENAI_", "ANTHROPIC_", "GITHUB_", "GITLAB_", "NPM_TOKEN", "DOCKER_"];

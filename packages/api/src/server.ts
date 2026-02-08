@@ -1,12 +1,12 @@
 import express from "express";
 import { v4 as uuid } from "uuid";
-import type { Kernel } from "@openvger/kernel";
-import { Kernel as KernelClass } from "@openvger/kernel";
-import type { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import type { Journal } from "@openvger/journal";
-import type { PermissionEngine } from "@openvger/permissions";
-import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, PolicyProfile, JournalEvent } from "@openvger/schemas";
-import type { PluginRegistry } from "@openvger/plugins";
+import type { Kernel } from "@jarvis/kernel";
+import { Kernel as KernelClass } from "@jarvis/kernel";
+import type { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import type { Journal } from "@jarvis/journal";
+import type { PermissionEngine } from "@jarvis/permissions";
+import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, PolicyProfile, JournalEvent } from "@jarvis/schemas";
+import type { PluginRegistry } from "@jarvis/plugins";
 import type { ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 
@@ -205,7 +205,7 @@ export class ApiServer {
   }
 
   listen(port: number): void {
-    this.app.listen(port, () => { console.log(`OpenVger API listening on http://localhost:${port}`); });
+    this.app.listen(port, () => { console.log(`Jarvis API listening on http://localhost:${port}`); });
   }
 
   getExpressApp(): express.Application { return this.app; }

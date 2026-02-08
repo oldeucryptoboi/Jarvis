@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { v4 as uuid } from "uuid";
-import type { Plan, Session, ToolSchemaForPlanner } from "@openvger/schemas";
+import type { Plan, Session, ToolSchemaForPlanner } from "@jarvis/schemas";
 import {
   toolInputCritic,
   stepLimitCritic,

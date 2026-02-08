@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { PolicyProfile } from "@openvger/schemas";
+import type { PolicyProfile } from "@jarvis/schemas";
 import { browserHandler } from "./browser.js";
 
 const openPolicy: PolicyProfile = {

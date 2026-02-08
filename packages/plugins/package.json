@@ -1,5 +1,5 @@
 {
-  "name": "@openvger/plugins",
+  "name": "@jarvis/plugins",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,10 +11,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@openvger/schemas": "workspace:*",
-    "@openvger/journal": "workspace:*",
-    "@openvger/tools": "workspace:*",
-    "@openvger/permissions": "workspace:*",
+    "@jarvis/schemas": "workspace:*",
+    "@jarvis/journal": "workspace:*",
+    "@jarvis/tools": "workspace:*",
+    "@jarvis/permissions": "workspace:*",
     "js-yaml": "^4.1.0",
     "uuid": "^11.0.0"
   },

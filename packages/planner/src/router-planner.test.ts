@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { v4 as uuid } from "uuid";
-import type { Task, PlanResult, Planner, ToolSchemaForPlanner } from "@openvger/schemas";
+import type { Task, PlanResult, Planner, ToolSchemaForPlanner } from "@jarvis/schemas";
 import { RouterPlanner, classifyTask, filterToolsByDomain } from "./router-planner.js";
 
 const toolSchemas: ToolSchemaForPlanner[] = [

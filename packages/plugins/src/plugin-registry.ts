@@ -3,11 +3,11 @@ import type {
   PluginManifest,
   RouteHandler,
   CommandOptions,
-} from "@openvger/schemas";
-import { validateToolInput } from "@openvger/schemas";
-import type { Journal } from "@openvger/journal";
-import type { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import type { PermissionEngine } from "@openvger/permissions";
+} from "@jarvis/schemas";
+import { validateToolInput } from "@jarvis/schemas";
+import type { Journal } from "@jarvis/journal";
+import type { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import type { PermissionEngine } from "@jarvis/permissions";
 import { PluginDiscovery, type DiscoveredPlugin } from "./plugin-discovery.js";
 import { PluginLoader } from "./plugin-loader.js";
 import { PluginApiImpl } from "./plugin-api-impl.js";

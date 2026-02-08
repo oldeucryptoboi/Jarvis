@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { PluginManifest, ToolManifest } from "@openvger/schemas";
+import type { PluginManifest, ToolManifest } from "@jarvis/schemas";
 import { PluginApiImpl } from "./plugin-api-impl.js";
 import { PluginLoggerImpl } from "./plugin-logger.js";
 

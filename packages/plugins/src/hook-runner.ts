@@ -3,9 +3,9 @@ import type {
   HookContext,
   HookResult,
   HookRegistration,
-} from "@openvger/schemas";
-import type { Journal } from "@openvger/journal";
-import { CircuitBreaker } from "@openvger/tools";
+} from "@jarvis/schemas";
+import type { Journal } from "@jarvis/journal";
+import { CircuitBreaker } from "@jarvis/tools";
 
 const VALID_ACTIONS = new Set(["continue", "modify", "block", "observe"]);
 const BLOCKABLE_HOOKS: Set<HookName> = new Set([

@@ -1,5 +1,5 @@
 /**
- * OpenVger Core Types
+ * Jarvis Core Types
  *
  * These are the canonical data models for the entire runtime.
  * Every component references these types. Nothing is implicit.
@@ -179,12 +179,12 @@ export const ErrorCodes = {
 
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes];
 
-export class OpenVgerError extends Error {
+export class JarvisError extends Error {
   readonly code: ErrorCode;
   readonly data?: unknown;
   constructor(code: ErrorCode, message: string, data?: unknown) {
     super(message);
-    this.name = "OpenVgerError";
+    this.name = "JarvisError";
     this.code = code;
     this.data = data;
   }

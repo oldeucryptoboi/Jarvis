@@ -1,5 +1,5 @@
 import type { ToolHandler } from "../tool-runtime.js";
-import type { ExecutionMode, PolicyProfile } from "@openvger/schemas";
+import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
 import { assertEndpointAllowed } from "../policy-enforcer.js";
 
 interface Target {

@@ -17,15 +17,15 @@ import type {
   UsageMetrics,
   HookName,
   HookResult,
-} from "@openvger/schemas";
-import { validatePlanData } from "@openvger/schemas";
-import type { Journal } from "@openvger/journal";
-import type { ToolRuntime } from "@openvger/tools";
-import type { ToolRegistry } from "@openvger/tools";
-import type { PermissionEngine } from "@openvger/permissions";
-import { TaskStateManager, extractLesson } from "@openvger/memory";
-import type { ActiveMemory } from "@openvger/memory";
-import type { PluginRegistry } from "@openvger/plugins";
+} from "@jarvis/schemas";
+import { validatePlanData } from "@jarvis/schemas";
+import type { Journal } from "@jarvis/journal";
+import type { ToolRuntime } from "@jarvis/tools";
+import type { ToolRegistry } from "@jarvis/tools";
+import type { PermissionEngine } from "@jarvis/permissions";
+import { TaskStateManager, extractLesson } from "@jarvis/memory";
+import type { ActiveMemory } from "@jarvis/memory";
+import type { PluginRegistry } from "@jarvis/plugins";
 import { mkdir, rename, open } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { runCritics } from "./critics.js";
@@ -35,7 +35,7 @@ import { UsageAccumulator } from "./usage-accumulator.js";
 import { ContextBudgetMonitor, buildCheckpoint } from "./context-budget.js";
 import type { ContextBudgetConfig } from "./context-budget.js";
 import { runSubagent } from "./subagent.js";
-import type { CheckpointFinding } from "@openvger/schemas";
+import type { CheckpointFinding } from "@jarvis/schemas";
 
 export interface KernelConfig {
   journal: Journal;

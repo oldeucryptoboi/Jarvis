@@ -197,20 +197,20 @@ describe("validateJournalEventData", () => {
   });
 });
 
-describe("OpenVgerError", () => {
+describe("JarvisError", () => {
   it("has correct code, message, and data", async () => {
-    const { OpenVgerError, ErrorCodes } = await import("./types.js");
-    const err = new OpenVgerError("POLICY_VIOLATION", "test message", { detail: 42 });
+    const { JarvisError, ErrorCodes } = await import("./types.js");
+    const err = new JarvisError("POLICY_VIOLATION", "test message", { detail: 42 });
     expect(err.code).toBe(ErrorCodes.POLICY_VIOLATION);
     expect(err.message).toBe("test message");
     expect(err.data).toEqual({ detail: 42 });
-    expect(err.name).toBe("OpenVgerError");
+    expect(err.name).toBe("JarvisError");
     expect(err instanceof Error).toBe(true);
   });
 
   it("works without data parameter", async () => {
-    const { OpenVgerError } = await import("./types.js");
-    const err = new OpenVgerError("TIMEOUT", "timed out");
+    const { JarvisError } = await import("./types.js");
+    const err = new JarvisError("TIMEOUT", "timed out");
     expect(err.code).toBe("TIMEOUT");
     expect(err.data).toBeUndefined();
   });

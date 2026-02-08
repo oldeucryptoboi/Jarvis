@@ -1,5 +1,5 @@
 {
-  "name": "@openvger/api",
+  "name": "@jarvis/api",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,18 +11,18 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@openvger/schemas": "workspace:*",
-    "@openvger/kernel": "workspace:*",
-    "@openvger/tools": "workspace:*",
-    "@openvger/journal": "workspace:*",
-    "@openvger/permissions": "workspace:*",
-    "@openvger/plugins": "workspace:*",
+    "@jarvis/schemas": "workspace:*",
+    "@jarvis/kernel": "workspace:*",
+    "@jarvis/tools": "workspace:*",
+    "@jarvis/journal": "workspace:*",
+    "@jarvis/permissions": "workspace:*",
+    "@jarvis/plugins": "workspace:*",
     "express": "^5.0.0",
     "uuid": "^11.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "@openvger/planner": "workspace:*",
-    "@openvger/memory": "workspace:*"
+    "@jarvis/planner": "workspace:*",
+    "@jarvis/memory": "workspace:*"
   }
 }

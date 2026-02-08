@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { UsageAccumulator } from "./usage-accumulator.js";
-import type { UsageMetrics } from "@openvger/schemas";
+import type { UsageMetrics } from "@jarvis/schemas";
 
 describe("UsageAccumulator", () => {
   it("starts at zero", () => {

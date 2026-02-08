@@ -6,10 +6,10 @@ import type {
   Planner,
   ModelPricing,
   CheckpointFinding,
-} from "@openvger/schemas";
-import type { Journal } from "@openvger/journal";
-import type { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import type { PermissionEngine } from "@openvger/permissions";
+} from "@jarvis/schemas";
+import type { Journal } from "@jarvis/journal";
+import type { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import type { PermissionEngine } from "@jarvis/permissions";
 import { v4 as uuid } from "uuid";
 import { Kernel } from "./kernel.js";
 

@@ -1,4 +1,4 @@
-import type { PluginLogger } from "@openvger/schemas";
+import type { PluginLogger } from "@jarvis/schemas";
 
 export class PluginLoggerImpl implements PluginLogger {
   private prefix: string;

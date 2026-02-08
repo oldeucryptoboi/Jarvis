@@ -2,8 +2,8 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import yaml from "js-yaml";
-import type { PluginManifest } from "@openvger/schemas";
-import { validatePluginManifestData } from "@openvger/schemas";
+import type { PluginManifest } from "@jarvis/schemas";
+import { validatePluginManifestData } from "@jarvis/schemas";
 
 export interface DiscoveredPlugin {
   manifest: PluginManifest;

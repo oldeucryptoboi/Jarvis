@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { resolve } from "node:path";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@openvger/journal";
-import type { ApprovalDecision, PermissionRequest } from "@openvger/schemas";
+import { Journal } from "@jarvis/journal";
+import type { ApprovalDecision, PermissionRequest } from "@jarvis/schemas";
 import { PermissionEngine } from "./permission-engine.js";
 
 const TEST_DIR = resolve(import.meta.dirname ?? ".", "../../.test-data");

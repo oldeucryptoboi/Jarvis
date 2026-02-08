@@ -4,15 +4,15 @@ import { Command } from "commander";
 import { v4 as uuid } from "uuid";
 import { resolve } from "node:path";
 import * as readline from "node:readline";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry, ToolRuntime, readFileHandler, writeFileHandler, shellExecHandler, httpRequestHandler, browserHandler } from "@openvger/tools";
-import { PermissionEngine } from "@openvger/permissions";
-import { Kernel } from "@openvger/kernel";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry, ToolRuntime, readFileHandler, writeFileHandler, shellExecHandler, httpRequestHandler, browserHandler } from "@jarvis/tools";
+import { PermissionEngine } from "@jarvis/permissions";
+import { Kernel } from "@jarvis/kernel";
 import { createPlanner } from "./llm-adapters.js";
-import { ApiServer } from "@openvger/api";
-import { PluginRegistry } from "@openvger/plugins";
-import { ActiveMemory } from "@openvger/memory";
-import type { Task, ApprovalDecision, PermissionRequest } from "@openvger/schemas";
+import { ApiServer } from "@jarvis/api";
+import { PluginRegistry } from "@jarvis/plugins";
+import { ActiveMemory } from "@jarvis/memory";
+import type { Task, ApprovalDecision, PermissionRequest } from "@jarvis/schemas";
 
 const JOURNAL_PATH = resolve("journal/events.jsonl");
 const TOOLS_DIR = resolve("tools/examples");
@@ -67,7 +67,7 @@ async function createRuntime(policy?: { allowed_paths: string[]; allowed_endpoin
 }
 
 const program = new Command();
-program.name("openvger").description("OpenVger — Deterministic agent runtime").version("0.1.0");
+program.name("jarvis").description("Jarvis — Deterministic agent runtime").version("0.1.0");
 
 program.command("run").description("Run a task end-to-end").argument("<task>", "Task description")
   .option("-m, --mode <mode>", "Execution mode: real, dry_run, mock", "mock")
@@ -146,7 +146,7 @@ program.command("run").description("Run a task end-to-end").argument("<task>", "
         console.log(`  Checkpoint saved: ${event.payload.checkpoint_path}`);
       }
     });
-    console.log(`\nOpenVger session starting...`);
+    console.log(`\nJarvis session starting...`);
     console.log(`Task: ${taskText}`);
     console.log(`Mode: ${opts.mode}`);
     console.log(`Tools: ${registry.list().map((t) => t.name).join(", ") || "(none)"}`);
@@ -285,7 +285,7 @@ program.command("relay").description("Start the browser relay server")
   .option("--no-headless", "Run browser with visible window (managed only)")
   .option("--bridge-port <port>", "Bridge WebSocket port for extension driver", "9225")
   .action(async (opts: { port: string; driver: string; headless: boolean; bridgePort: string }) => {
-    const { ManagedDriver, ExtensionDriver, RelayServer } = await import("@openvger/browser-relay");
+    const { ManagedDriver, ExtensionDriver, RelayServer } = await import("@jarvis/browser-relay");
     const driverType = opts.driver;
 
     let browserDriver;

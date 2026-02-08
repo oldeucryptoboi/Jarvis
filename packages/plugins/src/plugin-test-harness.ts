@@ -1,9 +1,9 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { v4 as uuid } from "uuid";
-import type { PluginManifest, PluginApi } from "@openvger/schemas";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry } from "@openvger/tools";
+import type { PluginManifest, PluginApi } from "@jarvis/schemas";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry } from "@jarvis/tools";
 import { PluginApiImpl } from "./plugin-api-impl.js";
 import { PluginLoggerImpl } from "./plugin-logger.js";
 import { HookRunner } from "./hook-runner.js";
@@ -18,7 +18,7 @@ export class PluginTestHarness {
     toolRegistry: ToolRegistry;
     journal: Journal;
   }> {
-    const journalPath = join(tmpdir(), `openvger-test-${uuid()}.jsonl`);
+    const journalPath = join(tmpdir(), `jarvis-test-${uuid()}.jsonl`);
     const journal = new Journal(journalPath, { fsync: false, redact: false });
     await journal.init();
 

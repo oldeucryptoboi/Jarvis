@@ -3,8 +3,8 @@ import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry } from "@openvger/tools";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry } from "@jarvis/tools";
 import { PluginRegistry } from "./plugin-registry.js";
 
 describe("Plugin System Integration", () => {
@@ -14,7 +14,7 @@ describe("Plugin System Integration", () => {
   let toolRegistry: ToolRegistry;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `openvger-test-${uuid()}`);
+    testDir = join(tmpdir(), `jarvis-test-${uuid()}`);
     pluginsDir = join(testDir, "plugins");
     await mkdir(pluginsDir, { recursive: true });
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });

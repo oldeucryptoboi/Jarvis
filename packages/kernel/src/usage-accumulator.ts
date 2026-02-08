@@ -1,4 +1,4 @@
-import type { UsageMetrics, ModelPricing } from "@openvger/schemas";
+import type { UsageMetrics, ModelPricing } from "@jarvis/schemas";
 
 export interface UsageSummary {
   total_input_tokens: number;

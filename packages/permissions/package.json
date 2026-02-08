@@ -1,5 +1,5 @@
 {
-  "name": "@openvger/permissions",
+  "name": "@jarvis/permissions",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,8 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@openvger/schemas": "workspace:*",
-    "@openvger/journal": "workspace:*",
+    "@jarvis/schemas": "workspace:*",
+    "@jarvis/journal": "workspace:*",
     "uuid": "^11.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import type { Plan, Session, ToolSchemaForPlanner } from "@openvger/schemas";
+import type { Plan, Session, ToolSchemaForPlanner } from "@jarvis/schemas";
 
 export interface CriticResult {
   passed: boolean;

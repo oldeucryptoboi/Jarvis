@@ -1,11 +1,11 @@
 {
-  "name": "@openvger/cli",
+  "name": "@jarvis/cli",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "openvger": "dist/index.js"
+    "jarvis": "dist/index.js"
   },
   "scripts": {
     "build": "tsc -b",
@@ -15,16 +15,16 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "@openvger/api": "workspace:*",
-    "@openvger/browser-relay": "workspace:*",
-    "@openvger/journal": "workspace:*",
-    "@openvger/kernel": "workspace:*",
-    "@openvger/memory": "workspace:*",
-    "@openvger/permissions": "workspace:*",
-    "@openvger/planner": "workspace:*",
-    "@openvger/plugins": "workspace:*",
-    "@openvger/schemas": "workspace:*",
-    "@openvger/tools": "workspace:*",
+    "@jarvis/api": "workspace:*",
+    "@jarvis/browser-relay": "workspace:*",
+    "@jarvis/journal": "workspace:*",
+    "@jarvis/kernel": "workspace:*",
+    "@jarvis/memory": "workspace:*",
+    "@jarvis/permissions": "workspace:*",
+    "@jarvis/planner": "workspace:*",
+    "@jarvis/plugins": "workspace:*",
+    "@jarvis/schemas": "workspace:*",
+    "@jarvis/tools": "workspace:*",
     "commander": "^13.0.0",
     "dotenv": "^17.2.4",
     "openai": "^4.77.0",

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import type { Journal } from "@openvger/journal";
-import type { PluginApi, PluginRegisterFn } from "@openvger/schemas";
+import type { Journal } from "@jarvis/journal";
+import type { PluginApi, PluginRegisterFn } from "@jarvis/schemas";
 import type { DiscoveredPlugin } from "./plugin-discovery.js";
 
 export class PluginLoader {

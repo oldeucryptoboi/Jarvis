@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createPlanner } from "./llm-adapters.js";
-import { MockPlanner, LLMPlanner } from "@openvger/planner";
+import { MockPlanner, LLMPlanner } from "@jarvis/planner";
 
 describe("createPlanner", () => {
   const savedEnv: Record<string, string | undefined> = {};

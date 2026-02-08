@@ -5,8 +5,8 @@ import type {
   ApprovalDecision,
   PermissionCheckResult,
   PermissionConstraints,
-} from "@openvger/schemas";
-import type { Journal } from "@openvger/journal";
+} from "@jarvis/schemas";
+import type { Journal } from "@jarvis/journal";
 
 export type ApprovalPromptFn = (
   request: PermissionRequest

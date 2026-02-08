@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import { v4 as uuid } from "uuid";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import { PermissionEngine } from "@openvger/permissions";
-import { PluginRegistry } from "@openvger/plugins";
-import { MockPlanner } from "@openvger/planner";
-import type { ToolManifest, ApprovalDecision } from "@openvger/schemas";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import { PermissionEngine } from "@jarvis/permissions";
+import { PluginRegistry } from "@jarvis/plugins";
+import { MockPlanner } from "@jarvis/planner";
+import type { ToolManifest, ApprovalDecision } from "@jarvis/schemas";
 import { ApiServer } from "./server.js";
 
 const TEST_DIR = resolve(import.meta.dirname ?? ".", "../../.test-data");
@@ -381,7 +381,7 @@ describe("ApiServer (full config constructor)", () => {
   });
 
   it("registerKernel makes session retrievable via GET", async () => {
-    const { Kernel } = await import("@openvger/kernel");
+    const { Kernel } = await import("@jarvis/kernel");
     const kernel = new Kernel({
       journal, toolRuntime: runtime, toolRegistry: registry, permissions,
       planner: new MockPlanner(), mode: "mock",
@@ -633,7 +633,7 @@ describe("ApiServer plugin integration", () => {
     permissions = new PermissionEngine(journal, async () => "allow_session" as ApprovalDecision);
     runtime = new ToolRuntime(registry, permissions, journal);
 
-    pluginsDir = join(tmpdir(), `openvger-api-test-${uuid()}`);
+    pluginsDir = join(tmpdir(), `jarvis-api-test-${uuid()}`);
     const pluginDir = join(pluginsDir, "api-test-plugin");
     await mkdir(pluginDir, { recursive: true });
     await writeFile(join(pluginDir, "plugin.yaml"), `

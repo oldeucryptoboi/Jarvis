@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { resolve } from "node:path";
 import { rm, mkdir } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import type { Plan, StepResult, MemoryLesson } from "@openvger/schemas";
+import type { Plan, StepResult, MemoryLesson } from "@jarvis/schemas";
 import { ActiveMemory, extractLesson } from "./memory.js";
 
 const TEST_DIR = resolve(import.meta.dirname ?? ".", "../../.test-memory-data");

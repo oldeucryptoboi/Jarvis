@@ -4,14 +4,14 @@ import { tmpdir } from "node:os";
 import { rm, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@openvger/journal";
+import { Journal } from "@jarvis/journal";
 
 describe("Journal Lifecycle Smoke", () => {
   let testDir: string;
   let journalPath: string;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `openvger-e2e-journal-${uuid()}`);
+    testDir = join(tmpdir(), `jarvis-e2e-journal-${uuid()}`);
     journalPath = join(testDir, "journal", "events.jsonl");
   });
 

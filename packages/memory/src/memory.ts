@@ -9,7 +9,7 @@ import type {
   MemoryItem,
   MemoryLesson,
   SessionStatus,
-} from "@openvger/schemas";
+} from "@jarvis/schemas";
 
 export class TaskStateManager {
   private state: TaskState;

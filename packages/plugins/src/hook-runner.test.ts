@@ -3,8 +3,8 @@ import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { v4 as uuid } from "uuid";
-import type { HookContext, HookRegistration, HookResult } from "@openvger/schemas";
-import { Journal } from "@openvger/journal";
+import type { HookContext, HookRegistration, HookResult } from "@jarvis/schemas";
+import { Journal } from "@jarvis/journal";
 import { HookRunner } from "./hook-runner.js";
 
 describe("HookRunner", () => {
@@ -13,7 +13,7 @@ describe("HookRunner", () => {
   let runner: HookRunner;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `openvger-test-${uuid()}`);
+    testDir = join(tmpdir(), `jarvis-test-${uuid()}`);
     await mkdir(testDir, { recursive: true });
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();

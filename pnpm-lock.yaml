@@ -8,34 +8,34 @@ importers:
 
   .:
     devDependencies:
-      '@openvger/api':
+      '@jarvis/api':
         specifier: workspace:^
         version: link:packages/api
-      '@openvger/browser-relay':
+      '@jarvis/browser-relay':
         specifier: workspace:^
         version: link:packages/browser-relay
-      '@openvger/cli':
+      '@jarvis/cli':
         specifier: workspace:^
         version: link:packages/cli
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:^
         version: link:packages/journal
-      '@openvger/kernel':
+      '@jarvis/kernel':
         specifier: workspace:^
         version: link:packages/kernel
-      '@openvger/permissions':
+      '@jarvis/permissions':
         specifier: workspace:^
         version: link:packages/permissions
-      '@openvger/planner':
+      '@jarvis/planner':
         specifier: workspace:^
         version: link:packages/planner
-      '@openvger/plugins':
+      '@jarvis/plugins':
         specifier: workspace:^
         version: link:packages/plugins
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:^
         version: link:packages/schemas
-      '@openvger/tools':
+      '@jarvis/tools':
         specifier: workspace:^
         version: link:packages/tools
       '@types/node':
@@ -59,22 +59,22 @@ importers:
 
   packages/api:
     dependencies:
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:*
         version: link:../journal
-      '@openvger/kernel':
+      '@jarvis/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@openvger/permissions':
+      '@jarvis/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@openvger/plugins':
+      '@jarvis/plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@openvger/tools':
+      '@jarvis/tools':
         specifier: workspace:*
         version: link:../tools
       express:
@@ -84,10 +84,10 @@ importers:
         specifier: ^11.0.0
         version: 11.1.0
     devDependencies:
-      '@openvger/memory':
+      '@jarvis/memory':
         specifier: workspace:*
         version: link:../memory
-      '@openvger/planner':
+      '@jarvis/planner':
         specifier: workspace:*
         version: link:../planner
       '@types/express':
@@ -119,34 +119,34 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
-      '@openvger/api':
+      '@jarvis/api':
         specifier: workspace:*
         version: link:../api
-      '@openvger/browser-relay':
+      '@jarvis/browser-relay':
         specifier: workspace:*
         version: link:../browser-relay
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:*
         version: link:../journal
-      '@openvger/kernel':
+      '@jarvis/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@openvger/memory':
+      '@jarvis/memory':
         specifier: workspace:*
         version: link:../memory
-      '@openvger/permissions':
+      '@jarvis/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@openvger/planner':
+      '@jarvis/planner':
         specifier: workspace:*
         version: link:../planner
-      '@openvger/plugins':
+      '@jarvis/plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@openvger/tools':
+      '@jarvis/tools':
         specifier: workspace:*
         version: link:../tools
       commander:
@@ -164,7 +164,7 @@ importers:
 
   packages/journal:
     dependencies:
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -173,35 +173,35 @@ importers:
 
   packages/kernel:
     dependencies:
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:*
         version: link:../journal
-      '@openvger/memory':
+      '@jarvis/memory':
         specifier: workspace:*
         version: link:../memory
-      '@openvger/permissions':
+      '@jarvis/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@openvger/plugins':
+      '@jarvis/plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@openvger/tools':
+      '@jarvis/tools':
         specifier: workspace:*
         version: link:../tools
       uuid:
         specifier: ^11.0.0
         version: 11.1.0
     devDependencies:
-      '@openvger/planner':
+      '@jarvis/planner':
         specifier: workspace:*
         version: link:../planner
 
   packages/memory:
     dependencies:
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -210,10 +210,10 @@ importers:
 
   packages/permissions:
     dependencies:
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:*
         version: link:../journal
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -222,7 +222,7 @@ importers:
 
   packages/planner:
     dependencies:
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -231,16 +231,16 @@ importers:
 
   packages/plugins:
     dependencies:
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:*
         version: link:../journal
-      '@openvger/permissions':
+      '@jarvis/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@openvger/tools':
+      '@jarvis/tools':
         specifier: workspace:*
         version: link:../tools
       js-yaml:
@@ -269,13 +269,13 @@ importers:
 
   packages/tools:
     dependencies:
-      '@openvger/journal':
+      '@jarvis/journal':
         specifier: workspace:*
         version: link:../journal
-      '@openvger/permissions':
+      '@jarvis/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@openvger/schemas':
+      '@jarvis/schemas':
         specifier: workspace:*
         version: link:../schemas
       js-yaml:

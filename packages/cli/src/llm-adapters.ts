@@ -1,6 +1,6 @@
-import { MockPlanner, LLMPlanner, RouterPlanner } from "@openvger/planner";
-import type { ModelCallFn, ModelCallResult } from "@openvger/planner";
-import type { Planner } from "@openvger/schemas";
+import { MockPlanner, LLMPlanner, RouterPlanner } from "@jarvis/planner";
+import type { ModelCallFn, ModelCallResult } from "@jarvis/planner";
+import type { Planner } from "@jarvis/schemas";
 
 const PROVIDER_DEFAULTS: Record<string, string> = {
   claude: "claude-sonnet-4-5-20250929",

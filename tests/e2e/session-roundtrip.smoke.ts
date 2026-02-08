@@ -3,12 +3,12 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@openvger/journal";
-import { ToolRegistry, ToolRuntime } from "@openvger/tools";
-import { PermissionEngine } from "@openvger/permissions";
-import { MockPlanner } from "@openvger/planner";
-import { Kernel } from "@openvger/kernel";
-import type { Task } from "@openvger/schemas";
+import { Journal } from "@jarvis/journal";
+import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
+import { PermissionEngine } from "@jarvis/permissions";
+import { MockPlanner } from "@jarvis/planner";
+import { Kernel } from "@jarvis/kernel";
+import type { Task } from "@jarvis/schemas";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
 const TOOLS_DIR = join(ROOT, "tools/examples");
@@ -21,7 +21,7 @@ describe("Session Roundtrip Smoke", () => {
   let runtime: ToolRuntime;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `openvger-e2e-session-${uuid()}`);
+    testDir = join(tmpdir(), `jarvis-e2e-session-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();
@@ -170,7 +170,7 @@ describe("Session Roundtrip Smoke", () => {
 
   it("session with plugin hooks fires them in correct order", async () => {
     // Import plugin registry dynamically to keep it optional
-    const { PluginRegistry } = await import("@openvger/plugins");
+    const { PluginRegistry } = await import("@jarvis/plugins");
 
     const pluginsDir = join(ROOT, "plugins");
     const pluginRegistry = new PluginRegistry({
@@ -257,7 +257,7 @@ describe("Session Roundtrip Smoke", () => {
   });
 
   it("SSE stream delivers events for a session", async () => {
-    const { ApiServer } = await import("@openvger/api");
+    const { ApiServer } = await import("@jarvis/api");
     const planner = new MockPlanner();
 
     const apiServer = new ApiServer({
