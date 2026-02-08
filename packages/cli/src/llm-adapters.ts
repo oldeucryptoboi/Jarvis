@@ -2,17 +2,49 @@ import { MockPlanner, LLMPlanner, RouterPlanner } from "@jarvis/planner";
 import type { ModelCallFn, ModelCallResult } from "@jarvis/planner";
 import type { Planner } from "@jarvis/schemas";
 
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 500;
+
+function isTransientError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  // Network errors
+  if (msg.includes("econnreset") || msg.includes("econnrefused") || msg.includes("etimedout") || msg.includes("fetch failed") || msg.includes("socket hang up")) return true;
+  // HTTP 5xx or 429 from SDK errors
+  const status = (err as unknown as Record<string, unknown>).status as number | undefined;
+  if (status !== undefined && (status === 429 || status >= 500)) return true;
+  return false;
+}
+
+async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < MAX_RETRIES && isTransientError(err)) {
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt) * (0.5 + Math.random() * 0.5);
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
 const PROVIDER_DEFAULTS: Record<string, string> = {
   claude: "claude-sonnet-4-5-20250929",
   openai: "gpt-4o",
 };
 
 function resolveProvider(opts: { planner?: string }): string {
-  return opts.planner ?? process.env.OPENVGER_PLANNER ?? "mock";
+  return opts.planner ?? process.env.JARVIS_PLANNER ?? "mock";
 }
 
 function resolveModel(provider: string, opts: { model?: string }): string {
-  return opts.model ?? process.env.OPENVGER_MODEL ?? PROVIDER_DEFAULTS[provider] ?? "unknown";
+  return opts.model ?? process.env.JARVIS_MODEL ?? PROVIDER_DEFAULTS[provider] ?? "unknown";
 }
 
 function createClaudeCallFn(model: string): ModelCallFn {
@@ -27,25 +59,27 @@ function createClaudeCallFn(model: string): ModelCallFn {
   return async (systemPrompt: string, userPrompt: string): Promise<ModelCallResult> => {
     const { default: Anthropic } = await import("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey });
-    const response = await client.messages.create({
-      model,
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-    });
-    const block = response.content[0];
-    if (!block || block.type !== "text") {
-      throw new Error("Claude returned no text content");
-    }
-    return {
-      text: block.text,
-      usage: {
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-        total_tokens: response.usage.input_tokens + response.usage.output_tokens,
+    return withRetry(async () => {
+      const response = await client.messages.create({
         model,
-      },
-    };
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      });
+      const block = response.content[0];
+      if (!block || block.type !== "text") {
+        throw new Error("Claude returned no text content");
+      }
+      return {
+        text: block.text,
+        usage: {
+          input_tokens: response.usage.input_tokens,
+          output_tokens: response.usage.output_tokens,
+          total_tokens: response.usage.input_tokens + response.usage.output_tokens,
+          model,
+        },
+      };
+    });
   };
 }
 
@@ -67,28 +101,30 @@ function createOpenAICallFn(model: string): ModelCallFn {
       apiKey: apiKey ?? "not-needed",
       ...(baseURL ? { baseURL } : {}),
     });
-    const response = await client.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("OpenAI returned no content");
-    }
-    const promptTokens = response.usage?.prompt_tokens ?? 0;
-    const completionTokens = response.usage?.completion_tokens ?? 0;
-    return {
-      text: content,
-      usage: {
-        input_tokens: promptTokens,
-        output_tokens: completionTokens,
-        total_tokens: promptTokens + completionTokens,
+    return withRetry(async () => {
+      const response = await client.chat.completions.create({
         model,
-      },
-    };
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("OpenAI returned no content");
+      }
+      const promptTokens = response.usage?.prompt_tokens ?? 0;
+      const completionTokens = response.usage?.completion_tokens ?? 0;
+      return {
+        text: content,
+        usage: {
+          input_tokens: promptTokens,
+          output_tokens: completionTokens,
+          total_tokens: promptTokens + completionTokens,
+          model,
+        },
+      };
+    });
   };
 }
 

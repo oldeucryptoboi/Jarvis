@@ -9,7 +9,7 @@ import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, Pol
 import type { PluginRegistry } from "@jarvis/plugins";
 import type { MetricsCollector } from "@jarvis/metrics";
 import { createMetricsRouter } from "@jarvis/metrics";
-import type { ServerResponse } from "node:http";
+import type { ServerResponse, Server } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 
 // ─── Input Validation ──────────────────────────────────────────────
@@ -94,6 +94,7 @@ function validateCompactInput(body: unknown): string | null {
 interface PendingApproval {
   resolve: (decision: ApprovalDecision) => void;
   request: unknown;
+  timer: ReturnType<typeof setTimeout>;
 }
 
 interface SSEClient {
@@ -117,11 +118,14 @@ export interface ApiServerConfig {
   agentic?: boolean;
   apiToken?: string;
   metricsCollector?: MetricsCollector;
+  approvalTimeoutMs?: number;
+  corsOrigins?: string | string[];
 }
 
 export class ApiServer {
   private app: express.Application;
   private kernels = new Map<string, Kernel>();
+  private activeSessionCount = 0;
   private toolRegistry: ToolRegistry;
   private toolRuntime?: ToolRuntime;
   private journal: Journal;
@@ -138,6 +142,9 @@ export class ApiServer {
   private agentic: boolean;
   private apiToken?: string;
   private metricsCollector?: MetricsCollector;
+  private approvalTimeoutMs: number;
+  private corsOrigins?: string | string[];
+  private httpServer?: Server;
 
   constructor(config: ApiServerConfig);
   constructor(toolRegistry: ToolRegistry, journal: Journal);
@@ -156,6 +163,7 @@ export class ApiServer {
       this.maxConcurrentSessions = 50;
       this.maxSseClientsPerSession = 10;
       this.agentic = false;
+      this.approvalTimeoutMs = 300000; // 5 minutes
       // No token in legacy constructor — unauthenticated
     } else {
       const config = configOrRegistry as ApiServerConfig;
@@ -173,9 +181,32 @@ export class ApiServer {
       this.agentic = config.agentic ?? false;
       this.apiToken = config.apiToken;
       this.metricsCollector = config.metricsCollector;
+      this.approvalTimeoutMs = config.approvalTimeoutMs ?? 300000; // 5 minutes
+      this.corsOrigins = config.corsOrigins;
     }
     if (this.metricsCollector) {
       this.metricsCollector.attach(this.journal);
+    }
+    if (!this.apiToken) {
+      console.warn("[api] WARNING: No API token configured — all endpoints are unauthenticated. Set apiToken in config or JARVIS_API_TOKEN env var.");
+    }
+    // CORS middleware
+    if (this.corsOrigins) {
+      const origins = this.corsOrigins;
+      this.app.use((req, res, next) => {
+        const origin = req.headers.origin;
+        const allowed = typeof origins === "string"
+          ? origins === "*" || origin === origins
+          : origin !== undefined && origins.includes(origin);
+        if (allowed && origin) {
+          res.setHeader("Access-Control-Allow-Origin", origin);
+          res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+          res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+          res.setHeader("Access-Control-Max-Age", "86400");
+        }
+        if (req.method === "OPTIONS") { res.status(204).end(); return; }
+        next();
+      });
     }
     this.setupRoutes();
     this.journal.on((event) => { this.broadcastEvent(event.session_id, event); });
@@ -184,7 +215,13 @@ export class ApiServer {
   registerKernel(sessionId: string, kernel: Kernel): void { this.kernels.set(sessionId, kernel); }
 
   registerApproval(requestId: string, request: unknown, resolve: (decision: ApprovalDecision) => void): void {
-    this.pendingApprovals.set(requestId, { resolve, request });
+    const timer = setTimeout(() => {
+      if (this.pendingApprovals.has(requestId)) {
+        this.pendingApprovals.delete(requestId);
+        resolve("deny"); // Auto-deny on timeout
+      }
+    }, this.approvalTimeoutMs);
+    this.pendingApprovals.set(requestId, { resolve, request, timer });
   }
 
   broadcastEvent(sessionId: string, data: unknown): void {
@@ -212,8 +249,29 @@ export class ApiServer {
     }
   }
 
-  listen(port: number): void {
-    this.app.listen(port, () => { console.log(`Jarvis API listening on http://localhost:${port}`); });
+  listen(port: number): Server {
+    this.httpServer = this.app.listen(port, () => { console.log(`Jarvis API listening on http://localhost:${port}`); });
+    return this.httpServer;
+  }
+
+  async shutdown(): Promise<void> {
+    // Auto-deny all pending approvals
+    for (const [id, approval] of this.pendingApprovals) {
+      clearTimeout(approval.timer);
+      approval.resolve("deny");
+      this.pendingApprovals.delete(id);
+    }
+    // Close all SSE connections
+    for (const [, clients] of this.sseClients) {
+      for (const client of clients) client.res.end();
+    }
+    this.sseClients.clear();
+    // Detach metrics
+    if (this.metricsCollector) this.metricsCollector.detach();
+    // Close HTTP server
+    if (this.httpServer) {
+      await new Promise<void>((resolve) => this.httpServer!.close(() => resolve()));
+    }
   }
 
   getExpressApp(): express.Application { return this.app; }
@@ -243,7 +301,7 @@ export class ApiServer {
     router.get("/health", async (_req, res) => {
       const journalHealth = await this.journal.checkHealth();
       const toolCount = this.toolRegistry.list().length;
-      const activeSessionCount = this.kernels.size;
+      const activeSessionCount = this.activeSessionCount;
 
       const journalStatus = journalHealth.writable ? "ok" as const : "error" as const;
       const toolsStatus = toolCount > 0 ? "ok" as const : "warning" as const;
@@ -319,7 +377,7 @@ export class ApiServer {
       try {
         const validationError = validateSessionInput(req.body);
         if (validationError) { res.status(400).json({ error: validationError }); return; }
-        if (this.kernels.size >= this.maxConcurrentSessions) {
+        if (this.activeSessionCount >= this.maxConcurrentSessions) {
           res.status(429).json({ error: "Max concurrent sessions reached" });
           return;
         }
@@ -348,16 +406,23 @@ export class ApiServer {
           const kernel = new KernelClass(kernelConfig);
           const session = await kernel.createSession(task);
           this.kernels.set(session.session_id, kernel);
+          this.activeSessionCount++;
 
-          // Run in background — broadcast failures to SSE clients
-          kernel.run().catch((err) => {
-            this.broadcastEvent(session.session_id, {
-              type: "session.failed",
-              session_id: session.session_id,
-              payload: { error: err instanceof Error ? err.message : String(err) },
-              timestamp: new Date().toISOString(),
+          // Run in background — clean up on completion, broadcast failures
+          kernel.run()
+            .catch((err) => {
+              this.broadcastEvent(session.session_id, {
+                type: "session.failed",
+                session_id: session.session_id,
+                payload: { error: err instanceof Error ? err.message : String(err) },
+                timestamp: new Date().toISOString(),
+              });
+            })
+            .finally(() => {
+              this.activeSessionCount--;
+              // Keep session queryable for 60s after completion, then evict
+              setTimeout(() => this.kernels.delete(session.session_id), 60000).unref();
             });
-          });
 
           res.json({ session_id: session.session_id, status: session.status, task });
         } else {
@@ -424,12 +489,14 @@ export class ApiServer {
         client.missedEvents = 0;
       });
 
-      req.on("close", () => {
+      const cleanupSse = () => {
         clearInterval(keepalive);
         const remaining = (this.sseClients.get(sessionId) ?? []).filter((c) => c !== client);
         if (remaining.length === 0) this.sseClients.delete(sessionId);
         else this.sseClients.set(sessionId, remaining);
-      });
+      };
+      req.on("close", cleanupSse);
+      req.on("error", cleanupSse);
     });
 
     router.get("/approvals", (_req, res) => {
@@ -443,6 +510,7 @@ export class ApiServer {
       const approval = this.pendingApprovals.get(req.params.id!);
       if (!approval) { res.status(404).json({ error: "Approval not found" }); return; }
       const { decision } = req.body as { decision: ApprovalDecision };
+      clearTimeout(approval.timer);
       approval.resolve(decision);
       this.pendingApprovals.delete(req.params.id!);
       res.json({ status: "resolved", decision });

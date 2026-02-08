@@ -15,10 +15,10 @@ import { PluginRegistry } from "@jarvis/plugins";
 import { ActiveMemory } from "@jarvis/memory";
 import type { Task, ApprovalDecision, PermissionRequest } from "@jarvis/schemas";
 
-const JOURNAL_PATH = resolve("journal/events.jsonl");
-const TOOLS_DIR = resolve("tools/examples");
-const MEMORY_PATH = resolve("sessions/memory.jsonl");
-const DEFAULT_PORT = 3100;
+const JOURNAL_PATH = process.env.JARVIS_JOURNAL_PATH ?? resolve("journal/events.jsonl");
+const TOOLS_DIR = process.env.JARVIS_TOOLS_DIR ?? resolve("tools/examples");
+const MEMORY_PATH = process.env.JARVIS_MEMORY_PATH ?? resolve("sessions/memory.jsonl");
+const DEFAULT_PORT = parseInt(process.env.JARVIS_PORT ?? "3100", 10);
 
 async function cliApprovalPrompt(request: PermissionRequest): Promise<ApprovalDecision> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -270,14 +270,29 @@ program.command("server").description("Start the API server")
       console.log(`Plugins loaded: ${active.map((p) => p.id).join(", ")}`);
     }
     const metricsCollector = new MetricsCollector();
-    const server = new ApiServer({
+    const apiToken = process.env.JARVIS_API_TOKEN;
+    const corsOrigins = process.env.JARVIS_CORS_ORIGINS;
+    const apiServer = new ApiServer({
       toolRegistry: registry, journal, toolRuntime: runtime, permissions,
       pluginRegistry,
       planner: createPlanner({ planner: opts.planner, model: opts.model, agentic: opts.agentic }),
       agentic: opts.agentic ?? false,
       metricsCollector,
+      apiToken,
+      corsOrigins: corsOrigins ? corsOrigins.split(",").map((s) => s.trim()) : undefined,
+      approvalTimeoutMs: parseInt(process.env.JARVIS_APPROVAL_TIMEOUT_MS ?? "300000", 10),
+      maxConcurrentSessions: parseInt(process.env.JARVIS_MAX_SESSIONS ?? "50", 10),
     });
-    server.listen(parseInt(opts.port, 10));
+    apiServer.listen(parseInt(opts.port, 10));
+
+    // Graceful shutdown
+    const shutdown = async () => {
+      console.log("\nShutting down...");
+      await apiServer.shutdown();
+      process.exit(0);
+    };
+    process.on("SIGTERM", shutdown);
+    process.on("SIGINT", shutdown);
   });
 
 // ─── Relay Command ────────────────────────────────────────────────
