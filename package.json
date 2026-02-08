@@ -1,5 +1,6 @@
 {
   "name": "jarvis-monorepo",
+  "version": "0.1.0",
   "private": true,
   "description": "Jarvis — Deterministic agent runtime with explicit plans, typed tools, permissions, and replay",
   "scripts": {
