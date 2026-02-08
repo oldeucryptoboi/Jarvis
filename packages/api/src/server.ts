@@ -46,8 +46,8 @@ class RateLimiter {
 }
 
 function getClientIP(req: IncomingMessage): string {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string") return forwarded.split(",")[0]!.trim();
+  // Do not trust X-Forwarded-For — it is trivially spoofable without a trusted reverse proxy.
+  // Use the direct socket address for rate limiting.
   return req.socket.remoteAddress ?? "unknown";
 }
 
@@ -186,6 +186,7 @@ export class ApiServer {
   private httpServer?: Server;
   private rateLimiter: RateLimiter;
   private rateLimiterPruneInterval?: ReturnType<typeof setInterval>;
+  private journalUnsubscribe?: () => void;
 
   constructor(config: ApiServerConfig);
   constructor(toolRegistry: ToolRegistry, journal: Journal);
@@ -267,7 +268,7 @@ export class ApiServer {
       });
     }
     this.setupRoutes();
-    this.journal.on((event) => { this.broadcastEvent(event.session_id, event); });
+    this.journalUnsubscribe = this.journal.on((event) => { this.broadcastEvent(event.session_id, event); });
   }
 
   registerKernel(sessionId: string, kernel: Kernel): void { this.kernels.set(sessionId, kernel); }
@@ -333,6 +334,8 @@ export class ApiServer {
       for (const client of clients) client.res.end();
     }
     this.sseClients.clear();
+    // Unsubscribe journal listener
+    if (this.journalUnsubscribe) this.journalUnsubscribe();
     // Stop rate limiter pruning
     if (this.rateLimiterPruneInterval) clearInterval(this.rateLimiterPruneInterval);
     // Detach metrics
@@ -666,6 +669,10 @@ export class ApiServer {
           res.status(409).json({ error: "Session already active" });
           return;
         }
+        if (this.activeSessionCount >= this.maxConcurrentSessions) {
+          res.status(429).json({ error: "Max concurrent sessions reached" });
+          return;
+        }
         if (!this.toolRuntime || !this.permissions || !this.planner) {
           res.status(503).json({ error: "Server not fully configured for recovery" });
           return;
@@ -686,6 +693,31 @@ export class ApiServer {
           return;
         }
         this.kernels.set(sessionId, kernel);
+        this.activeSessionCount++;
+
+        // Apply same lifecycle management as POST /sessions
+        const sessionTimeoutMs = this.defaultLimits.max_duration_ms + 30000;
+        const kernelPromise = kernel.run();
+        let sessionTimer: ReturnType<typeof setTimeout>;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          sessionTimer = setTimeout(() => reject(new Error(`Recovered session timed out after ${sessionTimeoutMs}ms`)), sessionTimeoutMs);
+          sessionTimer.unref();
+        });
+        Promise.race([kernelPromise, timeoutPromise])
+          .catch((err) => {
+            this.broadcastEvent(sessionId, {
+              type: "session.failed",
+              session_id: sessionId,
+              payload: { error: err instanceof Error ? err.message : String(err) },
+              timestamp: new Date().toISOString(),
+            });
+          })
+          .finally(() => {
+            clearTimeout(sessionTimer!);
+            this.activeSessionCount = Math.max(0, this.activeSessionCount - 1);
+            setTimeout(() => this.kernels.delete(sessionId), 60000).unref();
+          });
+
         res.json({ session_id: sessionId, status: session.status });
       } catch (err) { console.error("[api] POST /sessions/:id/recover error:", err); res.status(500).json({ error: "Internal server error" }); }
     });

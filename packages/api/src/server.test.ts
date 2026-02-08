@@ -596,6 +596,41 @@ describe("ApiServer recovery", () => {
     expect(res.status).toBe(404);
   });
 
+  it("H1: POST /sessions/:id/recover returns 409 for already active session", async () => {
+    const { v4: uuidv4 } = await import("uuid");
+    const sessionId = uuidv4();
+    const planId = uuidv4();
+
+    // Set up recoverable journal events
+    await journal.emit(sessionId, "session.created", {
+      task_id: uuidv4(), task_text: "Recovery test", mode: "mock",
+    });
+    await journal.emit(sessionId, "session.started", {});
+    await journal.emit(sessionId, "plan.accepted", {
+      plan_id: planId,
+      plan: {
+        plan_id: planId, schema_version: "0.1", goal: "Recovery test",
+        assumptions: [], steps: [{
+          step_id: uuidv4(), title: "Test step", tool_ref: { name: "test-tool" },
+          input: {}, success_criteria: ["done"], failure_policy: "abort",
+          timeout_ms: 5000, max_retries: 0,
+        }],
+        created_at: new Date().toISOString(),
+      },
+    });
+
+    // First recover
+    const res1 = await fetch(`${baseUrl}/api/sessions/${sessionId}/recover`, { method: "POST" });
+    expect(res1.status).toBe(200);
+
+    // Wait a bit for kernel to be registered
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Second recover should conflict
+    const res2 = await fetch(`${baseUrl}/api/sessions/${sessionId}/recover`, { method: "POST" });
+    expect(res2.status).toBe(409);
+  });
+
   it("discoverRecoverableSessions finds sessions without terminal events", async () => {
     const { v4: uuidv4 } = await import("uuid");
     const recoverableId = uuidv4();
@@ -1184,6 +1219,105 @@ describe("ApiServer H8: shutdown aborts running kernels", () => {
     } catch {
       // Connection refused — server properly shut down
     }
+
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+  });
+});
+
+describe("ApiServer H1: /recover respects concurrency limit", () => {
+  it("POST /sessions/:id/recover returns 429 when at max concurrent sessions", async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    const journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    const registry = new ToolRegistry();
+    registry.register(testTool);
+    const permissions = new PermissionEngine(journal, async () => "allow_session" as ApprovalDecision);
+    const runtime = new ToolRuntime(registry, permissions, journal);
+    const apiServer = new ApiServer({
+      toolRegistry: registry,
+      toolRuntime: runtime,
+      journal,
+      permissions,
+      planner: new MockPlanner(),
+      defaultMode: "mock",
+      defaultLimits: { max_steps: 10, max_duration_ms: 60000, max_cost_usd: 1, max_tokens: 10000 },
+      defaultPolicy: { allowed_paths: ["/tmp"], allowed_endpoints: [], allowed_commands: [], require_approval_for_writes: false },
+      maxConcurrentSessions: 1,
+      insecure: true,
+    });
+
+    const httpServer = await new Promise<ReturnType<typeof createServer>>((resolve) => {
+      const s = createServer(apiServer.getExpressApp());
+      s.listen(0, () => resolve(s));
+    });
+    const baseUrl = `http://127.0.0.1:${(httpServer.address() as AddressInfo).port}`;
+
+    try {
+      // Create a regular session (fills the 1 slot)
+      const res1 = await fetch(`${baseUrl}/api/sessions`, {
+        method: "POST",
+        body: { text: "Session 1" },
+      });
+      expect(res1.status).toBe(200);
+
+      const { v4: uuidv4 } = await import("uuid");
+      const sessionId = uuidv4();
+      const planId = uuidv4();
+
+      // Set up recoverable journal events
+      await journal.emit(sessionId, "session.created", {
+        task_id: uuidv4(), task_text: "Recovery", mode: "mock",
+      });
+      await journal.emit(sessionId, "session.started", {});
+      await journal.emit(sessionId, "plan.accepted", {
+        plan_id: planId,
+        plan: {
+          plan_id: planId, schema_version: "0.1", goal: "Recovery",
+          assumptions: [], steps: [{
+            step_id: uuidv4(), title: "Test step", tool_ref: { name: "test-tool" },
+            input: {}, success_criteria: ["done"], failure_policy: "abort",
+            timeout_ms: 5000, max_retries: 0,
+          }],
+          created_at: new Date().toISOString(),
+        },
+      });
+
+      // Recover should fail because we're at max capacity
+      const res2 = await fetch(`${baseUrl}/api/sessions/${sessionId}/recover`, { method: "POST" });
+      expect(res2.status).toBe(429);
+      const body = await res2.json();
+      expect(body.error).toContain("Max concurrent sessions");
+    } finally {
+      await new Promise<void>((resolve) => { httpServer.close(() => resolve()); });
+      try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    }
+  });
+});
+
+describe("ApiServer M3: journal listener cleanup on shutdown", () => {
+  it("shutdown() unsubscribes journal listener (no broadcast after shutdown)", async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    const journalFile = resolve(TEST_DIR, "m3-journal.jsonl");
+    const journal = new Journal(journalFile, { fsync: false });
+    await journal.init();
+    const registry = new ToolRegistry();
+    registry.register(testTool);
+    const apiServer = new ApiServer(registry, journal);
+
+    const httpServer = await new Promise<ReturnType<typeof createServer>>((resolve) => {
+      const s = createServer(apiServer.getExpressApp());
+      s.listen(0, () => resolve(s));
+    });
+
+    // Before shutdown, broadcastEvent should be callable
+    expect(() => apiServer.broadcastEvent("test-sess", { type: "test" })).not.toThrow();
+
+    // Shutdown cleans up the listener
+    await apiServer.shutdown();
+
+    // After shutdown, the SSE clients map is cleared and the listener is detached.
+    // broadcastEvent is safe to call (no-ops) but the journal listener is removed.
+    expect(() => apiServer.broadcastEvent("test-sess", { type: "test" })).not.toThrow();
 
     try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
   });

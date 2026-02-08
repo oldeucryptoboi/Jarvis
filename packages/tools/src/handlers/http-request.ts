@@ -2,6 +2,8 @@ import type { ToolHandler } from "../tool-runtime.js";
 import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
 import { assertEndpointAllowedAsync } from "../policy-enforcer.js";
 
+const MAX_RESPONSE_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
+
 export const httpRequestHandler: ToolHandler = async (
   input: Record<string, unknown>, mode: ExecutionMode, policy: PolicyProfile
 ): Promise<unknown> => {
@@ -27,7 +29,7 @@ export const httpRequestHandler: ToolHandler = async (
   const fetchTimeout = Math.max(1000, Math.min(rawTimeout, MAX_FETCH_TIMEOUT));
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), fetchTimeout);
-  const fetchOpts: RequestInit = { method, headers, signal: controller.signal };
+  const fetchOpts: RequestInit = { method, headers, signal: controller.signal, redirect: "manual" };
   if (body && method !== "GET") fetchOpts.body = body;
   let response: Response;
   try {
@@ -35,8 +37,49 @@ export const httpRequestHandler: ToolHandler = async (
   } finally {
     clearTimeout(timer);
   }
-  const responseBody = await response.text();
+
+  // Handle redirects manually to prevent SSRF via redirect to private IPs
+  if (response.status >= 300 && response.status < 400) {
+    const location = response.headers.get("location");
+    if (location) {
+      // Validate redirect target against SSRF and endpoint policy
+      const redirectUrl = new URL(location, url).href;
+      await assertEndpointAllowedAsync(redirectUrl, policy.allowed_endpoints);
+      const redirectTimer = setTimeout(() => controller.abort(), fetchTimeout);
+      try {
+        response = await fetch(redirectUrl, { ...fetchOpts, redirect: "manual" });
+      } finally {
+        clearTimeout(redirectTimer);
+      }
+    }
+  }
+
+  // Read response body with size limit to prevent OOM
+  const responseBody = await readBodyWithLimit(response, MAX_RESPONSE_BODY_SIZE);
   const responseHeaders: Record<string, string> = {};
   response.headers.forEach((value, key) => { responseHeaders[key] = value; });
   return { status: response.status, body: responseBody, headers: responseHeaders };
 };
+
+async function readBodyWithLimit(response: Response, maxBytes: number): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        reader.cancel();
+        throw new Error(`Response body exceeds ${maxBytes} byte limit (received ${totalBytes}+ bytes)`);
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const decoder = new TextDecoder();
+  return chunks.map((c) => decoder.decode(c, { stream: true })).join("") + decoder.decode();
+}

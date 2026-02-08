@@ -1,6 +1,6 @@
 import type { ToolHandler } from "../tool-runtime.js";
 import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
-import { assertEndpointAllowed } from "../policy-enforcer.js";
+import { assertEndpointAllowedAsync } from "../policy-enforcer.js";
 
 interface Target {
   role?: string;
@@ -53,7 +53,7 @@ export const browserHandler: ToolHandler = async (
     if (typeof input.url !== "string") {
       return { success: false, error: "input.url must be a string for navigate action" };
     }
-    assertEndpointAllowed(input.url, policy.allowed_endpoints);
+    await assertEndpointAllowedAsync(input.url, policy.allowed_endpoints);
   }
 
   // Forward to relay server

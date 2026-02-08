@@ -15,6 +15,14 @@ export const writeFileHandler: ToolHandler = async (
   }
   const path = input.path;
   const content = input.content;
+
+  // Enforce write size limit (10 MB) to prevent disk exhaustion
+  const MAX_WRITE_SIZE = 10 * 1024 * 1024;
+  const contentBytes = Buffer.byteLength(content, "utf-8");
+  if (contentBytes > MAX_WRITE_SIZE) {
+    throw new Error(`Content is ${contentBytes} bytes, exceeding the ${MAX_WRITE_SIZE} byte write limit`);
+  }
+
   const fullPath = resolve(process.cwd(), path);
   assertPathAllowed(fullPath, policy.allowed_paths);
 
