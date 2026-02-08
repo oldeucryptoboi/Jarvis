@@ -508,7 +508,11 @@ export interface PluginLogger {
 
 export type RouteHandler = (
   req: { method: string; path: string; params: Record<string, string>; query: Record<string, string>; body: unknown },
-  res: { json(data: unknown): void; status(code: number): { json(data: unknown): void } }
+  res: {
+    json(data: unknown): void;
+    text(data: string, contentType?: string): void;
+    status(code: number): { json(data: unknown): void; text(data: string, contentType?: string): void };
+  }
 ) => Promise<void>;
 
 export interface CommandOptions {

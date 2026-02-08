@@ -15,6 +15,7 @@
     { "path": "../permissions" },
     { "path": "../planner" },
     { "path": "../memory" },
+    { "path": "../metrics" },
     { "path": "../api" },
     { "path": "../plugins" }
   ]

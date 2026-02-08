@@ -20,6 +20,7 @@
     "@jarvis/journal": "workspace:*",
     "@jarvis/kernel": "workspace:*",
     "@jarvis/memory": "workspace:*",
+    "@jarvis/metrics": "workspace:*",
     "@jarvis/permissions": "workspace:*",
     "@jarvis/planner": "workspace:*",
     "@jarvis/plugins": "workspace:*",

@@ -7,6 +7,8 @@ import type { Journal } from "@jarvis/journal";
 import type { PermissionEngine } from "@jarvis/permissions";
 import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, PolicyProfile, JournalEvent } from "@jarvis/schemas";
 import type { PluginRegistry } from "@jarvis/plugins";
+import type { MetricsCollector } from "@jarvis/metrics";
+import { createMetricsRouter } from "@jarvis/metrics";
 import type { ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 
@@ -114,6 +116,7 @@ export interface ApiServerConfig {
   maxSseClientsPerSession?: number;
   agentic?: boolean;
   apiToken?: string;
+  metricsCollector?: MetricsCollector;
 }
 
 export class ApiServer {
@@ -134,6 +137,7 @@ export class ApiServer {
   private maxSseClientsPerSession: number;
   private agentic: boolean;
   private apiToken?: string;
+  private metricsCollector?: MetricsCollector;
 
   constructor(config: ApiServerConfig);
   constructor(toolRegistry: ToolRegistry, journal: Journal);
@@ -168,6 +172,10 @@ export class ApiServer {
       this.maxSseClientsPerSession = config.maxSseClientsPerSession ?? 10;
       this.agentic = config.agentic ?? false;
       this.apiToken = config.apiToken;
+      this.metricsCollector = config.metricsCollector;
+    }
+    if (this.metricsCollector) {
+      this.metricsCollector.attach(this.journal);
     }
     this.setupRoutes();
     this.journal.on((event) => { this.broadcastEvent(event.session_id, event); });
@@ -265,6 +273,28 @@ export class ApiServer {
         },
       });
     });
+
+    // Metrics endpoint (unauthenticated, like /health)
+    if (this.metricsCollector) {
+      const metricsRoute = createMetricsRouter(this.metricsCollector);
+      router.get(metricsRoute.path, async (req: express.Request, res: express.Response) => {
+        try {
+          await metricsRoute.handler(
+            { method: req.method, path: req.path, params: req.params as Record<string, string>, query: req.query as Record<string, string>, body: req.body },
+            {
+              json: (data: unknown) => res.json(data),
+              text: (data: string, contentType?: string) => { res.set("Content-Type", contentType ?? "text/plain; charset=utf-8"); res.end(data); },
+              status: (code: number) => ({
+                json: (data: unknown) => res.status(code).json(data),
+                text: (data: string, contentType?: string) => { res.status(code).set("Content-Type", contentType ?? "text/plain; charset=utf-8").end(data); },
+              }),
+            }
+          );
+        } catch {
+          res.status(500).set("Content-Type", "text/plain").end("# Error collecting metrics\n");
+        }
+      });
+    }
 
     // Bearer token auth middleware — applied to all routes after /health
     if (this.apiToken) {
@@ -519,8 +549,15 @@ export class ApiServer {
                 },
                 {
                   json: (data: unknown) => res.json(data),
+                  text: (data: string, contentType?: string) => {
+                    res.set("Content-Type", contentType ?? "text/plain; charset=utf-8");
+                    res.end(data);
+                  },
                   status: (code: number) => ({
                     json: (data: unknown) => res.status(code).json(data),
+                    text: (data: string, contentType?: string) => {
+                      res.status(code).set("Content-Type", contentType ?? "text/plain; charset=utf-8").end(data);
+                    },
                   }),
                 }
               );

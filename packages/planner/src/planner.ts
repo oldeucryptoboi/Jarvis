@@ -317,7 +317,7 @@ export class MockPlanner implements Planner {
     stateSnapshot: Record<string, unknown>,
     _constraints: Record<string, unknown>
   ): Promise<PlanResult> {
-    const mockUsage: UsageMetrics = { input_tokens: 50, output_tokens: 50, total_tokens: 100 };
+    const mockUsage: UsageMetrics = { input_tokens: 50, output_tokens: 50, total_tokens: 100, model: "mock" };
 
     // In agentic mode, if previous steps all succeeded, signal "done"
     if (this.agentic && stateSnapshot.has_plan) {

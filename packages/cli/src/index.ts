@@ -10,6 +10,7 @@ import { PermissionEngine } from "@jarvis/permissions";
 import { Kernel } from "@jarvis/kernel";
 import { createPlanner } from "./llm-adapters.js";
 import { ApiServer } from "@jarvis/api";
+import { MetricsCollector } from "@jarvis/metrics";
 import { PluginRegistry } from "@jarvis/plugins";
 import { ActiveMemory } from "@jarvis/memory";
 import type { Task, ApprovalDecision, PermissionRequest } from "@jarvis/schemas";
@@ -268,11 +269,13 @@ program.command("server").description("Start the API server")
     if (active.length > 0) {
       console.log(`Plugins loaded: ${active.map((p) => p.id).join(", ")}`);
     }
+    const metricsCollector = new MetricsCollector();
     const server = new ApiServer({
       toolRegistry: registry, journal, toolRuntime: runtime, permissions,
       pluginRegistry,
       planner: createPlanner({ planner: opts.planner, model: opts.model, agentic: opts.agentic }),
       agentic: opts.agentic ?? false,
+      metricsCollector,
     });
     server.listen(parseInt(opts.port, 10));
   });

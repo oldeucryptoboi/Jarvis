@@ -1,0 +1,79 @@
+import { describe, it, expect, beforeEach } from "vitest";
+import { Registry } from "prom-client";
+import { MetricsCollector } from "./metrics-collector.js";
+import { createMetricsRouter } from "./metrics-server.js";
+import type { MetricsRouter } from "./metrics-server.js";
+
+describe("createMetricsRouter", () => {
+  let collector: MetricsCollector;
+  let route: MetricsRouter;
+
+  beforeEach(() => {
+    const registry = new Registry();
+    collector = new MetricsCollector({ registry, collectDefault: false });
+    route = createMetricsRouter(collector);
+  });
+
+  it("returns a GET /metrics route", () => {
+    expect(route.method).toBe("GET");
+    expect(route.path).toBe("/metrics");
+  });
+
+  it("handler returns Prometheus metrics text", async () => {
+    let responseText = "";
+    let responseContentType = "";
+
+    const req = {
+      method: "GET",
+      path: "/metrics",
+      params: {},
+      query: {},
+      body: undefined,
+    };
+
+    const res = {
+      json: () => {},
+      text: (data: string, contentType?: string) => {
+        responseText = data;
+        responseContentType = contentType ?? "";
+      },
+      status: (_code: number) => ({
+        json: () => {},
+        text: (data: string, contentType?: string) => {
+          responseText = data;
+          responseContentType = contentType ?? "";
+        },
+      }),
+    };
+
+    await route.handler(req, res);
+
+    expect(responseText).toContain("# HELP");
+    expect(responseContentType).toContain("text/plain");
+  });
+
+  it("handler includes collector metrics", async () => {
+    // Add some data
+    collector.handleEvent({
+      event_id: "evt-1",
+      timestamp: new Date().toISOString(),
+      session_id: "sess-1",
+      type: "session.created",
+      payload: {},
+    });
+
+    let responseText = "";
+
+    const req = { method: "GET", path: "/metrics", params: {}, query: {}, body: undefined };
+    const res = {
+      json: () => {},
+      text: (data: string) => { responseText = data; },
+      status: () => ({ json: () => {}, text: () => {} }),
+    };
+
+    await route.handler(req, res);
+
+    expect(responseText).toContain("jarvis_sessions_total");
+    expect(responseText).toContain('status="created"');
+  });
+});

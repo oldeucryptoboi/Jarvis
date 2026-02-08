@@ -17,6 +17,7 @@
     "@jarvis/journal": "workspace:*",
     "@jarvis/permissions": "workspace:*",
     "@jarvis/plugins": "workspace:*",
+    "@jarvis/metrics": "workspace:*",
     "express": "^5.0.0",
     "uuid": "^11.0.0"
   },

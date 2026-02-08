@@ -9,6 +9,7 @@
     { "path": "packages/planner" },
     { "path": "packages/plugins" },
     { "path": "packages/kernel" },
+    { "path": "packages/metrics" },
     { "path": "packages/api" },
     { "path": "packages/browser-relay" },
     { "path": "packages/cli" }
