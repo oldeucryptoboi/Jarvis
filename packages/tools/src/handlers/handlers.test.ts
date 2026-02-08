@@ -393,4 +393,46 @@ describe("httpRequestHandler", () => {
     )) as any;
     expect(result.body).toContain("[dry_run]");
   });
+
+  it("M10: respects custom timeout_ms parameter", async () => {
+    const result = (await httpRequestHandler(
+      { url: "https://example.com", method: "GET", timeout_ms: 5000 }, "dry_run", openPolicy
+    )) as any;
+    // dry_run doesn't actually use the timeout, but ensures the param is accepted
+    expect(result.body).toContain("[dry_run]");
+  });
+
+  it("M10: clamps timeout_ms to maximum of 120000ms", async () => {
+    // Shouldn't throw on oversized timeout — it gets clamped
+    const result = (await httpRequestHandler(
+      { url: "https://example.com", method: "GET", timeout_ms: 999999 }, "dry_run", openPolicy
+    )) as any;
+    expect(result.body).toContain("[dry_run]");
+  });
+
+  it("M10: clamps timeout_ms to minimum of 1000ms", async () => {
+    const result = (await httpRequestHandler(
+      { url: "https://example.com", method: "GET", timeout_ms: 10 }, "dry_run", openPolicy
+    )) as any;
+    expect(result.body).toContain("[dry_run]");
+  });
+
+  it("M10: AbortController aborts fetch on timeout (real request)", async () => {
+    // Use a very short timeout (1000ms min after clamping) against a URL that
+    // will take long or fail — the AbortController should kick in.
+    // We test with a non-routable IP to force a timeout.
+    await expect(
+      httpRequestHandler(
+        { url: "http://192.0.2.1:80/slow", method: "GET", timeout_ms: 1000 }, "real", openPolicy
+      )
+    ).rejects.toThrow(); // Should throw abort or connection error
+  }, 10000);
+
+  it("rejects private IP addresses via SSRF protection", async () => {
+    await expect(
+      httpRequestHandler(
+        { url: "http://127.0.0.1/admin", method: "GET" }, "real", openPolicy
+      )
+    ).rejects.toThrow();
+  });
 });

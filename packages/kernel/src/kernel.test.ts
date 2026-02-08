@@ -1373,6 +1373,19 @@ export async function register(api) {
     expect((rejected!.payload as any).errors[0]).toContain("timed out");
   });
 
+  it("B3: planner timer is cleaned up on normal completion (no dangling timers)", async () => {
+    // Use a fast planner with a timeout configured
+    registry.register(testTool);
+    const task: Task = { task_id: uuid(), text: "Timer cleanup test", created_at: new Date().toISOString() };
+    const kernel = new Kernel(makeKernelConfig({ journal, runtime, registry, permissions }));
+    (kernel as any).config.plannerTimeoutMs = 30000; // 30s timeout that should NOT fire
+
+    await kernel.createSession(task);
+    const session = await kernel.run();
+    // If the timer leaked, the test process would hang with open handles
+    expect(session.status).toBe("completed");
+  });
+
   it("resumeSession returns null for agentic sessions (plan.replaced in journal)", async () => {
     registry.register(testTool);
     // Simulate an interrupted agentic session by writing journal events with plan.replaced

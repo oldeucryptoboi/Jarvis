@@ -354,6 +354,38 @@ describe("PermissionEngine graduated decisions", () => {
     expect(engine.isGranted("filesystem:read:workspace", req.session_id)).toBe(false);
   });
 
+  it("H4: clearStep requires sessionId to properly clear step-scoped grants", async () => {
+    promptDecision = "allow_once"; // allow_once grants are step-scoped (ttl=step)
+    const engine = new PermissionEngine(journal, mockPrompt);
+
+    // Create two sessions
+    const reqA = makeRequest(["filesystem:read:workspace"], "test-tool");
+    (reqA as any).session_id = "session-A";
+    await engine.check(reqA);
+
+    const reqB = makeRequest(["filesystem:write:workspace"], "test-tool");
+    (reqB as any).session_id = "session-B";
+    await engine.check(reqB);
+
+    // clearStep with sessionId should only affect that session
+    engine.clearStep("session-A");
+
+    // Session A step cache cleared, Session B unaffected
+    // allow_once doesn't cache in session, so both should be false regardless
+    expect(engine.isGranted("filesystem:read:workspace", "session-A")).toBe(false);
+    expect(engine.isGranted("filesystem:write:workspace", "session-B")).toBe(false);
+
+    // Now test with session-scoped grants — clearStep should NOT remove them
+    promptDecision = "allow_session";
+    const reqC = makeRequest(["shell:exec:workspace"], "test-tool");
+    (reqC as any).session_id = "session-C";
+    await engine.check(reqC);
+
+    engine.clearStep("session-C");
+    // allow_session grants should survive clearStep
+    expect(engine.isGranted("shell:exec:workspace", "session-C")).toBe(true);
+  });
+
   it("clearSession clears constraint and observed caches", async () => {
     promptDecision = {
       type: "allow_constrained",

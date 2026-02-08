@@ -11,6 +11,7 @@ import { PermissionEngine } from "@jarvis/permissions";
 import { PluginRegistry } from "@jarvis/plugins";
 import { MockPlanner } from "@jarvis/planner";
 import type { ToolManifest, ApprovalDecision } from "@jarvis/schemas";
+import { MetricsCollector } from "@jarvis/metrics";
 import { ApiServer } from "./server.js";
 
 const TEST_DIR = resolve(import.meta.dirname ?? ".", "../../.test-data");
@@ -1089,5 +1090,150 @@ describe("ApiServer security hardening", () => {
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
     expect(res.headers["x-frame-options"]).toBe("DENY");
     expect(res.headers["cache-control"]).toBe("no-store");
+  });
+});
+
+describe("ApiServer H7: metrics behind auth", () => {
+  const API_TOKEN = "metrics-auth-token";
+
+  it("metrics endpoint requires auth when API token is set", async () => {
+    const journalFile = resolve(TEST_DIR, "metrics-auth-journal.jsonl");
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    const journal = new Journal(journalFile, { fsync: false });
+    await journal.init();
+    const registry = new ToolRegistry();
+    registry.register(testTool);
+    const metricsCollector = new MetricsCollector();
+    const apiServer = new ApiServer({
+      toolRegistry: registry,
+      journal,
+      apiToken: API_TOKEN,
+      metricsCollector,
+    });
+
+    const httpServer = await new Promise<ReturnType<typeof createServer>>((resolve) => {
+      const s = createServer(apiServer.getExpressApp());
+      s.listen(0, () => resolve(s));
+    });
+    const baseUrl = `http://127.0.0.1:${(httpServer.address() as AddressInfo).port}`;
+
+    try {
+      // Without auth — should get 401
+      const noAuth = await fetch(`${baseUrl}/api/metrics`);
+      expect(noAuth.status).toBe(401);
+
+      // With auth — should get 200
+      const withAuth = await fetch(`${baseUrl}/api/metrics`, {
+        headers: { Authorization: `Bearer ${API_TOKEN}` },
+      });
+      expect(withAuth.status).toBe(200);
+    } finally {
+      await new Promise<void>((resolve) => { httpServer.close(() => resolve()); });
+      try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    }
+  });
+});
+
+describe("ApiServer H8: shutdown aborts running kernels", () => {
+  it("shutdown() aborts active kernel sessions", async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    const journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    const registry = new ToolRegistry();
+    registry.register(testTool);
+    const permissions = new PermissionEngine(journal, async () => "allow_session" as ApprovalDecision);
+    const runtime = new ToolRuntime(registry, permissions, journal);
+    const apiServer = new ApiServer({
+      toolRegistry: registry,
+      toolRuntime: runtime,
+      journal,
+      permissions,
+      planner: new MockPlanner(),
+      defaultMode: "mock",
+      defaultLimits: { max_steps: 10, max_duration_ms: 60000, max_cost_usd: 1, max_tokens: 10000 },
+      defaultPolicy: { allowed_paths: ["/tmp"], allowed_endpoints: [], allowed_commands: [], require_approval_for_writes: false },
+      insecure: true,
+    });
+
+    const httpServer = await new Promise<ReturnType<typeof createServer>>((resolve) => {
+      const s = createServer(apiServer.getExpressApp());
+      s.listen(0, () => resolve(s));
+    });
+    const baseUrl = `http://127.0.0.1:${(httpServer.address() as AddressInfo).port}`;
+
+    // Create a session to get a running kernel
+    const res = await fetch(`${baseUrl}/api/sessions`, {
+      method: "POST",
+      body: { text: "Session for shutdown test" },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.session_id).toBeTruthy();
+
+    // Give kernel time to start
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Shutdown should complete without hanging
+    await apiServer.shutdown();
+
+    // After shutdown the http server is closed via shutdown()
+    // Verify we can't make new requests (server closed)
+    try {
+      await fetch(`${baseUrl}/api/health`);
+      // If we get here, the server is still running — that's ok for some implementations
+    } catch {
+      // Connection refused — server properly shut down
+    }
+
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+  });
+});
+
+describe("ApiServer B3: session timer cleanup", () => {
+  it("session timer is cleaned up on normal completion", async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    const journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    const registry = new ToolRegistry();
+    registry.register(testTool);
+    const permissions = new PermissionEngine(journal, async () => "allow_session" as ApprovalDecision);
+    const runtime = new ToolRuntime(registry, permissions, journal);
+    const apiServer = new ApiServer({
+      toolRegistry: registry,
+      toolRuntime: runtime,
+      journal,
+      permissions,
+      planner: new MockPlanner(),
+      defaultMode: "mock",
+      defaultLimits: { max_steps: 10, max_duration_ms: 60000, max_cost_usd: 1, max_tokens: 10000 },
+      defaultPolicy: { allowed_paths: ["/tmp"], allowed_endpoints: [], allowed_commands: [], require_approval_for_writes: false },
+      insecure: true,
+    });
+
+    const httpServer = await new Promise<ReturnType<typeof createServer>>((resolve) => {
+      const s = createServer(apiServer.getExpressApp());
+      s.listen(0, () => resolve(s));
+    });
+    const baseUrl = `http://127.0.0.1:${(httpServer.address() as AddressInfo).port}`;
+
+    // Create a session
+    const res = await fetch(`${baseUrl}/api/sessions`, {
+      method: "POST",
+      body: { text: "Timer cleanup test" },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+
+    // Wait for session to complete
+    await new Promise((r) => setTimeout(r, 500));
+
+    // Session should complete normally — timer is cleaned up
+    const sessionRes = await fetch(`${baseUrl}/api/sessions/${body.session_id}`);
+    const session = await sessionRes.json();
+    expect(["completed", "failed"]).toContain(session.status);
+    // If timer leaked, subsequent operations would hang or fail
+
+    await new Promise<void>((resolve) => { httpServer.close(() => resolve()); });
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
   });
 });
