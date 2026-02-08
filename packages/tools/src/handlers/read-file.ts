@@ -21,7 +21,12 @@ export const readFileHandler: ToolHandler = async (
   if (!existsSync(fullPath)) return { content: "", exists: false, size_bytes: 0 };
   // Resolve symlinks before reading to prevent traversal attacks
   await assertPathAllowedReal(fullPath, policy.allowed_paths);
-  const content = await readFile(fullPath, "utf-8");
+  // Size cap: reject files larger than 10 MB to prevent memory exhaustion
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
   const stats = await stat(fullPath);
+  if (stats.size > MAX_FILE_SIZE) {
+    throw new Error(`File "${fullPath}" is ${stats.size} bytes, exceeding the ${MAX_FILE_SIZE} byte limit`);
+  }
+  const content = await readFile(fullPath, "utf-8");
   return { content, exists: true, size_bytes: stats.size };
 };

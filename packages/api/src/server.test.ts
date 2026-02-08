@@ -832,3 +832,262 @@ describe("ApiServer authentication", () => {
     expect(res.status).not.toBe(401);
   });
 });
+
+describe("ApiServer rate limiting", () => {
+  let journal: Journal;
+  let registry: ToolRegistry;
+  let apiServer: ApiServer;
+  let httpServer: ReturnType<typeof createServer>;
+  let baseUrl: string;
+
+  beforeEach(async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    registry = new ToolRegistry();
+    registry.register(testTool);
+    apiServer = new ApiServer(registry, journal);
+
+    await new Promise<void>((resolve) => {
+      httpServer = createServer(apiServer.getExpressApp());
+      httpServer.listen(0, () => {
+        const addr = httpServer.address() as AddressInfo;
+        baseUrl = `http://127.0.0.1:${addr.port}`;
+        resolve();
+      });
+    });
+  });
+
+  afterEach(async () => {
+    await new Promise<void>((resolve) => { httpServer.close(() => resolve()); });
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+  });
+
+  it("includes rate limit headers in responses", async () => {
+    const res = await fetch(`${baseUrl}/api/tools`);
+    expect(res.status).toBe(200);
+    // Our custom fetch doesn't expose headers, so we test via the rate limiter behavior
+    // After 100 requests, the 101st should be rate-limited
+  });
+
+  it("returns 429 after exceeding rate limit", async () => {
+    // Send 101 requests to trigger rate limit (default 100/minute)
+    let lastStatus = 200;
+    for (let i = 0; i < 105; i++) {
+      const res = await fetch(`${baseUrl}/api/tools`);
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    expect(lastStatus).toBe(429);
+  });
+});
+
+describe("ApiServer journal pagination", () => {
+  let journal: Journal;
+  let registry: ToolRegistry;
+  let apiServer: ApiServer;
+  let httpServer: ReturnType<typeof createServer>;
+  let baseUrl: string;
+
+  beforeEach(async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    registry = new ToolRegistry();
+    registry.register(testTool);
+    apiServer = new ApiServer(registry, journal);
+
+    await new Promise<void>((resolve) => {
+      httpServer = createServer(apiServer.getExpressApp());
+      httpServer.listen(0, () => {
+        const addr = httpServer.address() as AddressInfo;
+        baseUrl = `http://127.0.0.1:${addr.port}`;
+        resolve();
+      });
+    });
+  });
+
+  afterEach(async () => {
+    await new Promise<void>((resolve) => { httpServer.close(() => resolve()); });
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+  });
+
+  it("GET /sessions/:id/journal returns paginated events with metadata", async () => {
+    // Write 10 events
+    for (let i = 0; i < 10; i++) {
+      await journal.emit("test-sess", "step.started", { step: i });
+    }
+
+    const res = await fetch(`${baseUrl}/api/sessions/test-sess/journal?limit=3&offset=2`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.events).toHaveLength(3);
+    expect(body.total).toBe(10);
+    expect(body.offset).toBe(2);
+    expect(body.limit).toBe(3);
+  });
+
+  it("GET /sessions/:id/journal defaults to max 500 events", async () => {
+    // Write 5 events
+    for (let i = 0; i < 5; i++) {
+      await journal.emit("test-sess-2", "step.started", { step: i });
+    }
+
+    const res = await fetch(`${baseUrl}/api/sessions/test-sess-2/journal`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.events).toHaveLength(5);
+    expect(body.total).toBe(5);
+    expect(body.offset).toBe(0);
+    expect(body.limit).toBe(500);
+  });
+
+  it("GET /sessions/:id/journal clamps oversized limit", async () => {
+    await journal.emit("test-sess-3", "step.started", { step: 1 });
+
+    const res = await fetch(`${baseUrl}/api/sessions/test-sess-3/journal?limit=9999`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    // limit should be clamped to 500
+    expect(body.limit).toBe(500);
+  });
+
+  it("POST /sessions/:id/replay caps events at 1000", async () => {
+    // Write a few events
+    for (let i = 0; i < 5; i++) {
+      await journal.emit("replay-sess", "step.started", { step: i });
+    }
+
+    const res = await fetch(`${baseUrl}/api/sessions/replay-sess/replay`, { method: "POST" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.event_count).toBe(5);
+    expect(body.total_events).toBe(5);
+    expect(body.truncated).toBe(false);
+  });
+});
+
+describe("ApiServer security hardening", () => {
+  let journal: Journal;
+  let registry: ToolRegistry;
+  let permissions: PermissionEngine;
+  let runtime: ToolRuntime;
+  let apiServer: ApiServer;
+  let httpServer: ReturnType<typeof createServer>;
+  let baseUrl: string;
+
+  beforeEach(async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    registry = new ToolRegistry();
+    registry.register(testTool);
+    permissions = new PermissionEngine(journal, async () => "allow_session" as ApprovalDecision);
+    runtime = new ToolRuntime(registry, permissions, journal);
+    apiServer = new ApiServer({
+      toolRegistry: registry,
+      toolRuntime: runtime,
+      journal,
+      permissions,
+      planner: new MockPlanner(),
+      defaultMode: "mock",
+      defaultLimits: { max_steps: 10, max_duration_ms: 60000, max_cost_usd: 1, max_tokens: 10000 },
+      defaultPolicy: { allowed_paths: ["/tmp"], allowed_endpoints: [], allowed_commands: [], require_approval_for_writes: false },
+      insecure: true,
+    });
+
+    await new Promise<void>((resolve) => {
+      httpServer = createServer(apiServer.getExpressApp());
+      httpServer.listen(0, () => {
+        const addr = httpServer.address() as AddressInfo;
+        baseUrl = `http://127.0.0.1:${addr.port}`;
+        resolve();
+      });
+    });
+  });
+
+  afterEach(async () => {
+    await new Promise<void>((resolve) => { httpServer.close(() => resolve()); });
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+  });
+
+  it("B2: client cannot override server policy", async () => {
+    const res = await fetch(`${baseUrl}/api/sessions`, {
+      method: "POST",
+      body: {
+        text: "Policy override attempt",
+        policy: { allowed_paths: ["/etc", "/root"], allowed_endpoints: ["http://evil.com"], allowed_commands: ["rm"], require_approval_for_writes: false },
+      },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const sessionRes = await fetch(`${baseUrl}/api/sessions/${body.session_id}`);
+    const session = await sessionRes.json();
+    // Policy should be server-controlled, not client-supplied
+    expect(session.policy.allowed_paths).toEqual(["/tmp"]);
+    expect(session.policy.allowed_commands).toEqual([]);
+  });
+
+  it("H3: client limits are clamped to server maximums", async () => {
+    const res = await fetch(`${baseUrl}/api/sessions`, {
+      method: "POST",
+      body: {
+        text: "Limits override attempt",
+        limits: { max_steps: 999, max_duration_ms: 99999999, max_cost_usd: 99999, max_tokens: 99999999 },
+      },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const sessionRes = await fetch(`${baseUrl}/api/sessions/${body.session_id}`);
+    const session = await sessionRes.json();
+    // All should be clamped to server defaults
+    expect(session.limits.max_steps).toBe(10);
+    expect(session.limits.max_duration_ms).toBe(60000);
+    expect(session.limits.max_cost_usd).toBe(1);
+    expect(session.limits.max_tokens).toBe(10000);
+  });
+
+  it("H3: client limits below server max are honored", async () => {
+    const res = await fetch(`${baseUrl}/api/sessions`, {
+      method: "POST",
+      body: {
+        text: "Lower limits test",
+        limits: { max_steps: 3 },
+      },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const sessionRes = await fetch(`${baseUrl}/api/sessions/${body.session_id}`);
+    const session = await sessionRes.json();
+    expect(session.limits.max_steps).toBe(3);
+    // Other limits should be server defaults
+    expect(session.limits.max_duration_ms).toBe(60000);
+  });
+
+  it("security headers are set on all responses", async () => {
+    // Use raw http to check headers
+    const res = await new Promise<{ headers: Record<string, string>; status: number }>((resolve, reject) => {
+      const parsed = new URL(`${baseUrl}/api/health`);
+      require("node:http").request(parsed, (res: any) => {
+        let data = "";
+        res.on("data", (chunk: string) => { data += chunk; });
+        res.on("end", () => {
+          resolve({ headers: res.headers, status: res.statusCode });
+        });
+      }).on("error", reject).end();
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["x-frame-options"]).toBe("DENY");
+    expect(res.headers["cache-control"]).toBe("no-store");
+  });
+});

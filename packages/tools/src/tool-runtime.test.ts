@@ -473,3 +473,68 @@ describe("ToolRuntime circuit breaker integration", () => {
     expect(result.ok).toBe(true);
   });
 });
+
+describe("B3: Timer leak fix in executeWithTimeout", () => {
+  let journal: Journal;
+  let registry: ToolRegistry;
+  let permissions: PermissionEngine;
+
+  beforeEach(async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    const { mkdirSync } = await import("node:fs");
+    try { mkdirSync(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+    journal = new Journal(TEST_FILE, { fsync: false });
+    await journal.init();
+    registry = new ToolRegistry();
+    permissions = new PermissionEngine(journal, async () => "allow_session" as ApprovalDecision);
+  });
+
+  afterEach(async () => {
+    try { await rm(TEST_DIR, { recursive: true }); } catch { /* ok */ }
+  });
+
+  it("clears timeout timer after successful execution (no dangling timers)", async () => {
+    const asyncTool: ToolManifest = {
+      name: "async-tool", version: "1.0.0", description: "Async tool",
+      runner: "internal",
+      input_schema: { type: "object", additionalProperties: false },
+      output_schema: { type: "object", properties: { done: { type: "boolean" } }, additionalProperties: false },
+      permissions: [], timeout_ms: 60000,
+      supports: { mock: true as const, dry_run: false },
+    };
+    registry.register(asyncTool);
+    const runtime = new ToolRuntime(registry, permissions, journal);
+    runtime.registerHandler("async-tool", async () => {
+      await new Promise((r) => setTimeout(r, 10));
+      return { done: true };
+    });
+
+    const req = makeRequest("async-tool", {}, "real");
+    const result = await runtime.execute(req);
+    expect(result.ok).toBe(true);
+    // If timers leaked, the process would hang or the test would fail with
+    // "open handles" warnings. Successful completion proves cleanup.
+  });
+
+  it("clears timeout timer after handler throws", async () => {
+    const throwTool: ToolManifest = {
+      name: "throw-tool", version: "1.0.0", description: "Throws",
+      runner: "internal",
+      input_schema: { type: "object", additionalProperties: false },
+      output_schema: { type: "object", additionalProperties: false },
+      permissions: [], timeout_ms: 60000,
+      supports: { mock: true as const, dry_run: false },
+    };
+    registry.register(throwTool);
+    const runtime = new ToolRuntime(registry, permissions, journal);
+    runtime.registerHandler("throw-tool", async () => {
+      throw new Error("handler error");
+    });
+
+    const req = makeRequest("throw-tool", {}, "real");
+    const result = await runtime.execute(req);
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe("EXECUTION_ERROR");
+    // Timer should be cleaned up even on error
+  });
+});

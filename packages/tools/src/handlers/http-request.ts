@@ -1,6 +1,6 @@
 import type { ToolHandler } from "../tool-runtime.js";
 import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
-import { assertEndpointAllowed } from "../policy-enforcer.js";
+import { assertEndpointAllowedAsync } from "../policy-enforcer.js";
 
 export const httpRequestHandler: ToolHandler = async (
   input: Record<string, unknown>, mode: ExecutionMode, policy: PolicyProfile
@@ -17,7 +17,7 @@ export const httpRequestHandler: ToolHandler = async (
     ? input.headers as Record<string, string>
     : {};
   const body = typeof input.body === "string" ? input.body : undefined;
-  assertEndpointAllowed(url, policy.allowed_endpoints);
+  await assertEndpointAllowedAsync(url, policy.allowed_endpoints);
   if (mode === "dry_run") {
     return { status: 0, body: `[dry_run] Would ${method} ${url}`, headers: {} };
   }

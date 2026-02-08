@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { realpath } from "node:fs/promises";
+import { lookup } from "node:dns/promises";
 import type { PolicyProfile } from "@jarvis/schemas";
 import { JarvisError } from "@jarvis/schemas";
 
@@ -173,6 +174,45 @@ export function assertEndpointAllowed(
   if (!allowed) {
     throw new PolicyViolationError(
       `Endpoint "${hostname}" is not in allowed endpoints: ${allowedEndpoints.join(", ")}`
+    );
+  }
+}
+
+/**
+ * Async version of assertEndpointAllowed that resolves DNS to prevent
+ * DNS rebinding attacks. A hostname like "evil.com" could resolve to
+ * 127.0.0.1 — this function catches that by resolving and re-checking.
+ */
+export async function assertEndpointAllowedAsync(
+  url: string,
+  allowedEndpoints: string[]
+): Promise<void> {
+  // First, run all synchronous checks
+  assertEndpointAllowed(url, allowedEndpoints);
+
+  // Then resolve DNS and check the resolved IP
+  const parsed = new URL(url);
+  const hostname = parsed.hostname;
+
+  // Skip DNS resolution for IP literals (already checked by sync version)
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.includes(":")) {
+    return;
+  }
+
+  try {
+    const result = await lookup(hostname, { all: true });
+    for (const entry of result) {
+      if (isPrivateIP(entry.address)) {
+        throw new SsrfError(
+          `DNS rebinding detected: "${hostname}" resolves to private IP ${entry.address}`
+        );
+      }
+    }
+  } catch (err) {
+    if (err instanceof SsrfError) throw err;
+    // DNS resolution failure — block the request to be safe
+    throw new SsrfError(
+      `DNS resolution failed for "${hostname}": ${err instanceof Error ? err.message : String(err)}`
     );
   }
 }

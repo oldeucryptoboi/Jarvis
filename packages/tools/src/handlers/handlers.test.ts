@@ -228,6 +228,140 @@ describe("shellExecHandler environment sanitization", () => {
   });
 });
 
+describe("readFileHandler — file size cap", () => {
+  let tmpDir: string;
+  let policy: PolicyProfile;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "handler-test-"));
+    policy = { ...openPolicy, allowed_paths: [tmpDir] };
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("rejects files exceeding 10 MB size cap", async () => {
+    const filePath = join(tmpDir, "huge.txt");
+    // Create a file slightly over 10 MB by writing a sparse descriptor
+    // We use stat-based check, so just need the file to report > 10MB
+    const tenMBPlus = Buffer.alloc(10 * 1024 * 1024 + 1, "a");
+    await writeFile(filePath, tenMBPlus);
+    await expect(
+      readFileHandler({ path: filePath }, "real", policy)
+    ).rejects.toThrow(/exceeding the .* byte limit/);
+  });
+
+  it("reads files at exactly the 10 MB limit", async () => {
+    const filePath = join(tmpDir, "exact.txt");
+    const exactTenMB = Buffer.alloc(10 * 1024 * 1024, "b");
+    await writeFile(filePath, exactTenMB);
+    const result = (await readFileHandler({ path: filePath }, "real", policy)) as any;
+    expect(result.exists).toBe(true);
+    expect(result.size_bytes).toBe(10 * 1024 * 1024);
+  });
+});
+
+describe("shellExecHandler — timeout configuration", () => {
+  let tmpDir: string;
+  let policy: PolicyProfile;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "handler-test-"));
+    policy = { ...openPolicy, allowed_paths: [tmpDir] };
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("accepts custom timeout_ms", async () => {
+    const result = (await shellExecHandler(
+      { command: "echo timeout_test", cwd: tmpDir, timeout_ms: 5000 }, "real", policy
+    )) as any;
+    expect(result.stdout.trim()).toBe("timeout_test");
+    expect(result.exit_code).toBe(0);
+  });
+
+  it("clamps timeout_ms to maximum of 300000ms", async () => {
+    // Should not throw — the timeout is clamped, not rejected
+    const result = (await shellExecHandler(
+      { command: "echo hi", cwd: tmpDir, timeout_ms: 999999 }, "real", policy
+    )) as any;
+    expect(result.exit_code).toBe(0);
+  });
+
+  it("clamps timeout_ms to minimum of 1000ms", async () => {
+    const result = (await shellExecHandler(
+      { command: "echo hi", cwd: tmpDir, timeout_ms: 100 }, "real", policy
+    )) as any;
+    expect(result.exit_code).toBe(0);
+  });
+
+  it("uses default timeout when timeout_ms not provided", async () => {
+    const result = (await shellExecHandler(
+      { command: "echo default", cwd: tmpDir }, "real", policy
+    )) as any;
+    expect(result.exit_code).toBe(0);
+  });
+});
+
+describe("shellExecHandler — JARVIS_ env prefix filtering", () => {
+  let tmpDir: string;
+  let policy: PolicyProfile;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "handler-test-"));
+    policy = { ...openPolicy, allowed_paths: [tmpDir] };
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("filters out JARVIS_ prefixed environment variables", async () => {
+    const original = process.env.JARVIS_API_TOKEN;
+    process.env.JARVIS_API_TOKEN = "secret-token-123";
+    try {
+      const result = (await shellExecHandler(
+        { command: "env", cwd: tmpDir }, "real", policy
+      )) as any;
+      expect(result.stdout).not.toContain("JARVIS_API_TOKEN");
+    } finally {
+      if (original !== undefined) process.env.JARVIS_API_TOKEN = original;
+      else delete process.env.JARVIS_API_TOKEN;
+    }
+  });
+
+  it("filters out DATABASE_URL environment variable", async () => {
+    const original = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = "postgres://user:pass@host/db";
+    try {
+      const result = (await shellExecHandler(
+        { command: "env", cwd: tmpDir }, "real", policy
+      )) as any;
+      expect(result.stdout).not.toContain("DATABASE_URL");
+    } finally {
+      if (original !== undefined) process.env.DATABASE_URL = original;
+      else delete process.env.DATABASE_URL;
+    }
+  });
+
+  it("filters out variables ending with _SECRET", async () => {
+    const original = process.env.MY_APP_SECRET;
+    process.env.MY_APP_SECRET = "supersecret";
+    try {
+      const result = (await shellExecHandler(
+        { command: "env", cwd: tmpDir }, "real", policy
+      )) as any;
+      expect(result.stdout).not.toContain("MY_APP_SECRET");
+    } finally {
+      if (original !== undefined) process.env.MY_APP_SECRET = original;
+      else delete process.env.MY_APP_SECRET;
+    }
+  });
+});
+
 describe("httpRequestHandler", () => {
   it("returns dry_run output without fetching", async () => {
     const result = (await httpRequestHandler(

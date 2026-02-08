@@ -9,8 +9,47 @@ import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, Pol
 import type { PluginRegistry } from "@jarvis/plugins";
 import type { MetricsCollector } from "@jarvis/metrics";
 import { createMetricsRouter } from "@jarvis/metrics";
-import type { ServerResponse, Server } from "node:http";
+import type { ServerResponse, Server, IncomingMessage } from "node:http";
 import { timingSafeEqual } from "node:crypto";
+
+// ─── Rate Limiter ──────────────────────────────────────────────────
+
+class RateLimiter {
+  private windows = new Map<string, { count: number; resetAt: number }>();
+  private maxRequests: number;
+  private windowMs: number;
+
+  constructor(maxRequests = 100, windowMs = 60000) {
+    this.maxRequests = maxRequests;
+    this.windowMs = windowMs;
+  }
+
+  check(key: string): { allowed: boolean; remaining: number; resetAt: number } {
+    const now = Date.now();
+    const entry = this.windows.get(key);
+    if (!entry || now >= entry.resetAt) {
+      this.windows.set(key, { count: 1, resetAt: now + this.windowMs });
+      return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
+    }
+    entry.count++;
+    const remaining = Math.max(0, this.maxRequests - entry.count);
+    return { allowed: entry.count <= this.maxRequests, remaining, resetAt: entry.resetAt };
+  }
+
+  /** Periodically prune expired entries to prevent memory leak */
+  prune(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.windows) {
+      if (now >= entry.resetAt) this.windows.delete(key);
+    }
+  }
+}
+
+function getClientIP(req: IncomingMessage): string {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string") return forwarded.split(",")[0]!.trim();
+  return req.socket.remoteAddress ?? "unknown";
+}
 
 // ─── Input Validation ──────────────────────────────────────────────
 
@@ -145,6 +184,8 @@ export class ApiServer {
   private approvalTimeoutMs: number;
   private corsOrigins?: string | string[];
   private httpServer?: Server;
+  private rateLimiter: RateLimiter;
+  private rateLimiterPruneInterval?: ReturnType<typeof setInterval>;
 
   constructor(config: ApiServerConfig);
   constructor(toolRegistry: ToolRegistry, journal: Journal);
@@ -173,6 +214,7 @@ export class ApiServer {
       this.maxSseClientsPerSession = 10;
       this.agentic = false;
       this.approvalTimeoutMs = 300000; // 5 minutes
+      this.rateLimiter = new RateLimiter();
       // No token in legacy constructor — unauthenticated
     } else {
       const config = configOrRegistry as ApiServerConfig;
@@ -192,6 +234,7 @@ export class ApiServer {
       this.metricsCollector = config.metricsCollector;
       this.approvalTimeoutMs = config.approvalTimeoutMs ?? 300000; // 5 minutes
       this.corsOrigins = config.corsOrigins;
+      this.rateLimiter = new RateLimiter();
     }
     if (this.metricsCollector) {
       this.metricsCollector.attach(this.journal);
@@ -266,6 +309,9 @@ export class ApiServer {
 
   listen(port: number): Server {
     this.httpServer = this.app.listen(port, () => { console.log(`Jarvis API listening on http://localhost:${port}`); });
+    // Prune rate limiter entries every 60 seconds
+    this.rateLimiterPruneInterval = setInterval(() => this.rateLimiter.prune(), 60000);
+    this.rateLimiterPruneInterval.unref();
     return this.httpServer;
   }
 
@@ -287,6 +333,8 @@ export class ApiServer {
       for (const client of clients) client.res.end();
     }
     this.sseClients.clear();
+    // Stop rate limiter pruning
+    if (this.rateLimiterPruneInterval) clearInterval(this.rateLimiterPruneInterval);
     // Detach metrics
     if (this.metricsCollector) this.metricsCollector.detach();
     // Wait for pending journal writes to flush
@@ -373,6 +421,19 @@ export class ApiServer {
         next();
       });
     }
+
+    // Rate limiting — applied after auth, before business routes
+    router.use((req, res, next) => {
+      const ip = getClientIP(req);
+      const result = this.rateLimiter.check(ip);
+      res.setHeader("X-RateLimit-Remaining", String(result.remaining));
+      res.setHeader("X-RateLimit-Reset", String(Math.ceil(result.resetAt / 1000)));
+      if (!result.allowed) {
+        res.status(429).json({ error: "Rate limit exceeded. Try again later." });
+        return;
+      }
+      next();
+    });
 
     // Metrics endpoint (behind auth)
     if (this.metricsCollector) {
@@ -485,8 +546,12 @@ export class ApiServer {
 
     router.get("/sessions/:id/journal", async (req, res) => {
       try {
-        const events = await this.journal.readSession(req.params.id!);
-        res.json({ events });
+        const MAX_JOURNAL_PAGE = 500;
+        const offset = Math.max(0, parseInt(req.query.offset as string, 10) || 0);
+        const limit = Math.min(Math.max(1, parseInt(req.query.limit as string, 10) || MAX_JOURNAL_PAGE), MAX_JOURNAL_PAGE);
+        const allEvents = await this.journal.readSession(req.params.id!);
+        const events = allEvents.slice(offset, offset + limit);
+        res.json({ events, total: allEvents.length, offset, limit });
       } catch (err) { console.error("[api] GET /sessions/:id/journal error:", err); res.status(500).json({ error: "Internal server error" }); }
     });
 
@@ -585,9 +650,12 @@ export class ApiServer {
 
     router.post("/sessions/:id/replay", async (req, res) => {
       try {
-        const events = await this.journal.readSession(req.params.id!);
-        if (events.length === 0) { res.status(404).json({ error: "No events found for session" }); return; }
-        res.json({ session_id: req.params.id, event_count: events.length, events });
+        const MAX_REPLAY_EVENTS = 1000;
+        const allEvents = await this.journal.readSession(req.params.id!);
+        if (allEvents.length === 0) { res.status(404).json({ error: "No events found for session" }); return; }
+        const events = allEvents.slice(0, MAX_REPLAY_EVENTS);
+        const truncated = allEvents.length > MAX_REPLAY_EVENTS;
+        res.json({ session_id: req.params.id, event_count: events.length, total_events: allEvents.length, truncated, events });
       } catch (err) { console.error("[api] POST /sessions/:id/replay error:", err); res.status(500).json({ error: "Internal server error" }); }
     });
 

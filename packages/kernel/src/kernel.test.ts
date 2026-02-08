@@ -2260,4 +2260,84 @@ export async function register(api) {
     const session = await kernel.run();
     expect(["completed", "failed"]).toContain(session.status);
   });
+
+  it("detects cyclic step dependencies and fails the session", async () => {
+    registry.register(testTool);
+
+    const stepA = uuid();
+    const stepB = uuid();
+    const stepC = uuid();
+
+    const cyclicPlanner = {
+      async generatePlan() {
+        return {
+          plan: {
+            plan_id: uuid(), schema_version: "0.1" as const, goal: "Cyclic deps",
+            assumptions: [],
+            steps: [
+              { step_id: stepA, title: "Step A", tool_ref: { name: "test-tool" },
+                input: { message: "a" }, success_criteria: ["ok"],
+                failure_policy: "abort" as const, timeout_ms: 5000, max_retries: 0,
+                depends_on: [stepC] },
+              { step_id: stepB, title: "Step B", tool_ref: { name: "test-tool" },
+                input: { message: "b" }, success_criteria: ["ok"],
+                failure_policy: "abort" as const, timeout_ms: 5000, max_retries: 0,
+                depends_on: [stepA] },
+              { step_id: stepC, title: "Step C", tool_ref: { name: "test-tool" },
+                input: { message: "c" }, success_criteria: ["ok"],
+                failure_policy: "abort" as const, timeout_ms: 5000, max_retries: 0,
+                depends_on: [stepB] },
+            ],
+            created_at: new Date().toISOString(),
+          },
+        };
+      },
+    };
+
+    const task: Task = { task_id: uuid(), text: "Cyclic dependency test", created_at: new Date().toISOString() };
+    const kernel = new Kernel(makeKernelConfig({ journal, runtime, registry, permissions, planner: cyclicPlanner }));
+    await kernel.createSession(task);
+    const session = await kernel.run();
+    expect(session.status).toBe("failed");
+    // Check journal for the cyclic dependency evidence
+    const events = await journal.readSession(session.session_id);
+    const types = events.map(e => e.type);
+    expect(types).toContain("session.started");
+    // The cycle detection should prevent any steps from executing
+    expect(types).not.toContain("step.started");
+  });
+
+  it("succeeds with valid (non-cyclic) step dependencies", async () => {
+    registry.register(testTool);
+
+    const stepA = uuid();
+    const stepB = uuid();
+
+    const linearPlanner = {
+      async generatePlan() {
+        return {
+          plan: {
+            plan_id: uuid(), schema_version: "0.1" as const, goal: "Linear deps",
+            assumptions: [],
+            steps: [
+              { step_id: stepA, title: "Step A", tool_ref: { name: "test-tool" },
+                input: { message: "first" }, success_criteria: ["ok"],
+                failure_policy: "abort" as const, timeout_ms: 5000, max_retries: 0 },
+              { step_id: stepB, title: "Step B", tool_ref: { name: "test-tool" },
+                input: { message: "second" }, success_criteria: ["ok"],
+                failure_policy: "abort" as const, timeout_ms: 5000, max_retries: 0,
+                depends_on: [stepA] },
+            ],
+            created_at: new Date().toISOString(),
+          },
+        };
+      },
+    };
+
+    const task: Task = { task_id: uuid(), text: "Linear dependency test", created_at: new Date().toISOString() };
+    const kernel = new Kernel(makeKernelConfig({ journal, runtime, registry, permissions, planner: linearPlanner }));
+    await kernel.createSession(task);
+    const session = await kernel.run();
+    expect(session.status).toBe("completed");
+  });
 });

@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { resolve } from "node:path";
 import {
   assertPathAllowed,
   assertCommandAllowed,
   assertEndpointAllowed,
+  assertEndpointAllowedAsync,
   PolicyViolationError,
   SsrfError,
   isPrivateIP,
@@ -156,5 +157,82 @@ describe("SSRF protection in assertEndpointAllowed", () => {
   it("allows public IPs with standard ports", () => {
     expect(() => assertEndpointAllowed("https://8.8.8.8/dns", [])).not.toThrow();
     expect(() => assertEndpointAllowed("https://1.1.1.1/", [])).not.toThrow();
+  });
+});
+
+describe("isPrivateIP — IPv6 coverage", () => {
+  it("detects bracketed IPv6 loopback [::1]", () => {
+    expect(isPrivateIP("[::1]")).toBe(true);
+  });
+
+  it("detects :: (all-zeros) as private", () => {
+    expect(isPrivateIP("::")).toBe(true);
+  });
+
+  it("detects full-form IPv6 loopback", () => {
+    expect(isPrivateIP("0:0:0:0:0:0:0:1")).toBe(true);
+    expect(isPrivateIP("0:0:0:0:0:0:0:0")).toBe(true);
+  });
+
+  it("detects IPv6-mapped IPv4 private addresses", () => {
+    expect(isPrivateIP("::ffff:127.0.0.1")).toBe(true);
+    expect(isPrivateIP("::ffff:10.0.0.1")).toBe(true);
+    expect(isPrivateIP("::ffff:192.168.1.1")).toBe(true);
+  });
+
+  it("allows IPv6-mapped public addresses", () => {
+    expect(isPrivateIP("::ffff:8.8.8.8")).toBe(false);
+  });
+
+  it("detects IPv6 link-local (fe80::)", () => {
+    expect(isPrivateIP("fe80::1")).toBe(true);
+  });
+
+  it("detects IPv6 unique local (fc00::/7)", () => {
+    expect(isPrivateIP("fc00::1")).toBe(true);
+    expect(isPrivateIP("fd00::1")).toBe(true);
+  });
+
+  it("detects 0.x.x.x range as private", () => {
+    expect(isPrivateIP("0.0.0.0")).toBe(true);
+    expect(isPrivateIP("0.1.2.3")).toBe(true);
+  });
+});
+
+describe("assertEndpointAllowedAsync — DNS rebinding protection", () => {
+  it("allows public hostnames that resolve to public IPs", async () => {
+    // example.com resolves to public IPs in the real DNS
+    await expect(assertEndpointAllowedAsync("https://example.com/", [])).resolves.toBeUndefined();
+  });
+
+  it("blocks hostnames that resolve to private IPs (DNS rebinding)", async () => {
+    // localhost resolves to 127.0.0.1
+    // The sync check will block "localhost" directly since it's recognized as private
+    await expect(assertEndpointAllowedAsync("http://localhost/admin", [])).rejects.toThrow(SsrfError);
+  });
+
+  it("skips DNS resolution for IP literals (already checked by sync)", async () => {
+    await expect(assertEndpointAllowedAsync("https://8.8.8.8/dns", [])).resolves.toBeUndefined();
+  });
+
+  it("blocks IP literals that are private", async () => {
+    await expect(assertEndpointAllowedAsync("http://127.0.0.1/", [])).rejects.toThrow(SsrfError);
+  });
+
+  it("runs sync checks first (protocol, port, hostname)", async () => {
+    await expect(assertEndpointAllowedAsync("ftp://example.com/file", [])).rejects.toThrow(SsrfError);
+    await expect(assertEndpointAllowedAsync("http://example.com:6379/", [])).rejects.toThrow(SsrfError);
+  });
+
+  it("blocks hostnames that fail DNS resolution", async () => {
+    await expect(
+      assertEndpointAllowedAsync("https://this-domain-definitely-does-not-exist-xyz123.invalid/", [])
+    ).rejects.toThrow(SsrfError);
+  });
+
+  it("respects endpoint allowlist", async () => {
+    await expect(
+      assertEndpointAllowedAsync("https://evil.com/steal", ["https://api.example.com"])
+    ).rejects.toThrow(PolicyViolationError);
   });
 });
