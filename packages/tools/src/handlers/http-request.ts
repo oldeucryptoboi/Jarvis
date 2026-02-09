@@ -1,5 +1,5 @@
 import type { ToolHandler } from "../tool-runtime.js";
-import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
+import type { ExecutionMode, PolicyProfile } from "@karnevil9/schemas";
 import { assertEndpointAllowedAsync } from "../policy-enforcer.js";
 
 const MAX_RESPONSE_BODY_SIZE = 10 * 1024 * 1024; // 10 MB

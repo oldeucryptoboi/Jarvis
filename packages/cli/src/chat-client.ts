@@ -3,6 +3,7 @@ import {
   green, red, yellow, dim,
   chatPrompt, colorForType, formatEvent, helpText, TERMINAL_EVENTS,
 } from "./chat-formatter.js";
+import type { StatusBarLike } from "./status-bar.js";
 
 // ─── DI Interfaces ────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ export interface ChatClientConfig {
   wsFactory: WebSocketFactory;
   terminal: TerminalIO;
   process?: ProcessControl;
+  statusBar?: StatusBarLike;
   pingIntervalMs?: number;
   maxReconnectDelay?: number;
   initialReconnectDelay?: number;
@@ -64,6 +66,7 @@ export class ChatClient {
   private readonly _wsFactory: WebSocketFactory;
   private readonly _terminal: TerminalIO;
   private readonly _process: ProcessControl;
+  private readonly _statusBar: StatusBarLike | null;
   private readonly _pingIntervalMs: number;
   private readonly _maxReconnectDelay: number;
   private readonly _initialReconnectDelay: number;
@@ -74,6 +77,7 @@ export class ChatClient {
     this._wsFactory = config.wsFactory;
     this._terminal = config.terminal;
     this._process = config.process ?? process;
+    this._statusBar = config.statusBar ?? null;
     this._pingIntervalMs = config.pingIntervalMs ?? 30000;
     this._maxReconnectDelay = config.maxReconnectDelay ?? 30000;
     this._initialReconnectDelay = config.initialReconnectDelay ?? 1000;
@@ -115,6 +119,7 @@ export class ChatClient {
 
   close(): void {
     this._userClose = true;
+    if (this._statusBar) this._statusBar.teardown();
     if (this._ws) this._ws.close();
     this._terminal.closeReadline();
     this._process.exit(0);
@@ -124,7 +129,14 @@ export class ChatClient {
 
   private handleWsOpen(): void {
     this._reconnectDelay = this._initialReconnectDelay;
-    this._terminal.writeLine(green("Connected to Jarvis server"));
+
+    // Set up scroll region BEFORE any output so the clip area is established first
+    if (this._statusBar) {
+      this._statusBar.setup();
+      this._statusBar.update({ connection: "connected", wsUrl: this._wsUrl, mode: this._mode });
+    }
+
+    this._terminal.writeLine(green("Connected to KarnEvil9 server"));
     this._terminal.writeLine(dim("Type a message to start a session. Commands: /help, /abort, /quit\n"));
 
     this._terminal.createReadline();
@@ -185,17 +197,46 @@ export class ChatClient {
         this._currentSessionId = sid;
         this._running = true;
         this.printAbove(green(`Session ${sid} created`));
+        if (this._statusBar) {
+          this._statusBar.update({
+            sessionState: "running",
+            sessionId: sid,
+            totalTokens: 0,
+            costUsd: 0,
+            model: null,
+          });
+        }
         break;
       }
       case "event": {
         const event = msg.event as Record<string, unknown>;
         const eventType = String(event?.type ?? "");
+        const payload = event?.payload as Record<string, unknown> | undefined;
+
+        // Intercept usage.recorded for status bar before formatEvent (which suppresses it)
+        if (eventType === "usage.recorded" && this._statusBar && payload) {
+          const cumulative = payload.cumulative as Record<string, unknown> | undefined;
+          if (cumulative) {
+            this._statusBar.update({
+              totalTokens: typeof cumulative.total_tokens === "number" ? cumulative.total_tokens : 0,
+              costUsd: typeof cumulative.total_cost_usd === "number" ? cumulative.total_cost_usd : 0,
+            });
+          }
+          const model = payload.model;
+          if (typeof model === "string" && model) {
+            this._statusBar.update({ model });
+          }
+        }
+
         const formatted = formatEvent(String(msg.session_id), event);
         if (formatted !== null) this.printAbove(formatted);
 
         if (TERMINAL_EVENTS.has(eventType)) {
           this._running = false;
           this._currentSessionId = null;
+          if (this._statusBar) {
+            this._statusBar.update({ sessionState: "idle", sessionId: null });
+          }
           this.updatePrompt();
         }
         break;
@@ -227,6 +268,7 @@ export class ChatClient {
     this._reconnecting = true;
     this._terminal.closeReadline();
     this._reconnecting = false;
+    if (this._statusBar) this._statusBar.update({ connection: "reconnecting" });
     this._terminal.writeLine(yellow(`\nDisconnected. Reconnecting in ${this._reconnectDelay / 1000}s...`));
     this.scheduleReconnect();
   }
@@ -237,6 +279,7 @@ export class ChatClient {
       this._reconnecting = true;
       this._terminal.closeReadline();
       this._reconnecting = false;
+      if (this._statusBar) this._statusBar.update({ connection: "disconnected" });
       this._terminal.writeLine(red(`Cannot connect to server — is it running?`));
       this._terminal.writeLine(yellow(`Retrying in ${this._reconnectDelay / 1000}s...`));
       this.scheduleReconnect();

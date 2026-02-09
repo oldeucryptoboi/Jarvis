@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/plugins",
+  "name": "@karnevil9/plugins",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,10 +11,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@jarvis/schemas": "workspace:*",
-    "@jarvis/journal": "workspace:*",
-    "@jarvis/tools": "workspace:*",
-    "@jarvis/permissions": "workspace:*",
+    "@karnevil9/schemas": "workspace:*",
+    "@karnevil9/journal": "workspace:*",
+    "@karnevil9/tools": "workspace:*",
+    "@karnevil9/permissions": "workspace:*",
     "js-yaml": "^4.1.0",
     "uuid": "^11.0.0"
   },

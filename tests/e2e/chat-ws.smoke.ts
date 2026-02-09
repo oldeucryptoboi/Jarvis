@@ -3,11 +3,11 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { MockPlanner } from "@jarvis/planner";
-import { ApiServer } from "@jarvis/api";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { MockPlanner } from "@karnevil9/planner";
+import { ApiServer } from "@karnevil9/api";
 import WebSocket from "ws";
 import type { Server } from "node:http";
 
@@ -94,7 +94,7 @@ describe("Chat WebSocket Smoke Tests", () => {
   let port: number;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-e2e-chat-ws-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-e2e-chat-ws-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();

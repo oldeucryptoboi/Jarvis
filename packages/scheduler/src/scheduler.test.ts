@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { Journal } from "@jarvis/journal";
+import { Journal } from "@karnevil9/journal";
 import { ScheduleStore } from "./schedule-store.js";
 import { Scheduler } from "./scheduler.js";
 import type { SessionFactory } from "./scheduler.js";
-import type { Schedule, ScheduleTrigger, JobAction } from "@jarvis/schemas";
+import type { Schedule, ScheduleTrigger, JobAction } from "@karnevil9/schemas";
 
 function makeSessionFactory(result?: { session_id: string; status: string }): SessionFactory {
   return vi.fn().mockResolvedValue(result ?? { session_id: "sess-123", status: "created" });

@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/browser-relay",
+  "name": "@karnevil9/browser-relay",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

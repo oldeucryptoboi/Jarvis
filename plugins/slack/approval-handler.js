@@ -7,8 +7,8 @@ export class ApprovalHandler {
   /**
    * @param {object} opts
    * @param {import("./slack-app.js").SlackApp} opts.slackApp
-   * @param {string} opts.apiBaseUrl - Jarvis API base URL
-   * @param {string} [opts.apiToken] - Jarvis API token
+   * @param {string} opts.apiBaseUrl - KarnEvil9 API base URL
+   * @param {string} [opts.apiToken] - KarnEvil9 API token
    * @param {object} [opts.logger]
    */
   constructor({ slackApp, apiBaseUrl, apiToken, logger }) {
@@ -24,7 +24,7 @@ export class ApprovalHandler {
    * Register interactive button handler with the Slack app.
    */
   registerActions() {
-    this.slackApp.onAction(/^jarvis_approval_/, async ({ action, ack, respond }) => {
+    this.slackApp.onAction(/^karnevil9_approval_/, async ({ action, ack, respond }) => {
       await ack();
       await this._handleApprovalAction(action, respond);
     });
@@ -58,9 +58,9 @@ export class ApprovalHandler {
    * @param {Function} respond - respond function
    */
   async _handleApprovalAction(action, respond) {
-    // action_id format: jarvis_approval_{requestId}_{decision}
+    // action_id format: karnevil9_approval_{requestId}_{decision}
     const parts = action.action_id.split("_");
-    // "jarvis", "approval", ...requestId parts..., decision
+    // "karnevil9", "approval", ...requestId parts..., decision
     // Decision is the last part, requestId is everything between "approval" and decision
     const decision = parts[parts.length - 1];
     const requestId = parts.slice(2, -1).join("_");
@@ -73,7 +73,7 @@ export class ApprovalHandler {
       return;
     }
 
-    // Resolve via Jarvis API
+    // Resolve via KarnEvil9 API
     try {
       const url = `${this.apiBaseUrl}/api/approvals/${requestId}`;
       const headers = { "Content-Type": "application/json" };

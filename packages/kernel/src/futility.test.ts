@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { FutilityMonitor } from "./futility.js";
 import type { IterationRecord } from "./futility.js";
-import type { StepResult, UsageMetrics } from "@jarvis/schemas";
+import type { StepResult, UsageMetrics } from "@karnevil9/schemas";
 import type { UsageSummary } from "./usage-accumulator.js";
 
 function makeResult(overrides: Partial<StepResult> = {}): StepResult {

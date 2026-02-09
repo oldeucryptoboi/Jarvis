@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { resolve } from "node:path";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { PermissionEngine } from "@jarvis/permissions";
-import type { ToolManifest, ToolExecutionRequest, ApprovalDecision } from "@jarvis/schemas";
+import { Journal } from "@karnevil9/journal";
+import { PermissionEngine } from "@karnevil9/permissions";
+import type { ToolManifest, ToolExecutionRequest, ApprovalDecision } from "@karnevil9/schemas";
 import { ToolRegistry } from "./tool-registry.js";
 import { ToolRuntime, CircuitBreaker } from "./tool-runtime.js";
 

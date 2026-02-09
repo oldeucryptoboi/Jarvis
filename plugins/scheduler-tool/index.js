@@ -1,4 +1,4 @@
-import { scheduleToolManifest, createScheduleToolHandler } from "@jarvis/scheduler";
+import { scheduleToolManifest, createScheduleToolHandler } from "@karnevil9/scheduler";
 
 export async function register(api) {
   const scheduler = api.config.scheduler;

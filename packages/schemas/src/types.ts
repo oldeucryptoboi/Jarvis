@@ -1,5 +1,5 @@
 /**
- * Jarvis Core Types
+ * KarnEvil9 Core Types
  *
  * These are the canonical data models for the entire runtime.
  * Every component references these types. Nothing is implicit.
@@ -182,12 +182,12 @@ export const ErrorCodes = {
 
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes];
 
-export class JarvisError extends Error {
+export class KarnEvil9Error extends Error {
   readonly code: ErrorCode;
   readonly data?: unknown;
   constructor(code: ErrorCode, message: string, data?: unknown) {
     super(message);
-    this.name = "JarvisError";
+    this.name = "KarnEvil9Error";
     this.code = code;
     this.data = data;
   }

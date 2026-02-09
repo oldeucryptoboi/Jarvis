@@ -3,12 +3,12 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { MockPlanner } from "@jarvis/planner";
-import { Kernel } from "@jarvis/kernel";
-import type { Task } from "@jarvis/schemas";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { MockPlanner } from "@karnevil9/planner";
+import { Kernel } from "@karnevil9/kernel";
+import type { Task } from "@karnevil9/schemas";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
 const TOOLS_DIR = join(ROOT, "tools/examples");
@@ -21,7 +21,7 @@ describe("Session Roundtrip Smoke", () => {
   let runtime: ToolRuntime;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-e2e-session-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-e2e-session-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();
@@ -170,7 +170,7 @@ describe("Session Roundtrip Smoke", () => {
 
   it("session with plugin hooks fires them in correct order", async () => {
     // Import plugin registry dynamically to keep it optional
-    const { PluginRegistry } = await import("@jarvis/plugins");
+    const { PluginRegistry } = await import("@karnevil9/plugins");
 
     const pluginsDir = join(ROOT, "plugins");
     const pluginRegistry = new PluginRegistry({
@@ -257,7 +257,7 @@ describe("Session Roundtrip Smoke", () => {
   });
 
   it("SSE stream delivers events for a session", async () => {
-    const { ApiServer } = await import("@jarvis/api");
+    const { ApiServer } = await import("@karnevil9/api");
     const planner = new MockPlanner();
 
     const apiServer = new ApiServer({

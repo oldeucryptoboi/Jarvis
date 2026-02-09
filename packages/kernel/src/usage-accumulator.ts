@@ -1,4 +1,4 @@
-import type { UsageMetrics, ModelPricing } from "@jarvis/schemas";
+import type { UsageMetrics, ModelPricing } from "@karnevil9/schemas";
 
 export interface UsageSummary {
   total_input_tokens: number;

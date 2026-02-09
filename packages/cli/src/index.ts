@@ -4,34 +4,34 @@ import { Command } from "commander";
 import { v4 as uuid } from "uuid";
 import { resolve } from "node:path";
 import * as readline from "node:readline";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime, readFileHandler, writeFileHandler, shellExecHandler, httpRequestHandler, browserHandler, createBrowserHandler } from "@jarvis/tools";
-import type { BrowserDriverLike } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { Kernel } from "@jarvis/kernel";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime, readFileHandler, writeFileHandler, shellExecHandler, httpRequestHandler, browserHandler, createBrowserHandler } from "@karnevil9/tools";
+import type { BrowserDriverLike } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { Kernel } from "@karnevil9/kernel";
 import { createPlanner } from "./llm-adapters.js";
-import { ApiServer } from "@jarvis/api";
-import { MetricsCollector } from "@jarvis/metrics";
-import { PluginRegistry } from "@jarvis/plugins";
-import { ActiveMemory } from "@jarvis/memory";
-import { ScheduleStore, Scheduler } from "@jarvis/scheduler";
-import type { Task, ApprovalDecision, PermissionRequest } from "@jarvis/schemas";
+import { ApiServer } from "@karnevil9/api";
+import { MetricsCollector } from "@karnevil9/metrics";
+import { PluginRegistry } from "@karnevil9/plugins";
+import { ActiveMemory } from "@karnevil9/memory";
+import { ScheduleStore, Scheduler } from "@karnevil9/scheduler";
+import type { Task, ApprovalDecision, PermissionRequest } from "@karnevil9/schemas";
 import type { ChatWebSocket } from "./chat-client.js";
 
 // Global error handlers — prevent silent crashes from unhandled rejections/exceptions
 process.on("unhandledRejection", (reason) => {
-  console.error("[jarvis] Unhandled rejection:", reason);
+  console.error("[karnevil9] Unhandled rejection:", reason);
 });
 process.on("uncaughtException", (err) => {
-  console.error("[jarvis] Uncaught exception:", err);
+  console.error("[karnevil9] Uncaught exception:", err);
   process.exit(1);
 });
 
-const JOURNAL_PATH = process.env.JARVIS_JOURNAL_PATH ?? resolve("journal/events.jsonl");
-const TOOLS_DIR = process.env.JARVIS_TOOLS_DIR ?? resolve("tools/examples");
-const MEMORY_PATH = process.env.JARVIS_MEMORY_PATH ?? resolve("sessions/memory.jsonl");
-const SCHEDULER_PATH = process.env.JARVIS_SCHEDULER_PATH ?? resolve("sessions/schedules.jsonl");
-const DEFAULT_PORT = parseInt(process.env.JARVIS_PORT ?? "3100", 10);
+const JOURNAL_PATH = process.env.KARNEVIL9_JOURNAL_PATH ?? resolve("journal/events.jsonl");
+const TOOLS_DIR = process.env.KARNEVIL9_TOOLS_DIR ?? resolve("tools/examples");
+const MEMORY_PATH = process.env.KARNEVIL9_MEMORY_PATH ?? resolve("sessions/memory.jsonl");
+const SCHEDULER_PATH = process.env.KARNEVIL9_SCHEDULER_PATH ?? resolve("sessions/schedules.jsonl");
+const DEFAULT_PORT = parseInt(process.env.KARNEVIL9_PORT ?? "3100", 10);
 
 async function cliApprovalPrompt(request: PermissionRequest): Promise<ApprovalDecision> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -85,7 +85,7 @@ async function createRuntime(
 }
 
 const program = new Command();
-program.name("jarvis").description("Jarvis — Deterministic agent runtime").version("0.1.0");
+program.name("karnevil9").description("KarnEvil9 — Deterministic agent runtime").version("0.1.0");
 
 program.command("run").description("Run a task end-to-end").argument("<task>", "Task description")
   .option("-m, --mode <mode>", "Execution mode: real, dry_run, mock", "mock")
@@ -102,7 +102,7 @@ program.command("run").description("Run a task end-to-end").argument("<task>", "
     const policy = { allowed_paths: [process.cwd()], allowed_endpoints: [], allowed_commands: [], require_approval_for_writes: true };
     let browserDriver: BrowserDriverLike | undefined;
     if (opts.browser === "managed") {
-      const { ManagedDriver } = await import("@jarvis/browser-relay");
+      const { ManagedDriver } = await import("@karnevil9/browser-relay");
       browserDriver = new ManagedDriver({ headless: true });
     }
     const { journal, registry, permissions, runtime } = await createRuntime(policy, undefined, browserDriver);
@@ -170,7 +170,7 @@ program.command("run").description("Run a task end-to-end").argument("<task>", "
         console.log(`  Checkpoint saved: ${event.payload.checkpoint_path}`);
       }
     });
-    console.log(`\nJarvis session starting...`);
+    console.log(`\nKarnEvil9 session starting...`);
     console.log(`Task: ${taskText}`);
     console.log(`Mode: ${opts.mode}`);
     console.log(`Tools: ${registry.list().map((t) => t.name).join(", ") || "(none)"}`);
@@ -294,7 +294,7 @@ program.command("server").description("Start the API server")
     };
     let browserDriver: BrowserDriverLike | undefined;
     if (opts.browser === "managed") {
-      const { ManagedDriver } = await import("@jarvis/browser-relay");
+      const { ManagedDriver } = await import("@karnevil9/browser-relay");
       browserDriver = new ManagedDriver({ headless: true });
     }
     const { journal, registry, permissions, runtime } = await createRuntime(undefined, serverApprovalPrompt, browserDriver);
@@ -335,7 +335,7 @@ program.command("server").description("Start the API server")
     await scheduler.start();
     console.log(`Scheduler started (${scheduleStore.size} schedules loaded)`);
 
-    const apiToken = process.env.JARVIS_API_TOKEN;
+    const apiToken = process.env.KARNEVIL9_API_TOKEN;
     pluginRegistry = new PluginRegistry({
       journal, toolRegistry: registry, toolRuntime: runtime, permissions,
       pluginsDir,
@@ -355,7 +355,7 @@ program.command("server").description("Start the API server")
       console.log(`Plugins loaded: ${active.map((p) => p.id).join(", ")}`);
     }
 
-    const corsOrigins = process.env.JARVIS_CORS_ORIGINS;
+    const corsOrigins = process.env.KARNEVIL9_CORS_ORIGINS;
     const apiServer = new ApiServer({
       toolRegistry: registry, journal, toolRuntime: runtime, permissions,
       pluginRegistry,
@@ -366,8 +366,8 @@ program.command("server").description("Start the API server")
       apiToken,
       insecure: opts.insecure === true,
       corsOrigins: corsOrigins ? corsOrigins.split(",").map((s) => s.trim()) : undefined,
-      approvalTimeoutMs: parseInt(process.env.JARVIS_APPROVAL_TIMEOUT_MS ?? "300000", 10),
-      maxConcurrentSessions: parseInt(process.env.JARVIS_MAX_SESSIONS ?? "50", 10),
+      approvalTimeoutMs: parseInt(process.env.KARNEVIL9_APPROVAL_TIMEOUT_MS ?? "300000", 10),
+      maxConcurrentSessions: parseInt(process.env.KARNEVIL9_MAX_SESSIONS ?? "50", 10),
     });
     apiServerRef = apiServer;
     apiServer.listen(port);
@@ -386,20 +386,29 @@ program.command("server").description("Start the API server")
 
 program.command("chat").description("Interactive chat session via WebSocket")
   .option("--url <url>", "WebSocket URL", "ws://localhost:3100/api/ws")
-  .option("--token <token>", "API token (defaults to JARVIS_API_TOKEN)")
+  .option("--token <token>", "API token (defaults to KARNEVIL9_API_TOKEN)")
   .option("--mode <mode>", "Execution mode: real, dry_run, mock", "real")
   .action(async (opts: { url: string; token?: string; mode: string }) => {
     const { WebSocket: WS } = await import("ws");
     const { ChatClient, RealTerminalIO } = await import("./chat-client.js");
 
-    const token = opts.token ?? process.env.JARVIS_API_TOKEN;
+    const token = opts.token ?? process.env.KARNEVIL9_API_TOKEN;
     const wsUrl = token ? `${opts.url}?token=${encodeURIComponent(token)}` : opts.url;
+
+    let statusBar: import("./status-bar.js").StatusBarLike | undefined;
+    if (process.stdout.isTTY) {
+      const { StatusBar, RealStatusBarWriter } = await import("./status-bar.js");
+      statusBar = new StatusBar(new RealStatusBarWriter(), { wsUrl, mode: opts.mode });
+      process.stdout.on("resize", () => statusBar!.onResize());
+      process.on("exit", () => statusBar!.teardown());
+    }
 
     const client = new ChatClient({
       wsUrl,
       mode: opts.mode,
       wsFactory: (url) => new WS(url) as unknown as ChatWebSocket,
       terminal: new RealTerminalIO(),
+      statusBar,
     });
     client.connect();
   });
@@ -412,7 +421,7 @@ program.command("relay").description("Start the browser relay server")
   .option("--no-headless", "Run browser with visible window (managed only)")
   .option("--bridge-port <port>", "Bridge WebSocket port for extension driver", "9225")
   .action(async (opts: { port: string; driver: string; headless: boolean; bridgePort: string }) => {
-    const { ManagedDriver, ExtensionDriver, RelayServer } = await import("@jarvis/browser-relay");
+    const { ManagedDriver, ExtensionDriver, RelayServer } = await import("@karnevil9/browser-relay");
     const driverType = opts.driver;
 
     let browserDriver;

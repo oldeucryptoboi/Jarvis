@@ -3,9 +3,9 @@ import type {
   HookContext,
   HookResult,
   HookRegistration,
-} from "@jarvis/schemas";
-import type { Journal } from "@jarvis/journal";
-import { CircuitBreaker } from "@jarvis/tools";
+} from "@karnevil9/schemas";
+import type { Journal } from "@karnevil9/journal";
+import { CircuitBreaker } from "@karnevil9/tools";
 
 const VALID_ACTIONS = new Set(["continue", "modify", "block", "observe"]);
 const BLOCKABLE_HOOKS: Set<HookName> = new Set([

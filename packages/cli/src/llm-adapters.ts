@@ -1,6 +1,6 @@
-import { MockPlanner, LLMPlanner, RouterPlanner } from "@jarvis/planner";
-import type { ModelCallFn, ModelCallResult } from "@jarvis/planner";
-import type { Planner } from "@jarvis/schemas";
+import { MockPlanner, LLMPlanner, RouterPlanner } from "@karnevil9/planner";
+import type { ModelCallFn, ModelCallResult } from "@karnevil9/planner";
+import type { Planner } from "@karnevil9/schemas";
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 500;
@@ -40,11 +40,11 @@ const PROVIDER_DEFAULTS: Record<string, string> = {
 };
 
 function resolveProvider(opts: { planner?: string }): string {
-  return opts.planner ?? process.env.JARVIS_PLANNER ?? "mock";
+  return opts.planner ?? process.env.KARNEVIL9_PLANNER ?? "mock";
 }
 
 function resolveModel(provider: string, opts: { model?: string }): string {
-  return opts.model ?? process.env.JARVIS_MODEL ?? PROVIDER_DEFAULTS[provider] ?? "unknown";
+  return opts.model ?? process.env.KARNEVIL9_MODEL ?? PROVIDER_DEFAULTS[provider] ?? "unknown";
 }
 
 function createClaudeCallFn(model: string): ModelCallFn {

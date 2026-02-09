@@ -10,7 +10,7 @@ describe("PluginDiscovery", () => {
   let discovery: PluginDiscovery;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-test-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-test-${uuid()}`);
     await mkdir(testDir, { recursive: true });
     discovery = new PluginDiscovery();
   });

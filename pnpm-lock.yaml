@@ -12,40 +12,40 @@ importers:
         specifier: ^4.1.0
         version: 4.6.0(@types/express@5.0.6)
     devDependencies:
-      '@jarvis/api':
+      '@karnevil9/api':
         specifier: workspace:^
         version: link:packages/api
-      '@jarvis/browser-relay':
+      '@karnevil9/browser-relay':
         specifier: workspace:^
         version: link:packages/browser-relay
-      '@jarvis/cli':
+      '@karnevil9/cli':
         specifier: workspace:^
         version: link:packages/cli
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:^
         version: link:packages/journal
-      '@jarvis/kernel':
+      '@karnevil9/kernel':
         specifier: workspace:^
         version: link:packages/kernel
-      '@jarvis/metrics':
+      '@karnevil9/metrics':
         specifier: workspace:^
         version: link:packages/metrics
-      '@jarvis/permissions':
+      '@karnevil9/permissions':
         specifier: workspace:^
         version: link:packages/permissions
-      '@jarvis/planner':
+      '@karnevil9/planner':
         specifier: workspace:^
         version: link:packages/planner
-      '@jarvis/plugins':
+      '@karnevil9/plugins':
         specifier: workspace:^
         version: link:packages/plugins
-      '@jarvis/scheduler':
+      '@karnevil9/scheduler':
         specifier: workspace:^
         version: link:packages/scheduler
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:^
         version: link:packages/schemas
-      '@jarvis/tools':
+      '@karnevil9/tools':
         specifier: workspace:^
         version: link:packages/tools
       '@types/node':
@@ -78,28 +78,28 @@ importers:
 
   packages/api:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/kernel':
+      '@karnevil9/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@jarvis/metrics':
+      '@karnevil9/metrics':
         specifier: workspace:*
         version: link:../metrics
-      '@jarvis/permissions':
+      '@karnevil9/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@jarvis/plugins':
+      '@karnevil9/plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@jarvis/scheduler':
+      '@karnevil9/scheduler':
         specifier: workspace:*
         version: link:../scheduler
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@jarvis/tools':
+      '@karnevil9/tools':
         specifier: workspace:*
         version: link:../tools
       express:
@@ -112,10 +112,10 @@ importers:
         specifier: ^8.0.0
         version: 8.19.0
     devDependencies:
-      '@jarvis/memory':
+      '@karnevil9/memory':
         specifier: workspace:*
         version: link:../memory
-      '@jarvis/planner':
+      '@karnevil9/planner':
         specifier: workspace:*
         version: link:../planner
       '@types/express':
@@ -150,40 +150,40 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
-      '@jarvis/api':
+      '@karnevil9/api':
         specifier: workspace:*
         version: link:../api
-      '@jarvis/browser-relay':
+      '@karnevil9/browser-relay':
         specifier: workspace:*
         version: link:../browser-relay
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/kernel':
+      '@karnevil9/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@jarvis/memory':
+      '@karnevil9/memory':
         specifier: workspace:*
         version: link:../memory
-      '@jarvis/metrics':
+      '@karnevil9/metrics':
         specifier: workspace:*
         version: link:../metrics
-      '@jarvis/permissions':
+      '@karnevil9/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@jarvis/planner':
+      '@karnevil9/planner':
         specifier: workspace:*
         version: link:../planner
-      '@jarvis/plugins':
+      '@karnevil9/plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@jarvis/scheduler':
+      '@karnevil9/scheduler':
         specifier: workspace:*
         version: link:../scheduler
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@jarvis/tools':
+      '@karnevil9/tools':
         specifier: workspace:*
         version: link:../tools
       commander:
@@ -208,7 +208,7 @@ importers:
 
   packages/journal:
     dependencies:
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -217,35 +217,35 @@ importers:
 
   packages/kernel:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/memory':
+      '@karnevil9/memory':
         specifier: workspace:*
         version: link:../memory
-      '@jarvis/permissions':
+      '@karnevil9/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@jarvis/plugins':
+      '@karnevil9/plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@jarvis/tools':
+      '@karnevil9/tools':
         specifier: workspace:*
         version: link:../tools
       uuid:
         specifier: ^11.0.0
         version: 11.1.0
     devDependencies:
-      '@jarvis/planner':
+      '@karnevil9/planner':
         specifier: workspace:*
         version: link:../planner
 
   packages/memory:
     dependencies:
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -254,10 +254,10 @@ importers:
 
   packages/metrics:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       prom-client:
@@ -266,10 +266,10 @@ importers:
 
   packages/permissions:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -278,7 +278,7 @@ importers:
 
   packages/planner:
     dependencies:
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       uuid:
@@ -287,16 +287,16 @@ importers:
 
   packages/plugins:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/permissions':
+      '@karnevil9/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@jarvis/tools':
+      '@karnevil9/tools':
         specifier: workspace:*
         version: link:../tools
       js-yaml:
@@ -312,10 +312,10 @@ importers:
 
   packages/scheduler:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       cron-parser:
@@ -344,13 +344,13 @@ importers:
 
   packages/tools:
     dependencies:
-      '@jarvis/journal':
+      '@karnevil9/journal':
         specifier: workspace:*
         version: link:../journal
-      '@jarvis/permissions':
+      '@karnevil9/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@jarvis/schemas':
+      '@karnevil9/schemas':
         specifier: workspace:*
         version: link:../schemas
       js-yaml:

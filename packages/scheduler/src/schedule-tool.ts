@@ -1,4 +1,4 @@
-import type { ToolManifest, ToolHandler, ScheduleTrigger, JobAction, ScheduleOptions } from "@jarvis/schemas";
+import type { ToolManifest, ToolHandler, ScheduleTrigger, JobAction, ScheduleOptions } from "@karnevil9/schemas";
 import type { Scheduler } from "./scheduler.js";
 
 export const scheduleToolManifest: ToolManifest = {

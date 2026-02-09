@@ -1,4 +1,4 @@
-# Jarvis Architecture
+# KarnEvil9 Architecture
 
 Deterministic agent runtime with explicit plans, typed tools, permission gates, and replay.
 
@@ -6,7 +6,7 @@ Deterministic agent runtime with explicit plans, typed tools, permission gates, 
 
 ## 1. System Overview
 
-Jarvis converts a natural-language task into a structured plan of tool invocations, executes each step under permission control, and records every event in a tamper-evident journal. It supports two execution modes:
+KarnEvil9 converts a natural-language task into a structured plan of tool invocations, executes each step under permission control, and records every event in a tamper-evident journal. It supports two execution modes:
 
 - **Single-shot** — one plan, one execution pass, done.
 - **Agentic** — iterative loop of plan-execute-observe-replan until the planner signals completion or a halt condition is reached.
@@ -36,46 +36,46 @@ Planner  Tools  Perms  Journal Memory Plugins          │
    (fs · shell · http · browser)
 ```
 
-All packages share types from `@jarvis/schemas` — the sole source of truth for interfaces, validators, and error codes.
+All packages share types from `@karnevil9/schemas` — the sole source of truth for interfaces, validators, and error codes.
 
 ---
 
 ## 2. Package Dependency Graph
 
 ```
-@jarvis/schemas                  ← types, JSON schema validators, error codes
+@karnevil9/schemas                  ← types, JSON schema validators, error codes
     │
-    ├── @jarvis/journal          ← append-only JSONL event log with hash chain
-    ├── @jarvis/permissions      ← domain:action:target permission engine
-    ├── @jarvis/memory           ← task state, working memory, cross-session lessons
+    ├── @karnevil9/journal          ← append-only JSONL event log with hash chain
+    ├── @karnevil9/permissions      ← domain:action:target permission engine
+    ├── @karnevil9/memory           ← task state, working memory, cross-session lessons
     │
-    ├── @jarvis/tools            ← tool registry, runtime (circuit breaker), policy enforcer, handlers
+    ├── @karnevil9/tools            ← tool registry, runtime (circuit breaker), policy enforcer, handlers
     │       │
-    │       ├── @jarvis/journal
-    │       └── @jarvis/permissions
+    │       ├── @karnevil9/journal
+    │       └── @karnevil9/permissions
     │
-    ├── @jarvis/planner          ← MockPlanner, LLMPlanner, RouterPlanner
-    │       └── @jarvis/schemas
+    ├── @karnevil9/planner          ← MockPlanner, LLMPlanner, RouterPlanner
+    │       └── @karnevil9/schemas
     │
-    ├── @jarvis/plugins          ← discovery, loader, registry, hook runner
-    │       ├── @jarvis/journal
-    │       ├── @jarvis/tools
-    │       └── @jarvis/schemas
+    ├── @karnevil9/plugins          ← discovery, loader, registry, hook runner
+    │       ├── @karnevil9/journal
+    │       ├── @karnevil9/tools
+    │       └── @karnevil9/schemas
     │
-    ├── @jarvis/kernel           ← orchestrator: wires everything together
-    │       ├── @jarvis/journal
-    │       ├── @jarvis/tools
-    │       ├── @jarvis/permissions
-    │       ├── @jarvis/memory
-    │       └── @jarvis/plugins
+    ├── @karnevil9/kernel           ← orchestrator: wires everything together
+    │       ├── @karnevil9/journal
+    │       ├── @karnevil9/tools
+    │       ├── @karnevil9/permissions
+    │       ├── @karnevil9/memory
+    │       └── @karnevil9/plugins
     │
-    ├── @jarvis/api              ← REST server, SSE streaming, approval workflow
-    │       └── @jarvis/kernel (+ all transitive)
+    ├── @karnevil9/api              ← REST server, SSE streaming, approval workflow
+    │       └── @karnevil9/kernel (+ all transitive)
     │
-    ├── @jarvis/cli              ← command-line interface
-    │       └── @jarvis/kernel (+ all transitive)
+    ├── @karnevil9/cli              ← command-line interface
+    │       └── @karnevil9/kernel (+ all transitive)
     │
-    └── @jarvis/browser-relay    ← Playwright managed driver / extension driver
+    └── @karnevil9/browser-relay    ← Playwright managed driver / extension driver
 ```
 
 ---
@@ -134,7 +134,7 @@ Each event carries `event_id`, `timestamp`, `session_id`, `type`, `payload`, `se
 
 ### Error Codes
 
-18 enumerated codes in `ErrorCodes`: `TOOL_NOT_FOUND`, `CIRCUIT_BREAKER_OPEN`, `INVALID_INPUT`, `INVALID_OUTPUT`, `PERMISSION_DENIED`, `POLICY_VIOLATION`, `EXECUTION_ERROR`, `TIMEOUT`, `DURATION_LIMIT`, `SESSION_LIMIT_REACHED`, `NO_RUNTIME`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_TIMEOUT`, `PLUGIN_HOOK_FAILED`, `PLUGIN_HOOK_BLOCKED`. All runtime errors use `JarvisError` with a code and optional data payload.
+18 enumerated codes in `ErrorCodes`: `TOOL_NOT_FOUND`, `CIRCUIT_BREAKER_OPEN`, `INVALID_INPUT`, `INVALID_OUTPUT`, `PERMISSION_DENIED`, `POLICY_VIOLATION`, `EXECUTION_ERROR`, `TIMEOUT`, `DURATION_LIMIT`, `SESSION_LIMIT_REACHED`, `NO_RUNTIME`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_TIMEOUT`, `PLUGIN_HOOK_FAILED`, `PLUGIN_HOOK_BLOCKED`. All runtime errors use `KarnEvil9Error` with a code and optional data payload.
 
 ---
 
@@ -574,15 +574,15 @@ When a tool requires a permission the user hasn't pre-granted:
 
 | Command | Description |
 |---------|-------------|
-| `jarvis run <task>` | Execute task end-to-end. Options: `--mode`, `--max-steps`, `--planner`, `--model`, `--plugins-dir`, `--agentic`, `--context-budget`, `--checkpoint-dir`, `--no-memory` |
-| `jarvis plan <task>` | Generate plan without execution |
-| `jarvis tools list` | List registered tools |
-| `jarvis session ls` | List sessions from journal |
-| `jarvis session watch <id>` | Real-time event tail |
-| `jarvis replay <id>` | Replay session with integrity verification |
-| `jarvis server` | Start API server. Options: `--port`, `--planner`, `--model`, `--agentic`, `--no-memory` |
-| `jarvis relay` | Start browser relay. Options: `--port`, `--driver` (managed/extension), `--no-headless` |
-| `jarvis plugins list/info/reload` | Plugin management |
+| `karnevil9 run <task>` | Execute task end-to-end. Options: `--mode`, `--max-steps`, `--planner`, `--model`, `--plugins-dir`, `--agentic`, `--context-budget`, `--checkpoint-dir`, `--no-memory` |
+| `karnevil9 plan <task>` | Generate plan without execution |
+| `karnevil9 tools list` | List registered tools |
+| `karnevil9 session ls` | List sessions from journal |
+| `karnevil9 session watch <id>` | Real-time event tail |
+| `karnevil9 replay <id>` | Replay session with integrity verification |
+| `karnevil9 server` | Start API server. Options: `--port`, `--planner`, `--model`, `--agentic`, `--no-memory` |
+| `karnevil9 relay` | Start browser relay. Options: `--port`, `--driver` (managed/extension), `--no-headless` |
+| `karnevil9 plugins list/info/reload` | Plugin management |
 
 Interactive approval prompt offers: **[a]**llow once, **[s]**ession, **[g]**lobal, **[d]**eny, **[c]**onstrained, **[o]**bserved.
 
@@ -646,7 +646,7 @@ Filters all env vars with prefixes: `AWS_`, `AZURE_`, `GCP_`, `GOOGLE_`, `OPENAI
 
 ## 15. Validation
 
-All schemas use AJV with `strict: false` and `ajv-formats`. Six validators are exported from `@jarvis/schemas`:
+All schemas use AJV with `strict: false` and `ajv-formats`. Six validators are exported from `@karnevil9/schemas`:
 
 | Validator | Used By |
 |-----------|---------|

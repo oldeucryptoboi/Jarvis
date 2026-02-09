@@ -3,7 +3,7 @@
     {
       "name": "DS_PROMETHEUS",
       "label": "Prometheus",
-      "description": "Prometheus datasource for Jarvis metrics",
+      "description": "Prometheus datasource for KarnEvil9 metrics",
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
@@ -54,11 +54,11 @@
     }
   ],
   "id": null,
-  "uid": "jarvis-overview",
-  "title": "Jarvis Agent Runtime",
-  "description": "Comprehensive monitoring dashboard for the Jarvis deterministic agent runtime",
+  "uid": "karnevil9-overview",
+  "title": "KarnEvil9 Agent Runtime",
+  "description": "Comprehensive monitoring dashboard for the KarnEvil9 deterministic agent runtime",
   "tags": [
-    "jarvis",
+    "karnevil9",
     "agent"
   ],
   "style": "dark",
@@ -153,7 +153,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_sessions_active",
+          "expr": "karnevil9_sessions_active",
           "legendFormat": "",
           "instant": true
         }
@@ -219,7 +219,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_sessions_total[5m])",
+          "expr": "rate(karnevil9_sessions_total[5m])",
           "legendFormat": "",
           "instant": true
         }
@@ -285,7 +285,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_cost_usd_total",
+          "expr": "karnevil9_cost_usd_total",
           "legendFormat": "",
           "instant": true
         }
@@ -351,7 +351,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_tokens_total",
+          "expr": "karnevil9_tokens_total",
           "legendFormat": "",
           "instant": true
         }
@@ -430,7 +430,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_sessions_total{status=~\".*\"}[5m])",
+          "expr": "rate(karnevil9_sessions_total{status=~\".*\"}[5m])",
           "legendFormat": "{{status}}",
           "range": true
         }
@@ -520,7 +520,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_sessions_total",
+          "expr": "karnevil9_sessions_total",
           "legendFormat": "{{status}}",
           "instant": true
         }
@@ -590,7 +590,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_steps_total[5m])",
+          "expr": "rate(karnevil9_steps_total[5m])",
           "legendFormat": "{{status}}",
           "range": true
         }
@@ -680,7 +680,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_tool_executions_total[5m])",
+          "expr": "rate(karnevil9_tool_executions_total[5m])",
           "legendFormat": "{{tool_name}}",
           "range": true
         }
@@ -770,19 +770,19 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum(rate(jarvis_tool_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(karnevil9_tool_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P50",
           "range": true
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum(rate(jarvis_tool_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(karnevil9_tool_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P95",
           "range": true
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.99, sum(rate(jarvis_tool_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(karnevil9_tool_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P99",
           "range": true
         }
@@ -931,7 +931,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_tokens_total[5m])",
+          "expr": "rate(karnevil9_tokens_total[5m])",
           "legendFormat": "{{model}} {{type}}",
           "range": true
         }
@@ -1021,7 +1021,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_cost_usd_total",
+          "expr": "karnevil9_cost_usd_total",
           "legendFormat": "{{model}}",
           "range": true
         }
@@ -1111,7 +1111,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_cost_usd_total[5m])",
+          "expr": "rate(karnevil9_cost_usd_total[5m])",
           "legendFormat": "{{model}}",
           "range": true
         }
@@ -1214,7 +1214,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_planner_calls_total[5m])",
+          "expr": "rate(karnevil9_planner_calls_total[5m])",
           "legendFormat": "{{status}}",
           "range": true
         }
@@ -1304,13 +1304,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum(rate(jarvis_planner_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(karnevil9_planner_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P50",
           "range": true
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum(rate(jarvis_planner_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(karnevil9_planner_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P95",
           "range": true
         }
@@ -1444,7 +1444,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_permission_decisions_total[5m])",
+          "expr": "rate(karnevil9_permission_decisions_total[5m])",
           "legendFormat": "{{decision}}",
           "range": true
         }
@@ -1534,7 +1534,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_futility_detected_total[5m])",
+          "expr": "rate(karnevil9_futility_detected_total[5m])",
           "legendFormat": "futility events",
           "range": true
         }
@@ -1629,7 +1629,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_context_budget_assessments_total[5m])",
+          "expr": "rate(karnevil9_context_budget_assessments_total[5m])",
           "legendFormat": "{{verdict}}",
           "range": true
         }
@@ -1719,7 +1719,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_limits_exceeded_total[5m])",
+          "expr": "rate(karnevil9_limits_exceeded_total[5m])",
           "legendFormat": "{{limit}}",
           "range": true
         }
@@ -1809,7 +1809,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_policy_violations_total[5m])",
+          "expr": "rate(karnevil9_policy_violations_total[5m])",
           "legendFormat": "{{tool_name}}",
           "range": true
         }
@@ -1917,7 +1917,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_plugins_status",
+          "expr": "karnevil9_plugins_status",
           "legendFormat": "",
           "instant": true,
           "format": "table"
@@ -2115,7 +2115,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_circuit_breaker_open",
+          "expr": "karnevil9_circuit_breaker_open",
           "legendFormat": "{{plugin_id}}",
           "range": true
         }
@@ -2207,7 +2207,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_process_resident_memory_bytes",
+          "expr": "karnevil9_process_resident_memory_bytes",
           "legendFormat": "RSS",
           "range": true
         }
@@ -2306,7 +2306,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(jarvis_process_cpu_seconds_total[5m])",
+          "expr": "rate(karnevil9_process_cpu_seconds_total[5m])",
           "legendFormat": "CPU usage",
           "range": true
         }
@@ -2406,7 +2406,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jarvis_nodejs_eventloop_lag_seconds",
+          "expr": "karnevil9_nodejs_eventloop_lag_seconds",
           "legendFormat": "event loop lag",
           "range": true
         }

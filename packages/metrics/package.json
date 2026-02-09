@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/metrics",
+  "name": "@karnevil9/metrics",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,8 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@jarvis/schemas": "workspace:*",
-    "@jarvis/journal": "workspace:*",
+    "@karnevil9/schemas": "workspace:*",
+    "@karnevil9/journal": "workspace:*",
     "prom-client": "^15.1.0"
   }
 }

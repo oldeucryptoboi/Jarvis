@@ -3,7 +3,7 @@ import { mkdtemp, rm, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ScheduleStore } from "./schedule-store.js";
-import type { Schedule } from "@jarvis/schemas";
+import type { Schedule } from "@karnevil9/schemas";
 
 function makeSchedule(overrides: Partial<Schedule> = {}): Schedule {
   return {

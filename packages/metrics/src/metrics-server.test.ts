@@ -73,7 +73,7 @@ describe("createMetricsRouter", () => {
 
     await route.handler(req, res);
 
-    expect(responseText).toContain("jarvis_sessions_total");
+    expect(responseText).toContain("karnevil9_sessions_total");
     expect(responseText).toContain('status="created"');
   });
 });

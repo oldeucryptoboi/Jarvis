@@ -4,13 +4,13 @@ import { rm, mkdir, writeFile } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { PluginRegistry } from "@jarvis/plugins";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { PluginRegistry } from "@karnevil9/plugins";
 import { Kernel } from "./kernel.js";
-import { MockPlanner } from "@jarvis/planner";
-import type { Task, ToolManifest, ApprovalDecision, Plan, PlanResult, Planner, ToolSchemaForPlanner } from "@jarvis/schemas";
+import { MockPlanner } from "@karnevil9/planner";
+import type { Task, ToolManifest, ApprovalDecision, Plan, PlanResult, Planner, ToolSchemaForPlanner } from "@karnevil9/schemas";
 
 const TEST_JOURNAL = resolve(import.meta.dirname ?? ".", "../../.test-journal.jsonl");
 const autoApprove = async (): Promise<ApprovalDecision> => "allow_session";
@@ -812,7 +812,7 @@ describe("Kernel E2E", () => {
   it("plugin hook blocks step", async () => {
     registry.register(testTool);
 
-    const pluginsDir = join(tmpdir(), `jarvis-ktest-${uuid()}`);
+    const pluginsDir = join(tmpdir(), `karnevil9-ktest-${uuid()}`);
     const pluginDir = join(pluginsDir, "blocker");
     await mkdir(pluginDir, { recursive: true });
     await writeFile(join(pluginDir, "plugin.yaml"), `
@@ -1248,7 +1248,7 @@ export async function register(api) {
   it("plugin hook observes without affecting execution", async () => {
     registry.register(testTool);
 
-    const pluginsDir = join(tmpdir(), `jarvis-ktest-${uuid()}`);
+    const pluginsDir = join(tmpdir(), `karnevil9-ktest-${uuid()}`);
     const pluginDir = join(pluginsDir, "observer");
     await mkdir(pluginDir, { recursive: true });
     await writeFile(join(pluginDir, "plugin.yaml"), `
@@ -1585,7 +1585,7 @@ export async function register(api) {
     // Create an ActiveMemory with a pre-existing lesson
     const memPath = resolve(import.meta.dirname ?? ".", "../../.test-active-memory.jsonl");
     try { await rm(memPath); } catch { /* ok */ }
-    const { ActiveMemory } = await import("@jarvis/memory");
+    const { ActiveMemory } = await import("@karnevil9/memory");
     const activeMem = new ActiveMemory(memPath);
     await activeMem.load();
     activeMem.addLesson({
@@ -1618,7 +1618,7 @@ export async function register(api) {
 
     const memPath = resolve(import.meta.dirname ?? ".", "../../.test-active-memory-extract.jsonl");
     try { await rm(memPath); } catch { /* ok */ }
-    const { ActiveMemory } = await import("@jarvis/memory");
+    const { ActiveMemory } = await import("@karnevil9/memory");
     const activeMem = new ActiveMemory(memPath);
     await activeMem.load();
 
@@ -1669,7 +1669,7 @@ export async function register(api) {
 
     const memPath = resolve(import.meta.dirname ?? ".", "../../.test-active-memory-fail.jsonl");
     try { await rm(memPath); } catch { /* ok */ }
-    const { ActiveMemory } = await import("@jarvis/memory");
+    const { ActiveMemory } = await import("@karnevil9/memory");
     const activeMem = new ActiveMemory(memPath);
     await activeMem.load();
 

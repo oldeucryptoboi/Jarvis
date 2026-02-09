@@ -37,7 +37,7 @@ const NODE = process.execPath;
 describe("CLI Binary Smoke", () => {
   it("--help prints usage and exits 0", async () => {
     const { stdout, stderr } = await execFileAsync(NODE, [CLI_BIN, "--help"]);
-    expect(stdout).toContain("jarvis");
+    expect(stdout).toContain("karnevil9");
     expect(stdout).toContain("Deterministic agent runtime");
     expect(stdout).toContain("run");
     expect(stdout).toContain("plan");
@@ -130,7 +130,7 @@ describe("CLI Binary Smoke", () => {
       { cwd: ROOT, timeout: 25000, stdinData },
     );
     expect(code).toBe(0);
-    expect(stdout).toContain("Jarvis session starting");
+    expect(stdout).toContain("KarnEvil9 session starting");
     expect(stdout).toContain("agentic smoke test");
     expect(stdout).toContain("Status: completed");
   });
@@ -216,7 +216,7 @@ describe("CLI Binary Smoke", () => {
       { cwd: ROOT, timeout: 25000, stdinData },
     );
     expect(code).toBe(0);
-    expect(stdout).toContain("Jarvis session starting");
+    expect(stdout).toContain("KarnEvil9 session starting");
     expect(stdout).toContain("smoke test task");
     expect(stdout).toContain("Mode: mock");
     expect(stdout).toContain("Session");

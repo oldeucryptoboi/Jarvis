@@ -1,4 +1,4 @@
-import type { StepResult, UsageMetrics } from "@jarvis/schemas";
+import type { StepResult, UsageMetrics } from "@karnevil9/schemas";
 import type { UsageSummary } from "./usage-accumulator.js";
 
 export interface IterationRecord {

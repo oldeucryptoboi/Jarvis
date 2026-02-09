@@ -10,7 +10,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.1.0] - 2026-02-08
 
-Initial release of Jarvis — deterministic agent runtime.
+Initial release of KarnEvil9 — deterministic agent runtime.
 
 ### Added
 
@@ -29,5 +29,5 @@ Initial release of Jarvis — deterministic agent runtime.
 - **Browser relay** — HTTP server with managed (Playwright) and extension (WebSocket bridge) drivers, supporting 11 browser action types
 - **Chrome extension** — CDP bridge for browser relay extension driver
 
-[Unreleased]: https://github.com/oldeucryptoboi/Jarvis/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/oldeucryptoboi/Jarvis/releases/tag/v0.1.0
+[Unreleased]: https://github.com/oldeucryptoboi/KarnEvil9/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/oldeucryptoboi/KarnEvil9/releases/tag/v0.1.0

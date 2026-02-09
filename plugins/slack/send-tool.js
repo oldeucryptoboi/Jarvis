@@ -1,8 +1,8 @@
 /**
- * send-slack-message tool — allows Jarvis agents to post messages to Slack.
+ * send-slack-message tool — allows KarnEvil9 agents to post messages to Slack.
  */
 
-/** @type {import("@jarvis/schemas").ToolManifest} */
+/** @type {import("@karnevil9/schemas").ToolManifest} */
 export const sendSlackMessageManifest = {
   name: "send-slack-message",
   version: "1.0.0",
@@ -39,7 +39,7 @@ export const sendSlackMessageManifest = {
 /**
  * Create a tool handler for send-slack-message.
  * @param {import("./slack-app.js").SlackApp} slackApp
- * @returns {import("@jarvis/schemas").ToolHandler}
+ * @returns {import("@karnevil9/schemas").ToolHandler}
  */
 export function createSendSlackMessageHandler(slackApp) {
   return async (input, mode, _policy) => {

@@ -1,4 +1,4 @@
-import type { PluginLogger } from "@jarvis/schemas";
+import type { PluginLogger } from "@karnevil9/schemas";
 
 export class PluginLoggerImpl implements PluginLogger {
   private prefix: string;

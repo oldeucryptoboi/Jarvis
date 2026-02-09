@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { Journal } from "@jarvis/journal";
+import { Journal } from "@karnevil9/journal";
 import { ScheduleStore } from "./schedule-store.js";
 import { Scheduler } from "./scheduler.js";
 import { createSchedulerRoutes } from "./scheduler-routes.js";

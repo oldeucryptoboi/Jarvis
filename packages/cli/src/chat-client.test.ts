@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ChatClient, type ChatWebSocket, type TerminalIO, type ProcessControl } from "./chat-client.js";
+import type { StatusBarLike, StatusBarData } from "./status-bar.js";
 
 // ─── Mock helpers ─────────────────────────────────────────────────
 
@@ -67,11 +68,38 @@ function createMockProcess(): ProcessControl & { exit: ReturnType<typeof vi.fn> 
   return { exit: vi.fn() };
 }
 
+class MockStatusBar implements StatusBarLike {
+  setupCalls = 0;
+  teardownCalls = 0;
+  repaintCalls = 0;
+  resizeCalls = 0;
+  updates: Array<Partial<StatusBarData>> = [];
+
+  setup(): void { this.setupCalls++; }
+  teardown(): void { this.teardownCalls++; }
+  update(patch: Partial<StatusBarData>): void { this.updates.push(patch); }
+  repaint(): void { this.repaintCalls++; }
+  onResize(): void { this.resizeCalls++; }
+
+  /** Get the most recent update, or undefined. */
+  lastUpdate(): Partial<StatusBarData> | undefined {
+    return this.updates[this.updates.length - 1];
+  }
+
+  /** Get all updates that touched a specific key. */
+  updatesFor<K extends keyof StatusBarData>(key: K): Array<StatusBarData[K]> {
+    return this.updates
+      .filter((u) => key in u)
+      .map((u) => u[key] as StatusBarData[K]);
+  }
+}
+
 function createClient(overrides?: {
   ws?: MockWebSocket;
   terminal?: MockTerminal;
   process?: ProcessControl;
   wsFactory?: (url: string) => ChatWebSocket;
+  statusBar?: MockStatusBar;
   pingIntervalMs?: number;
   maxReconnectDelay?: number;
   initialReconnectDelay?: number;
@@ -80,6 +108,7 @@ function createClient(overrides?: {
   const terminal = overrides?.terminal ?? new MockTerminal();
   const proc = overrides?.process ?? createMockProcess();
   const factory = overrides?.wsFactory ?? (() => ws);
+  const statusBar = overrides?.statusBar;
 
   const client = new ChatClient({
     wsUrl: "ws://test:3100/api/ws",
@@ -87,12 +116,13 @@ function createClient(overrides?: {
     wsFactory: factory,
     terminal,
     process: proc,
+    statusBar,
     pingIntervalMs: overrides?.pingIntervalMs ?? 60000, // long to avoid interference
     maxReconnectDelay: overrides?.maxReconnectDelay ?? 30000,
     initialReconnectDelay: overrides?.initialReconnectDelay ?? 1000,
   });
 
-  return { client, ws, terminal, process: proc as ReturnType<typeof createMockProcess> };
+  return { client, ws, terminal, process: proc as ReturnType<typeof createMockProcess>, statusBar };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────
@@ -583,6 +613,141 @@ describe("ChatClient", () => {
       vi.advanceTimersByTime(500);
       const pingsAfter = ws.sent.filter((s) => JSON.parse(s).type === "ping");
       expect(pingsAfter.length).toBe(1);
+    });
+  });
+
+  describe("status bar integration", () => {
+    it("calls setup on open and teardown on close", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      ws.simulateOpen();
+      expect(statusBar.setupCalls).toBe(1);
+      expect(statusBar.updatesFor("connection")).toContain("connected");
+
+      client.close();
+      expect(statusBar.teardownCalls).toBe(1);
+    });
+
+    it("updates connection state to reconnecting on ws close", () => {
+      const sockets: MockWebSocket[] = [];
+      const factory = vi.fn(() => {
+        const s = new MockWebSocket();
+        sockets.push(s);
+        return s;
+      });
+      const statusBar = new MockStatusBar();
+      const { client } = createClient({ wsFactory: factory, statusBar });
+      client.connect();
+      sockets[0]!.simulateOpen();
+      sockets[0]!.simulateClose();
+      expect(statusBar.updatesFor("connection")).toContain("reconnecting");
+    });
+
+    it("updates connection state to disconnected on ECONNREFUSED", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      const err = new Error("connect ECONNREFUSED") as NodeJS.ErrnoException;
+      err.code = "ECONNREFUSED";
+      ws.simulateError(err);
+      expect(statusBar.updatesFor("connection")).toContain("disconnected");
+    });
+
+    it("updates session state on session.created", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      ws.simulateOpen();
+      ws.simulateMessage(JSON.stringify({ type: "session.created", session_id: "s1" }));
+      expect(statusBar.updatesFor("sessionState")).toContain("running");
+      expect(statusBar.updatesFor("sessionId")).toContain("s1");
+    });
+
+    it("resets token counters on new session", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      ws.simulateOpen();
+      ws.simulateMessage(JSON.stringify({ type: "session.created", session_id: "s1" }));
+      const sessionUpdate = statusBar.updates.find(
+        (u) => u.sessionState === "running",
+      );
+      expect(sessionUpdate?.totalTokens).toBe(0);
+      expect(sessionUpdate?.costUsd).toBe(0);
+    });
+
+    it("updates session state to idle on terminal event", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      ws.simulateOpen();
+      ws.simulateMessage(JSON.stringify({ type: "session.created", session_id: "s1" }));
+      ws.simulateMessage(JSON.stringify({
+        type: "event",
+        session_id: "s1",
+        event: { type: "session.completed", timestamp: "2025-01-01T00:00:00Z", payload: {} },
+      }));
+      expect(statusBar.updatesFor("sessionState")).toContain("idle");
+    });
+
+    it("extracts tokens and cost from usage.recorded events", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      ws.simulateOpen();
+      ws.simulateMessage(JSON.stringify({ type: "session.created", session_id: "s1" }));
+      ws.simulateMessage(JSON.stringify({
+        type: "event",
+        session_id: "s1",
+        event: {
+          type: "usage.recorded",
+          timestamp: "2025-01-01T00:00:00Z",
+          payload: {
+            model: "claude-sonnet-4-5-20250929",
+            cumulative: { total_tokens: 15000, total_cost_usd: 0.03 },
+          },
+        },
+      }));
+      expect(statusBar.updatesFor("totalTokens")).toContain(15000);
+      expect(statusBar.updatesFor("costUsd")).toContain(0.03);
+      expect(statusBar.updatesFor("model")).toContain("claude-sonnet-4-5-20250929");
+    });
+
+    it("handles usage.recorded without cumulative gracefully", () => {
+      const statusBar = new MockStatusBar();
+      const { client, ws } = createClient({ statusBar });
+      client.connect();
+      ws.simulateOpen();
+      ws.simulateMessage(JSON.stringify({
+        type: "event",
+        session_id: "s1",
+        event: {
+          type: "usage.recorded",
+          timestamp: "2025-01-01T00:00:00Z",
+          payload: { model: "gpt-4o" },
+        },
+      }));
+      // Should still update model without crashing
+      expect(statusBar.updatesFor("model")).toContain("gpt-4o");
+    });
+
+    it("works correctly without a status bar (no crash)", () => {
+      const { client, ws, terminal } = createClient();
+      client.connect();
+      ws.simulateOpen();
+      ws.simulateMessage(JSON.stringify({ type: "session.created", session_id: "s1" }));
+      ws.simulateMessage(JSON.stringify({
+        type: "event",
+        session_id: "s1",
+        event: {
+          type: "usage.recorded",
+          timestamp: "2025-01-01T00:00:00Z",
+          payload: { cumulative: { total_tokens: 100, total_cost_usd: 0.001 } },
+        },
+      }));
+      // Should not crash — usage.recorded is suppressed by formatEvent
+      expect(terminal.lines.every((l) => !l.includes("usage.recorded"))).toBe(true);
     });
   });
 });

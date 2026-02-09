@@ -1,5 +1,5 @@
 /**
- * SessionBridge — maps Slack messages to Jarvis sessions, tracks threads.
+ * SessionBridge — maps Slack messages to KarnEvil9 sessions, tracks threads.
  */
 export class SessionBridge {
   /**
@@ -36,7 +36,7 @@ export class SessionBridge {
   }
 
   /**
-   * Create a new Jarvis session from a Slack message.
+   * Create a new KarnEvil9 session from a Slack message.
    * @param {object} opts
    * @param {string} opts.taskText - cleaned task text
    * @param {string} opts.channel - Slack channel ID

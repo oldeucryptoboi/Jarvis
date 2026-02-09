@@ -5,8 +5,8 @@ import type {
   ApprovalDecision,
   PermissionCheckResult,
   PermissionConstraints,
-} from "@jarvis/schemas";
-import type { Journal } from "@jarvis/journal";
+} from "@karnevil9/schemas";
+import type { Journal } from "@karnevil9/journal";
 
 export type ApprovalPromptFn = (
   request: PermissionRequest

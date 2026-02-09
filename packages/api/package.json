@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/api",
+  "name": "@karnevil9/api",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,21 +11,21 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@jarvis/journal": "workspace:*",
-    "@jarvis/kernel": "workspace:*",
-    "@jarvis/metrics": "workspace:*",
-    "@jarvis/permissions": "workspace:*",
-    "@jarvis/plugins": "workspace:*",
-    "@jarvis/scheduler": "workspace:*",
-    "@jarvis/schemas": "workspace:*",
-    "@jarvis/tools": "workspace:*",
+    "@karnevil9/journal": "workspace:*",
+    "@karnevil9/kernel": "workspace:*",
+    "@karnevil9/metrics": "workspace:*",
+    "@karnevil9/permissions": "workspace:*",
+    "@karnevil9/plugins": "workspace:*",
+    "@karnevil9/scheduler": "workspace:*",
+    "@karnevil9/schemas": "workspace:*",
+    "@karnevil9/tools": "workspace:*",
     "express": "^5.0.0",
     "uuid": "^11.0.0",
     "ws": "^8.0.0"
   },
   "devDependencies": {
-    "@jarvis/memory": "workspace:*",
-    "@jarvis/planner": "workspace:*",
+    "@karnevil9/memory": "workspace:*",
+    "@karnevil9/planner": "workspace:*",
     "@types/express": "^5.0.0",
     "@types/ws": "^8.0.0"
   }

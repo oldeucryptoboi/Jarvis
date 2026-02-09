@@ -1,5 +1,5 @@
 /**
- * Slack Integration Plugin — bidirectional Slack integration for Jarvis.
+ * Slack Integration Plugin — bidirectional Slack integration for KarnEvil9.
  *
  * Receives tasks via Slack messages/mentions, posts progress in threads,
  * handles interactive approval buttons, and exposes a send-slack-message tool.
@@ -13,7 +13,7 @@ import { AccessControl } from "./access-control.js";
 import { sendSlackMessageManifest, createSendSlackMessageHandler } from "./send-tool.js";
 
 /**
- * @param {import("@jarvis/schemas").PluginApi} api
+ * @param {import("@karnevil9/schemas").PluginApi} api
  */
 export async function register(api) {
   const config = api.config;
@@ -118,7 +118,7 @@ export async function register(api) {
     if (!taskText) return;
 
     if (!sessionFactory) {
-      await say({ text: ":warning: Jarvis session factory not configured", thread_ts: event.ts });
+      await say({ text: ":warning: KarnEvil9 session factory not configured", thread_ts: event.ts });
       return;
     }
 
@@ -208,7 +208,7 @@ export async function register(api) {
 
 /**
  * Register stubs when Slack tokens are missing (so plugin manifest validates).
- * @param {import("@jarvis/schemas").PluginApi} api
+ * @param {import("@karnevil9/schemas").PluginApi} api
  */
 function _registerStubs(api) {
   api.registerTool(sendSlackMessageManifest, async (input, mode) => {

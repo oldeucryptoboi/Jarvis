@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Registry } from "prom-client";
 import { MetricsCollector } from "./metrics-collector.js";
-import type { JournalEvent } from "@jarvis/schemas";
+import type { JournalEvent } from "@karnevil9/schemas";
 
 function makeEvent(
   type: JournalEvent["type"],
@@ -32,35 +32,35 @@ describe("MetricsCollector", () => {
   describe("session metrics", () => {
     it("increments sessions_total on session.created", async () => {
       collector.handleEvent(makeEvent("session.created"));
-      const metrics = await registry.getSingleMetricAsString("jarvis_sessions_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_sessions_total");
       expect(metrics).toContain('status="created"');
       expect(metrics).toContain(" 1");
     });
 
     it("increments sessions_active on session.created", async () => {
       collector.handleEvent(makeEvent("session.created"));
-      const metrics = await registry.getSingleMetricAsString("jarvis_sessions_active");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_sessions_active");
       expect(metrics).toContain(" 1");
     });
 
     it("decrements sessions_active on terminal events", async () => {
       collector.handleEvent(makeEvent("session.created"));
       collector.handleEvent(makeEvent("session.completed"));
-      const metrics = await registry.getSingleMetricAsString("jarvis_sessions_active");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_sessions_active");
       expect(metrics).toContain(" 0");
     });
 
     it("tracks failed sessions", async () => {
       collector.handleEvent(makeEvent("session.created"));
       collector.handleEvent(makeEvent("session.failed"));
-      const totalMetrics = await registry.getSingleMetricAsString("jarvis_sessions_total");
+      const totalMetrics = await registry.getSingleMetricAsString("karnevil9_sessions_total");
       expect(totalMetrics).toContain('status="failed"');
     });
 
     it("tracks aborted sessions", async () => {
       collector.handleEvent(makeEvent("session.created"));
       collector.handleEvent(makeEvent("session.aborted"));
-      const totalMetrics = await registry.getSingleMetricAsString("jarvis_sessions_total");
+      const totalMetrics = await registry.getSingleMetricAsString("karnevil9_sessions_total");
       expect(totalMetrics).toContain('status="aborted"');
     });
   });
@@ -75,7 +75,7 @@ describe("MetricsCollector", () => {
           tool_ref: { name: "readFile" },
         })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('tool_name="readFile"');
       expect(metrics).toContain('status="started"');
     });
@@ -87,14 +87,14 @@ describe("MetricsCollector", () => {
       collector.handleEvent(
         makeEvent("step.succeeded", { step_id: "step-1" })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('status="succeeded"');
       expect(metrics).toContain('tool_name="shellExec"');
     });
 
     it("falls back to unknown when step_id not tracked", async () => {
       collector.handleEvent(makeEvent("step.failed", { step_id: "step-999" }));
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('tool_name="unknown"');
     });
 
@@ -105,7 +105,7 @@ describe("MetricsCollector", () => {
       collector.handleEvent(
         makeEvent("step.succeeded", { step_id: "s-carry" })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('status="succeeded"');
       expect(metrics).toContain('tool_name="read-file"');
     });
@@ -121,7 +121,7 @@ describe("MetricsCollector", () => {
       collector.handleEvent(
         makeEvent("step.failed", { step_id: "s-cleanup" })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('status="failed"');
       expect(metrics).toContain('tool_name="unknown"');
     });
@@ -135,11 +135,11 @@ describe("MetricsCollector", () => {
         makeEvent("tool.succeeded", { tool_name: "readFile", duration_ms: 150 })
       );
 
-      const execMetrics = await registry.getSingleMetricAsString("jarvis_tool_executions_total");
+      const execMetrics = await registry.getSingleMetricAsString("karnevil9_tool_executions_total");
       expect(execMetrics).toContain('tool_name="readFile"');
       expect(execMetrics).toContain('status="succeeded"');
 
-      const durMetrics = await registry.getSingleMetricAsString("jarvis_tool_duration_seconds");
+      const durMetrics = await registry.getSingleMetricAsString("karnevil9_tool_duration_seconds");
       expect(durMetrics).toContain('tool_name="readFile"');
       // 150ms = 0.15s should be in the 0.25 bucket
       expect(durMetrics).toContain("le=\"0.25\"");
@@ -149,10 +149,10 @@ describe("MetricsCollector", () => {
       collector.handleEvent(
         makeEvent("tool.failed", { tool_name: "writeFile", duration_ms: 5000 })
       );
-      const execMetrics = await registry.getSingleMetricAsString("jarvis_tool_executions_total");
+      const execMetrics = await registry.getSingleMetricAsString("karnevil9_tool_executions_total");
       expect(execMetrics).toContain('status="failed"');
 
-      const durMetrics = await registry.getSingleMetricAsString("jarvis_tool_duration_seconds");
+      const durMetrics = await registry.getSingleMetricAsString("karnevil9_tool_duration_seconds");
       expect(durMetrics).toContain('tool_name="writeFile"');
       // 5000ms = 5s should be in the 5 bucket
       expect(durMetrics).toContain("le=\"5\"");
@@ -172,19 +172,19 @@ describe("MetricsCollector", () => {
         })
       );
 
-      const tokenMetrics = await registry.getSingleMetricAsString("jarvis_tokens_total");
+      const tokenMetrics = await registry.getSingleMetricAsString("karnevil9_tokens_total");
       expect(tokenMetrics).toContain('model="claude-3-opus"');
       expect(tokenMetrics).toContain('type="input"');
       expect(tokenMetrics).toContain('type="output"');
 
-      const costMetrics = await registry.getSingleMetricAsString("jarvis_cost_usd_total");
+      const costMetrics = await registry.getSingleMetricAsString("karnevil9_cost_usd_total");
       expect(costMetrics).toContain('model="claude-3-opus"');
       expect(costMetrics).toContain("0.05");
     });
 
     it("uses unknown model when not provided", async () => {
       collector.handleEvent(makeEvent("usage.recorded", { input_tokens: 100 }));
-      const metrics = await registry.getSingleMetricAsString("jarvis_tokens_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_tokens_total");
       expect(metrics).toContain('model="unknown"');
     });
   });
@@ -203,10 +203,10 @@ describe("MetricsCollector", () => {
         makeEvent("planner.plan_received", {}, { timestamp: endTime.toISOString() })
       );
 
-      const callMetrics = await registry.getSingleMetricAsString("jarvis_planner_calls_total");
+      const callMetrics = await registry.getSingleMetricAsString("karnevil9_planner_calls_total");
       expect(callMetrics).toContain('status="accepted"');
 
-      const durMetrics = await registry.getSingleMetricAsString("jarvis_planner_duration_seconds");
+      const durMetrics = await registry.getSingleMetricAsString("karnevil9_planner_duration_seconds");
       // 5 seconds
       expect(durMetrics).toContain("le=\"5\"");
     });
@@ -219,7 +219,7 @@ describe("MetricsCollector", () => {
         makeEvent("planner.plan_rejected", {}, { timestamp: "2025-01-01T00:00:02.000Z" })
       );
 
-      const metrics = await registry.getSingleMetricAsString("jarvis_planner_calls_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_planner_calls_total");
       expect(metrics).toContain('status="rejected"');
     });
 
@@ -229,12 +229,12 @@ describe("MetricsCollector", () => {
         makeEvent("planner.plan_rejected", {}, { timestamp: "2025-01-01T00:00:01.000Z" })
       );
 
-      const callMetrics = await registry.getSingleMetricAsString("jarvis_planner_calls_total");
+      const callMetrics = await registry.getSingleMetricAsString("karnevil9_planner_calls_total");
       expect(callMetrics).toContain('status="rejected"');
 
       // Duration should have zero observations (no start time available)
-      const durMetrics = await registry.getSingleMetricAsString("jarvis_planner_duration_seconds");
-      expect(durMetrics).toContain("jarvis_planner_duration_seconds_count 0");
+      const durMetrics = await registry.getSingleMetricAsString("karnevil9_planner_duration_seconds");
+      expect(durMetrics).toContain("karnevil9_planner_duration_seconds_count 0");
     });
   });
 
@@ -246,7 +246,7 @@ describe("MetricsCollector", () => {
       collector.handleEvent(makeEvent("permission.granted"));
       collector.handleEvent(makeEvent("permission.denied"));
 
-      const metrics = await registry.getSingleMetricAsString("jarvis_permission_decisions_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_permission_decisions_total");
       expect(metrics).toContain('decision="requested"');
       expect(metrics).toContain('decision="allowed"');
       expect(metrics).toContain('decision="denied"');
@@ -260,20 +260,20 @@ describe("MetricsCollector", () => {
       collector.handleEvent(
         makeEvent("plugin.hook_circuit_open", { plugin_id: "my-plugin" })
       );
-      let metrics = await registry.getSingleMetricAsString("jarvis_circuit_breaker_open");
+      let metrics = await registry.getSingleMetricAsString("karnevil9_circuit_breaker_open");
       expect(metrics).toContain('plugin_id="my-plugin"');
       expect(metrics).toContain(" 1");
 
       collector.handleEvent(
         makeEvent("plugin.hook_fired", { plugin_id: "my-plugin" })
       );
-      metrics = await registry.getSingleMetricAsString("jarvis_circuit_breaker_open");
+      metrics = await registry.getSingleMetricAsString("karnevil9_circuit_breaker_open");
       expect(metrics).toContain(" 0");
     });
 
     it("tracks futility detection", async () => {
       collector.handleEvent(makeEvent("futility.detected"));
-      const metrics = await registry.getSingleMetricAsString("jarvis_futility_detected_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_futility_detected_total");
       expect(metrics).toContain(" 1");
     });
 
@@ -281,7 +281,7 @@ describe("MetricsCollector", () => {
       collector.handleEvent(
         makeEvent("context.budget_assessed", { verdict: "within_budget" })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_context_budget_assessments_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_context_budget_assessments_total");
       expect(metrics).toContain('verdict="within_budget"');
     });
   });
@@ -306,7 +306,7 @@ describe("MetricsCollector", () => {
         makeEvent("limit.exceeded", { limit: "max_iterations", value: 5 })
       );
 
-      const metrics = await registry.getSingleMetricAsString("jarvis_limits_exceeded_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_limits_exceeded_total");
       expect(metrics).toContain('limit="max_duration_ms"');
       expect(metrics).toContain('limit="max_tokens"');
       expect(metrics).toContain('limit="max_cost_usd"');
@@ -322,7 +322,7 @@ describe("MetricsCollector", () => {
           violation_message: "Command not allowed",
         })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_policy_violations_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_policy_violations_total");
       expect(metrics).toContain('tool_name="shell-exec"');
       expect(metrics).toContain(" 1");
     });
@@ -333,19 +333,19 @@ describe("MetricsCollector", () => {
   describe("plugin metrics", () => {
     it("tracks plugin loaded/unloaded", async () => {
       collector.handleEvent(makeEvent("plugin.loaded", { plugin_id: "logger" }));
-      let metrics = await registry.getSingleMetricAsString("jarvis_plugins_status");
+      let metrics = await registry.getSingleMetricAsString("karnevil9_plugins_status");
       expect(metrics).toContain('plugin_id="logger"');
       expect(metrics).toContain('status="active"');
 
       collector.handleEvent(makeEvent("plugin.unloaded", { plugin_id: "logger" }));
-      metrics = await registry.getSingleMetricAsString("jarvis_plugins_status");
+      metrics = await registry.getSingleMetricAsString("karnevil9_plugins_status");
       // active should now be 0
       expect(metrics).toContain('status="active"');
     });
 
     it("tracks plugin failure", async () => {
       collector.handleEvent(makeEvent("plugin.failed", { plugin_id: "broken" }));
-      const metrics = await registry.getSingleMetricAsString("jarvis_plugins_status");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_plugins_status");
       expect(metrics).toContain('status="failed"');
     });
   });
@@ -356,8 +356,8 @@ describe("MetricsCollector", () => {
     it("getMetrics returns Prometheus exposition format", async () => {
       collector.handleEvent(makeEvent("session.created"));
       const output = await collector.getMetrics();
-      expect(output).toContain("# HELP jarvis_sessions_total");
-      expect(output).toContain("# TYPE jarvis_sessions_total counter");
+      expect(output).toContain("# HELP karnevil9_sessions_total");
+      expect(output).toContain("# TYPE karnevil9_sessions_total counter");
     });
 
     it("getContentType returns prometheus content type", () => {
@@ -384,7 +384,7 @@ describe("MetricsCollector", () => {
   describe("edge cases", () => {
     it("handles tool events without duration_ms", async () => {
       collector.handleEvent(makeEvent("tool.succeeded", { tool_name: "readFile" }));
-      const metrics = await registry.getSingleMetricAsString("jarvis_tool_executions_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_tool_executions_total");
       expect(metrics).toContain('tool_name="readFile"');
     });
 
@@ -395,7 +395,7 @@ describe("MetricsCollector", () => {
           tool: "read-file",
         })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('tool_name="read-file"');
     });
 
@@ -406,7 +406,7 @@ describe("MetricsCollector", () => {
           step: { tool_ref: { name: "httpRequest" } },
         })
       );
-      const metrics = await registry.getSingleMetricAsString("jarvis_steps_total");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_steps_total");
       expect(metrics).toContain('tool_name="httpRequest"');
     });
 
@@ -436,9 +436,9 @@ describe("MetricsCollector", () => {
         })
       );
 
-      const metrics = await registry.getSingleMetricAsString("jarvis_planner_duration_seconds");
+      const metrics = await registry.getSingleMetricAsString("karnevil9_planner_duration_seconds");
       // Both observations should be recorded (3s and 3s)
-      expect(metrics).toContain("jarvis_planner_duration_seconds_count 2");
+      expect(metrics).toContain("karnevil9_planner_duration_seconds_count 2");
     });
 
     it("cleans up planner start times on session terminal events", () => {

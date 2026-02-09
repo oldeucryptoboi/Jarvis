@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Jarvis is a deterministic agent runtime with explicit plans, typed tools, permissions, and replay. It orchestrates LLM-generated plans into structured step execution with permission gates, an immutable event journal, and cross-session learning.
+KarnEvil9 is a deterministic agent runtime with explicit plans, typed tools, permissions, and replay. It orchestrates LLM-generated plans into structured step execution with permission gates, an immutable event journal, and cross-session learning.
 
 ## Build & Development Commands
 
@@ -20,7 +20,7 @@ pnpm clean          # Remove dist directories
 To run tests for a single package:
 ```bash
 cd packages/<name> && pnpm test
-# or: pnpm --filter @jarvis/<name> test
+# or: pnpm --filter @karnevil9/<name> test
 ```
 
 To run a single test file:
@@ -39,7 +39,7 @@ npx vitest run packages/<name>/src/<file>.test.ts
 
 ## Monorepo Architecture
 
-All packages live under `packages/` and are scoped as `@jarvis/*`. The dependency flow is strictly bottom-up:
+All packages live under `packages/` and are scoped as `@karnevil9/*`. The dependency flow is strictly bottom-up:
 
 ```
 schemas                     ← Foundation: all types, validators, error codes

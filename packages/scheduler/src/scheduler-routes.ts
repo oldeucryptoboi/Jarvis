@@ -1,4 +1,4 @@
-import type { RouteHandler, ScheduleTrigger, JobAction, ScheduleOptions } from "@jarvis/schemas";
+import type { RouteHandler, ScheduleTrigger, JobAction, ScheduleOptions } from "@karnevil9/schemas";
 import type { Scheduler } from "./scheduler.js";
 
 const MAX_NAME_LENGTH = 200;

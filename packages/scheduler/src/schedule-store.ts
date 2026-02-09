@@ -1,6 +1,6 @@
 import { readFile, mkdir, open, rename } from "node:fs/promises";
 import { dirname } from "node:path";
-import type { Schedule } from "@jarvis/schemas";
+import type { Schedule } from "@karnevil9/schemas";
 
 export class ScheduleStore {
   private schedules = new Map<string, Schedule>();

@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/scheduler",
+  "name": "@karnevil9/scheduler",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,8 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@jarvis/schemas": "workspace:*",
-    "@jarvis/journal": "workspace:*",
+    "@karnevil9/schemas": "workspace:*",
+    "@karnevil9/journal": "workspace:*",
     "cron-parser": "^4.9.0",
     "uuid": "^11.0.0"
   },

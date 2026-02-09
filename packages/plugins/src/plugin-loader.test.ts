@@ -3,8 +3,8 @@ import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { v4 as uuid } from "uuid";
-import type { PluginManifest } from "@jarvis/schemas";
-import { Journal } from "@jarvis/journal";
+import type { PluginManifest } from "@karnevil9/schemas";
+import { Journal } from "@karnevil9/journal";
 import { PluginLoader } from "./plugin-loader.js";
 import { PluginApiImpl } from "./plugin-api-impl.js";
 import { PluginLoggerImpl } from "./plugin-logger.js";
@@ -16,7 +16,7 @@ describe("PluginLoader", () => {
   let journal: Journal;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-test-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-test-${uuid()}`);
     await mkdir(testDir, { recursive: true });
     journalPath = join(testDir, "journal.jsonl");
     journal = new Journal(journalPath, { fsync: false, redact: false, lock: false });

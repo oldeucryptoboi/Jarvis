@@ -2,7 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type { ToolHandler } from "../tool-runtime.js";
-import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
+import type { ExecutionMode, PolicyProfile } from "@karnevil9/schemas";
 import { assertPathAllowed, assertPathAllowedReal } from "../policy-enforcer.js";
 
 export const readFileHandler: ToolHandler = async (

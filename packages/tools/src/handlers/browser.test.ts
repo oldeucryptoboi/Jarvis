@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { PolicyProfile } from "@jarvis/schemas";
+import type { PolicyProfile } from "@karnevil9/schemas";
 import { browserHandler, createBrowserHandler } from "./browser.js";
 import type { BrowserDriverLike } from "./browser.js";
 

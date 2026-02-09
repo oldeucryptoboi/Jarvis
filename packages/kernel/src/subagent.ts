@@ -6,10 +6,10 @@ import type {
   Planner,
   ModelPricing,
   CheckpointFinding,
-} from "@jarvis/schemas";
-import type { Journal } from "@jarvis/journal";
-import type { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import type { PermissionEngine } from "@jarvis/permissions";
+} from "@karnevil9/schemas";
+import type { Journal } from "@karnevil9/journal";
+import type { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import type { PermissionEngine } from "@karnevil9/permissions";
 import { v4 as uuid } from "uuid";
 import { Kernel } from "./kernel.js";
 

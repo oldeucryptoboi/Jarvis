@@ -19,7 +19,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./packages/metrics/src/grafana/dashboard.json:/var/lib/grafana/dashboards/jarvis.json:ro
+      - ./packages/metrics/src/grafana/dashboard.json:/var/lib/grafana/dashboards/karnevil9.json:ro
     depends_on:
       - prometheus
     restart: unless-stopped

@@ -122,7 +122,7 @@ export class SlackApp {
 
   /**
    * Register a slash command handler.
-   * @param {string} command - e.g. "/jarvis"
+   * @param {string} command - e.g. "/karnevil9"
    * @param {Function} handler - ({ command, ack, respond }) => Promise<void>
    */
   onCommand(command, handler) {

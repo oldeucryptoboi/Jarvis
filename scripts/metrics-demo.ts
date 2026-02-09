@@ -9,17 +9,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { v4 as uuid } from "uuid";
 import Anthropic from "@anthropic-ai/sdk";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime, readFileHandler } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { Kernel } from "@jarvis/kernel";
-import { MetricsCollector } from "@jarvis/metrics";
-import { LLMPlanner } from "@jarvis/planner";
-import type { Task, UsageMetrics } from "@jarvis/schemas";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime, readFileHandler } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { Kernel } from "@karnevil9/kernel";
+import { MetricsCollector } from "@karnevil9/metrics";
+import { LLMPlanner } from "@karnevil9/planner";
+import type { Task, UsageMetrics } from "@karnevil9/schemas";
 
 async function main() {
   // 1. Setup infrastructure
-  const journalPath = join(tmpdir(), `jarvis-demo-${uuid().slice(0, 8)}.jsonl`);
+  const journalPath = join(tmpdir(), `karnevil9-demo-${uuid().slice(0, 8)}.jsonl`);
   const journal = new Journal(journalPath, { fsync: false, redact: false });
   await journal.init();
 
@@ -120,7 +120,7 @@ async function main() {
   console.log("\n=== PROMETHEUS METRICS ===\n");
   const output = await metrics.getMetrics();
   const lines = output.split("\n").filter(l =>
-    l.startsWith("jarvis_") &&
+    l.startsWith("karnevil9_") &&
     !l.startsWith("# ") &&
     !l.includes("_bucket{") &&
     !l.includes("_created ")

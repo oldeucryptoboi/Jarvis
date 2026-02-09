@@ -3,11 +3,11 @@ import type {
   PluginManifest,
   RouteHandler,
   CommandOptions,
-} from "@jarvis/schemas";
-import { validateToolInput } from "@jarvis/schemas";
-import type { Journal } from "@jarvis/journal";
-import type { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import type { PermissionEngine } from "@jarvis/permissions";
+} from "@karnevil9/schemas";
+import { validateToolInput } from "@karnevil9/schemas";
+import type { Journal } from "@karnevil9/journal";
+import type { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import type { PermissionEngine } from "@karnevil9/permissions";
 import { PluginDiscovery, type DiscoveredPlugin } from "./plugin-discovery.js";
 import { PluginLoader } from "./plugin-loader.js";
 import { PluginApiImpl } from "./plugin-api-impl.js";

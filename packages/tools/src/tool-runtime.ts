@@ -8,14 +8,14 @@ import type {
   PermissionRequest,
   PolicyProfile,
   PermissionCheckResult,
-} from "@jarvis/schemas";
-import { validateToolInput, validateToolOutput } from "@jarvis/schemas";
-import { PermissionEngine } from "@jarvis/permissions";
-import type { Journal } from "@jarvis/journal";
+} from "@karnevil9/schemas";
+import { validateToolInput, validateToolOutput } from "@karnevil9/schemas";
+import { PermissionEngine } from "@karnevil9/permissions";
+import type { Journal } from "@karnevil9/journal";
 import { ToolRegistry } from "./tool-registry.js";
 import { PolicyViolationError } from "./policy-enforcer.js";
 
-export type { ToolHandler } from "@jarvis/schemas";
+export type { ToolHandler } from "@karnevil9/schemas";
 
 export class CircuitBreaker {
   private failures = new Map<string, { count: number; trippedAt: number }>();

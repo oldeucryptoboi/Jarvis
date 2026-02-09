@@ -14,9 +14,9 @@ config_schema:
     journal:
       description: Journal instance for event subscription (injected at runtime)
     apiBaseUrl:
-      description: Base URL of the Jarvis API server (injected at runtime)
+      description: Base URL of the KarnEvil9 API server (injected at runtime)
     apiToken:
-      description: Jarvis API token for authenticated calls (injected at runtime)
+      description: KarnEvil9 API token for authenticated calls (injected at runtime)
 provides:
   tools:
     - send-slack-message

@@ -1,17 +1,17 @@
 import { resolve } from "node:path";
 import { realpath } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
-import type { PolicyProfile } from "@jarvis/schemas";
-import { JarvisError } from "@jarvis/schemas";
+import type { PolicyProfile } from "@karnevil9/schemas";
+import { KarnEvil9Error } from "@karnevil9/schemas";
 
-export class PolicyViolationError extends JarvisError {
+export class PolicyViolationError extends KarnEvil9Error {
   constructor(message: string) {
     super("POLICY_VIOLATION", message);
     this.name = "PolicyViolationError";
   }
 }
 
-export class SsrfError extends JarvisError {
+export class SsrfError extends KarnEvil9Error {
   constructor(message: string) {
     super("POLICY_VIOLATION", message);
     this.name = "SsrfError";

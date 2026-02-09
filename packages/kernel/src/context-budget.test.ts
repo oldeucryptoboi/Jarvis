@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ContextBudgetMonitor, buildCheckpoint } from "./context-budget.js";
 import type { ContextIteration } from "./context-budget.js";
-import type { Plan, StepResult } from "@jarvis/schemas";
+import type { Plan, StepResult } from "@karnevil9/schemas";
 import type { UsageSummary } from "./usage-accumulator.js";
 
 function makeIteration(overrides: Partial<ContextIteration> = {}): ContextIteration {

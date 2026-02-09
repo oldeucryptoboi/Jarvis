@@ -4,11 +4,11 @@ import { tmpdir } from "node:os";
 import { rm } from "node:fs/promises";
 import { spawn, type ChildProcess } from "node:child_process";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { MockPlanner } from "@jarvis/planner";
-import { ApiServer } from "@jarvis/api";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { MockPlanner } from "@karnevil9/planner";
+import { ApiServer } from "@karnevil9/api";
 import type { Server } from "node:http";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
@@ -22,7 +22,7 @@ function stripAnsi(s: string): string {
 }
 
 /**
- * Spawn `jarvis chat` as a child process and return helpers for
+ * Spawn `karnevil9 chat` as a child process and return helpers for
  * interacting with stdin/stdout.
  */
 function spawnChat(
@@ -94,7 +94,7 @@ describe("Chat CLI REPL Smoke Tests", () => {
   let chat: ReturnType<typeof spawnChat> | null = null;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-e2e-chat-cli-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-e2e-chat-cli-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();
@@ -180,7 +180,7 @@ describe("Chat CLI REPL Smoke Tests", () => {
     expect(text).toMatch(/Session .+ created/);
     // Should show journal events
     expect(text).toContain("session.started");
-    // Prompt should be back (jarvis> without [running])
+    // Prompt should be back (karnevil9> without [running])
     // We just verify the session reached terminal — the prompt state is a readline detail
   });
 
@@ -268,10 +268,10 @@ describe("Chat CLI REPL Smoke Tests", () => {
     });
     httpServer = apiServer.listen(port);
 
-    // Wait for reconnection — check for 2 occurrences of "Connected to Jarvis server"
+    // Wait for reconnection — check for 2 occurrences of "Connected to KarnEvil9 server"
     await waitForOutput(() => {
       const text = stripAnsi(c.output());
-      const count = (text.match(/Connected to Jarvis server/g) ?? []).length;
+      const count = (text.match(/Connected to KarnEvil9 server/g) ?? []).length;
       return count >= 2 ? "found" : "";
     }, "found", 10000);
 

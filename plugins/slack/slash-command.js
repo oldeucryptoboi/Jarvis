@@ -1,5 +1,5 @@
 /**
- * SlashCommand — handles /jarvis slash command.
+ * SlashCommand — handles /karnevil9 slash command.
  */
 export class SlashCommand {
   /**
@@ -15,10 +15,10 @@ export class SlashCommand {
   }
 
   /**
-   * Register the /jarvis command handler.
+   * Register the /karnevil9 command handler.
    */
   register() {
-    this.slackApp.onCommand("/jarvis", async ({ command, ack, respond }) => {
+    this.slackApp.onCommand("/karnevil9", async ({ command, ack, respond }) => {
       await ack();
       await this._handle(command, respond);
     });
@@ -52,7 +52,7 @@ export class SlashCommand {
 
   async _handleRun(taskText, command, respond) {
     if (!taskText) {
-      await respond({ text: "Usage: `/jarvis run <task description>`", response_type: "ephemeral" });
+      await respond({ text: "Usage: `/karnevil9 run <task description>`", response_type: "ephemeral" });
       return;
     }
 
@@ -102,7 +102,7 @@ export class SlashCommand {
 
   async _handleCancel(sessionId, respond) {
     if (!sessionId) {
-      await respond({ text: "Usage: `/jarvis cancel <session_id>`", response_type: "ephemeral" });
+      await respond({ text: "Usage: `/karnevil9 cancel <session_id>`", response_type: "ephemeral" });
       return;
     }
 
@@ -120,11 +120,11 @@ export class SlashCommand {
   async _handleHelp(respond) {
     await respond({
       text: [
-        "*Jarvis Slack Commands:*",
-        "`/jarvis run <task>` — Start a new task",
-        "`/jarvis status` — Show active sessions",
-        "`/jarvis cancel <session_id>` — Cancel a session",
-        "`/jarvis help` — Show this message",
+        "*KarnEvil9 Slack Commands:*",
+        "`/karnevil9 run <task>` — Start a new task",
+        "`/karnevil9 status` — Show active sessions",
+        "`/karnevil9 cancel <session_id>` — Cancel a session",
+        "`/karnevil9 help` — Show this message",
       ].join("\n"),
       response_type: "ephemeral",
     });

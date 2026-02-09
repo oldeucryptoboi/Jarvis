@@ -1,4 +1,4 @@
-import type { Plan, Session, ToolSchemaForPlanner } from "@jarvis/schemas";
+import type { Plan, Session, ToolSchemaForPlanner } from "@karnevil9/schemas";
 
 export interface CriticResult {
   passed: boolean;

@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/kernel",
+  "name": "@karnevil9/kernel",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,15 +11,15 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@jarvis/schemas": "workspace:*",
-    "@jarvis/journal": "workspace:*",
-    "@jarvis/tools": "workspace:*",
-    "@jarvis/permissions": "workspace:*",
-    "@jarvis/memory": "workspace:*",
-    "@jarvis/plugins": "workspace:*",
+    "@karnevil9/schemas": "workspace:*",
+    "@karnevil9/journal": "workspace:*",
+    "@karnevil9/tools": "workspace:*",
+    "@karnevil9/permissions": "workspace:*",
+    "@karnevil9/memory": "workspace:*",
+    "@karnevil9/plugins": "workspace:*",
     "uuid": "^11.0.0"
   },
   "devDependencies": {
-    "@jarvis/planner": "workspace:*"
+    "@karnevil9/planner": "workspace:*"
   }
 }

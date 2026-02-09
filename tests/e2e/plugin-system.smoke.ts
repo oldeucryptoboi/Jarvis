@@ -3,10 +3,10 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry } from "@jarvis/tools";
-import { PluginRegistry } from "@jarvis/plugins";
-import { ApiServer } from "@jarvis/api";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry } from "@karnevil9/tools";
+import { PluginRegistry } from "@karnevil9/plugins";
+import { ApiServer } from "@karnevil9/api";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
 const REAL_PLUGINS_DIR = join(ROOT, "plugins");
@@ -17,7 +17,7 @@ describe("Plugin System Smoke", () => {
   let toolRegistry: ToolRegistry;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-e2e-plugin-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-e2e-plugin-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     toolRegistry = new ToolRegistry();

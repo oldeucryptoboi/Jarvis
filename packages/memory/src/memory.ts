@@ -9,7 +9,7 @@ import type {
   MemoryItem,
   MemoryLesson,
   SessionStatus,
-} from "@jarvis/schemas";
+} from "@karnevil9/schemas";
 
 export class TaskStateManager {
   private state: TaskState;

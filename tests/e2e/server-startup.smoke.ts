@@ -3,9 +3,9 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { rm } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry } from "@jarvis/tools";
-import { ApiServer } from "@jarvis/api";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry } from "@karnevil9/tools";
+import { ApiServer } from "@karnevil9/api";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
 const TOOLS_DIR = join(ROOT, "tools/examples");
@@ -18,7 +18,7 @@ describe("Server Startup Smoke", () => {
   let httpServer: ReturnType<typeof server.listen> | null = null;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-e2e-server-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-e2e-server-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();

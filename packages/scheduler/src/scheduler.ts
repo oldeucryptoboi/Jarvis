@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import type { Journal } from "@jarvis/journal";
+import type { Journal } from "@karnevil9/journal";
 import type {
   Schedule,
   ScheduleTrigger,
@@ -8,7 +8,7 @@ import type {
   Task,
   ExecutionMode,
   ScheduleStatus,
-} from "@jarvis/schemas";
+} from "@karnevil9/schemas";
 import { ScheduleStore } from "./schedule-store.js";
 import { parseInterval, computeNextCron, computeNextInterval } from "./interval.js";
 

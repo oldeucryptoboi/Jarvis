@@ -1,10 +1,10 @@
 import { execFile } from "node:child_process";
 import { resolve } from "node:path";
 import type { ToolHandler } from "../tool-runtime.js";
-import type { ExecutionMode, PolicyProfile } from "@jarvis/schemas";
+import type { ExecutionMode, PolicyProfile } from "@karnevil9/schemas";
 import { assertCommandAllowed, assertPathAllowed } from "../policy-enforcer.js";
 
-const SENSITIVE_ENV_PREFIXES = ["AWS_", "AZURE_", "GCP_", "GOOGLE_", "OPENAI_", "ANTHROPIC_", "GITHUB_", "GITLAB_", "NPM_TOKEN", "DOCKER_", "JARVIS_"];
+const SENSITIVE_ENV_PREFIXES = ["AWS_", "AZURE_", "GCP_", "GOOGLE_", "OPENAI_", "ANTHROPIC_", "GITHUB_", "GITLAB_", "NPM_TOKEN", "DOCKER_", "KARNEVIL9_"];
 const SENSITIVE_ENV_KEYS = new Set(["TOKEN", "SECRET", "PASSWORD", "CREDENTIAL", "API_KEY", "PRIVATE_KEY", "DATABASE_URL"]);
 
 function sanitizeEnv(): Record<string, string> {

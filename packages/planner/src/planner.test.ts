@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { v4 as uuid } from "uuid";
-import type { Task, ToolSchemaForPlanner } from "@jarvis/schemas";
+import type { Task, ToolSchemaForPlanner } from "@karnevil9/schemas";
 import { MockPlanner, LLMPlanner } from "./planner.js";
 
 const makeTask = (text = "Test task"): Task => ({

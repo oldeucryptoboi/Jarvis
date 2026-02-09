@@ -3,7 +3,7 @@ import { resolve, join } from "node:path";
 import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import type { PolicyProfile } from "@jarvis/schemas";
+import type { PolicyProfile } from "@karnevil9/schemas";
 import { readFileHandler } from "./read-file.js";
 import { writeFileHandler } from "./write-file.js";
 import { shellExecHandler } from "./shell-exec.js";
@@ -306,7 +306,7 @@ describe("shellExecHandler — timeout configuration", () => {
   });
 });
 
-describe("shellExecHandler — JARVIS_ env prefix filtering", () => {
+describe("shellExecHandler — KARNEVIL9_ env prefix filtering", () => {
   let tmpDir: string;
   let policy: PolicyProfile;
 
@@ -319,17 +319,17 @@ describe("shellExecHandler — JARVIS_ env prefix filtering", () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("filters out JARVIS_ prefixed environment variables", async () => {
-    const original = process.env.JARVIS_API_TOKEN;
-    process.env.JARVIS_API_TOKEN = "secret-token-123";
+  it("filters out KARNEVIL9_ prefixed environment variables", async () => {
+    const original = process.env.KARNEVIL9_API_TOKEN;
+    process.env.KARNEVIL9_API_TOKEN = "secret-token-123";
     try {
       const result = (await shellExecHandler(
         { command: "env", cwd: tmpDir }, "real", policy
       )) as any;
-      expect(result.stdout).not.toContain("JARVIS_API_TOKEN");
+      expect(result.stdout).not.toContain("KARNEVIL9_API_TOKEN");
     } finally {
-      if (original !== undefined) process.env.JARVIS_API_TOKEN = original;
-      else delete process.env.JARVIS_API_TOKEN;
+      if (original !== undefined) process.env.KARNEVIL9_API_TOKEN = original;
+      else delete process.env.KARNEVIL9_API_TOKEN;
     }
   });
 

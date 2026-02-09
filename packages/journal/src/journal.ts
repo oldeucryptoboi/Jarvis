@@ -3,8 +3,8 @@ import { appendFile, readFile, mkdir, writeFile, rename, access, constants, open
 import { existsSync } from "node:fs";
 import { dirname } from "node:path";
 import { v4 as uuid } from "uuid";
-import type { JournalEvent, JournalEventType } from "@jarvis/schemas";
-import { validateJournalEventData } from "@jarvis/schemas";
+import type { JournalEvent, JournalEventType } from "@karnevil9/schemas";
+import { validateJournalEventData } from "@karnevil9/schemas";
 import { redactPayload } from "./redact.js";
 
 export interface JournalOptions {

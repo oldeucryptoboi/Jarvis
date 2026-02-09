@@ -12,7 +12,7 @@ import type {
   CommandOptions,
   Planner,
   PluginService,
-} from "@jarvis/schemas";
+} from "@karnevil9/schemas";
 
 export class PluginApiImpl implements PluginApi {
   readonly id: string;

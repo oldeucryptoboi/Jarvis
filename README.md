@@ -1,40 +1,45 @@
-# Jarvis
+# KarnEvil9
 
 Deterministic agent runtime with explicit plans, typed tools, permissions, and replay.
 
-Jarvis converts a natural-language task into a structured execution plan, runs each step under fine-grained permission control, and records every event in a tamper-evident journal. It supports single-shot execution and an agentic feedback loop with iterative re-planning, futility detection, and context budget management.
+KarnEvil9 converts a natural-language task into a structured execution plan, runs each step under fine-grained permission control, and records every event in a tamper-evident journal. It supports single-shot execution and an agentic feedback loop with iterative re-planning, futility detection, and context budget management.
 
 ## Quick Start
 
 ```bash
-# Prerequisites: Node.js ≥ 20, pnpm ≥ 9.15
+# Prerequisites: Node.js >= 20, pnpm >= 9.15
 pnpm install
 pnpm build
 
-# Run a task (mock mode — no API keys required)
-npx jarvis run "read the contents of package.json"
+# Run a task (mock mode -- no API keys required)
+karnevil9 run "read the contents of package.json"
 
 # Run with an LLM planner
 export ANTHROPIC_API_KEY=sk-...
-npx jarvis run "list all TypeScript files in src/" --planner claude --mode real
+karnevil9 run "list all TypeScript files in src/" --planner claude --mode real
 
 # Agentic mode (iterative planning)
-npx jarvis run "refactor utils into separate modules" --planner claude --mode real --agentic
+karnevil9 run "refactor utils into separate modules" --planner claude --mode real --agentic
+
+# Start the server + interactive chat
+karnevil9 server --planner claude --agentic
+karnevil9 chat
 ```
 
 ## CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `jarvis run <task>` | Execute a task end-to-end |
-| `jarvis plan <task>` | Generate a plan without executing |
-| `jarvis tools list` | List registered tools |
-| `jarvis session ls` | List sessions from journal |
-| `jarvis session watch <id>` | Watch session events in real-time |
-| `jarvis replay <id>` | Replay session events with integrity check |
-| `jarvis server` | Start the REST API server |
-| `jarvis relay` | Start the browser automation relay |
-| `jarvis plugins list\|info\|reload` | Plugin management |
+| `karnevil9 run <task>` | Execute a task end-to-end |
+| `karnevil9 plan <task>` | Generate a plan without executing |
+| `karnevil9 chat` | Interactive chat session via WebSocket |
+| `karnevil9 server` | Start the REST/WebSocket API server |
+| `karnevil9 tools list` | List registered tools |
+| `karnevil9 session ls` | List sessions from journal |
+| `karnevil9 session watch <id>` | Watch session events |
+| `karnevil9 replay <id>` | Replay session events with integrity check |
+| `karnevil9 relay` | Start the browser automation relay |
+| `karnevil9 plugins list\|info\|reload` | Plugin management |
 
 ### Key Options
 
@@ -47,41 +52,62 @@ npx jarvis run "refactor utils into separate modules" --planner claude --mode re
 --max-steps <n>       Maximum steps (default: 20)
 --plugins-dir <dir>   Plugin directory (default: plugins)
 --no-memory           Disable cross-session learning
+--browser <mode>      Browser driver: managed or extension (default: managed)
+--insecure            Allow running without an API token
 ```
 
 ## API Server
 
 ```bash
-npx jarvis server --port 3100 --planner claude --agentic
+karnevil9 server --port 3100 --planner claude --agentic
 ```
+
+### REST Endpoints
 
 | Endpoint | Description |
 |----------|-------------|
-| `POST /sessions` | Create and run a session |
-| `GET /sessions/:id` | Get session status |
-| `GET /sessions/:id/stream` | SSE event stream |
-| `POST /sessions/:id/abort` | Abort a running session |
-| `GET /approvals` | List pending permission requests |
-| `POST /approvals/:id` | Submit approval decision |
-| `GET /tools` | List available tools |
-| `GET /health` | System health check |
+| `POST /api/sessions` | Create and run a session |
+| `GET /api/sessions/:id` | Get session status |
+| `GET /api/sessions/:id/stream` | SSE event stream |
+| `GET /api/sessions/:id/journal` | Paginated journal events |
+| `POST /api/sessions/:id/abort` | Abort a running session |
+| `POST /api/sessions/:id/recover` | Recover a failed session |
+| `POST /api/sessions/:id/replay` | Replay session events |
+| `GET /api/approvals` | List pending permission requests |
+| `POST /api/approvals/:id` | Submit approval decision |
+| `GET /api/tools` | List available tools |
+| `GET /api/plugins` | List loaded plugins |
+| `GET /api/plugins/:id` | Plugin details |
+| `POST /api/plugins/:id/reload` | Reload a plugin |
+| `POST /api/plugins/:id/unload` | Unload a plugin |
+| `GET /api/health` | System health check |
+| `GET /api/metrics` | Prometheus metrics |
+| `POST /api/journal/compact` | Compact the journal |
+
+### WebSocket
+
+Connect to `ws://localhost:3100/api/ws` for interactive sessions. The chat CLI uses this endpoint. Messages: `submit`, `abort`, `approve`, `ping`/`pong`. Server pushes `session.created`, `event`, `approve.needed`, `error`.
 
 ## Architecture
 
-Jarvis is a pnpm monorepo with 11 packages under `packages/`, all scoped as `@jarvis/*`:
+KarnEvil9 is a pnpm monorepo with 13 packages under `packages/`, all scoped as `@karnevil9/*`:
 
 ```
-schemas                     ← Foundation: types, validators, error codes
-  ↓
-journal, permissions, memory  ← Core infrastructure
-  ↓
-tools                       ← Registry, runtime, policy enforcement, handlers
-  ↓
-planner, plugins            ← LLM adapters & extensibility
-  ↓
-kernel                      ← Orchestrator: session lifecycle, execution phases
-  ↓
-api, cli, browser-relay     ← Entry points
+schemas                       <- Foundation: types, validators, error codes
+  |
+journal, permissions, memory  <- Core infrastructure
+  |
+tools                         <- Registry, runtime, policy enforcement, handlers
+  |
+planner, plugins              <- LLM adapters & extensibility
+  |
+kernel                        <- Orchestrator: session lifecycle, execution phases
+  |
+metrics, scheduler            <- Observability & scheduled jobs
+  |
+api                           <- REST/WebSocket server
+  |
+cli, browser-relay            <- Entry points
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture reference.
@@ -90,9 +116,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture refer
 
 **Single-shot:** Plan once, execute all steps, done.
 
-**Agentic:** Loop of plan → execute → observe results → replan, until the planner signals completion or a halt condition triggers (futility detection, budget exceeded, max iterations).
+**Agentic:** Loop of plan -> execute -> observe results -> replan, until the planner signals completion or a halt condition triggers (futility detection, budget exceeded, max iterations).
 
-Each step passes through: input validation → permission check → tool execution → output validation → result recording.
+Each step passes through: input validation -> permission check -> tool execution -> output validation -> result recording.
 
 ## Built-in Tools
 
@@ -108,12 +134,12 @@ Each step passes through: input validation → permission check → tool executi
 
 Permissions use a `domain:action:target` format (e.g., `filesystem:write:workspace`). The engine supports six decision types:
 
-- **allow_once** — single step
-- **allow_session** — lifetime of session
-- **allow_always** — persists across sessions
-- **allow_constrained** — with path/endpoint restrictions
-- **allow_observed** — with telemetry logging
-- **deny** — with optional alternative tool suggestion
+- **allow_once** -- single step
+- **allow_session** -- lifetime of session
+- **allow_always** -- persists across sessions
+- **allow_constrained** -- with path/endpoint restrictions
+- **allow_observed** -- with telemetry logging
+- **deny** -- with optional alternative tool suggestion
 
 ## Plugin System
 
@@ -133,14 +159,53 @@ provides:
 
 The entry module exports a `register(api)` function that can call `registerTool()`, `registerHook()`, `registerRoute()`, `registerCommand()`, and `registerService()`. See `plugins/example-logger/` for a working example.
 
+### Included Plugins
+
+| Plugin | Description |
+|--------|-------------|
+| `example-logger` | Reference plugin demonstrating hooks and event logging |
+| `scheduler-tool` | Exposes the scheduler as a tool for creating scheduled jobs |
+| `slack` | Bidirectional Slack integration: receive tasks, post progress, approval buttons |
+
+## Metrics & Monitoring
+
+KarnEvil9 includes a Prometheus metrics collector and a pre-built Grafana dashboard.
+
+```bash
+# Start Prometheus + Grafana
+docker compose -f docker-compose.metrics.yml up -d
+
+# Metrics are exposed at GET /api/metrics
+curl http://localhost:3100/api/metrics
+```
+
+14 metric families covering sessions, steps, tools, tokens, cost, planner, permissions, safety, and plugins. Grafana dashboard with 30 panels across 8 rows.
+
+## Scheduler
+
+Built-in job scheduler supporting one-shot, interval, and cron triggers.
+
+```bash
+# Schedules persist to JSONL and survive restarts
+# Create schedules via the scheduler-tool plugin or REST API
+GET  /api/schedules
+POST /api/schedules
+GET  /api/schedules/:id
+PUT  /api/schedules/:id
+DELETE /api/schedules/:id
+```
+
+Missed schedule policies: `skip`, `catchup_one`, `catchup_all`.
+
 ## Security
 
 - **Permission gates** on every tool invocation with multi-level caching
-- **Policy enforcement** — path allowlisting, SSRF protection (private IP blocking, port whitelist), command filtering
-- **Prompt injection prevention** — untrusted data wrapped in structured delimiters
-- **Journal integrity** — SHA-256 hash chain for tamper detection
-- **Credential sanitization** — env vars filtered from shell, payloads redacted in journal
-- **Circuit breakers** — per-tool failure tracking prevents cascading failures
+- **Policy enforcement** -- path allowlisting, SSRF protection (private IP blocking, port whitelist), command filtering
+- **Prompt injection prevention** -- untrusted data wrapped in structured delimiters
+- **Journal integrity** -- SHA-256 hash chain for tamper detection
+- **Credential sanitization** -- env vars filtered from shell, payloads redacted in journal
+- **Circuit breakers** -- per-tool failure tracking prevents cascading failures
+- **API authentication** -- token-based auth with rate limiting and CORS support
 
 ## Development
 
@@ -153,7 +218,7 @@ pnpm lint         # Lint all packages
 pnpm clean        # Remove dist directories
 
 # Single package
-pnpm --filter @jarvis/kernel test
+pnpm --filter @karnevil9/kernel test
 ```
 
 ## Environment Variables
@@ -162,6 +227,16 @@ pnpm --filter @jarvis/kernel test
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | For Claude planner | Anthropic API key |
 | `OPENAI_API_KEY` | For OpenAI planner | OpenAI API key |
+| `KARNEVIL9_API_TOKEN` | For server auth | API token for REST/WebSocket auth |
+| `KARNEVIL9_PORT` | No | Server port (default: 3100) |
+| `KARNEVIL9_JOURNAL_PATH` | No | Journal file path |
+| `KARNEVIL9_MEMORY_PATH` | No | Memory file path |
+| `KARNEVIL9_SCHEDULER_PATH` | No | Scheduler file path |
+| `KARNEVIL9_CORS_ORIGINS` | No | Comma-separated allowed CORS origins |
+| `KARNEVIL9_APPROVAL_TIMEOUT_MS` | No | Approval timeout (default: 300000) |
+| `KARNEVIL9_MAX_SESSIONS` | No | Max concurrent sessions (default: 50) |
+| `SLACK_BOT_TOKEN` | For Slack plugin | Slack bot token |
+| `SLACK_APP_TOKEN` | For Slack socket mode | Slack app-level token |
 
 Create a `.env` file in the project root (gitignored).
 

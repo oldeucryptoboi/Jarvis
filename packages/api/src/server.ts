@@ -1,16 +1,16 @@
 import express from "express";
 import { v4 as uuid } from "uuid";
-import type { Kernel } from "@jarvis/kernel";
-import { Kernel as KernelClass } from "@jarvis/kernel";
-import type { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import type { Journal } from "@jarvis/journal";
-import type { PermissionEngine } from "@jarvis/permissions";
-import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, PolicyProfile, JournalEvent } from "@jarvis/schemas";
-import type { PluginRegistry } from "@jarvis/plugins";
-import type { MetricsCollector } from "@jarvis/metrics";
-import { createMetricsRouter } from "@jarvis/metrics";
-import type { Scheduler } from "@jarvis/scheduler";
-import { createSchedulerRoutes } from "@jarvis/scheduler";
+import type { Kernel } from "@karnevil9/kernel";
+import { Kernel as KernelClass } from "@karnevil9/kernel";
+import type { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import type { Journal } from "@karnevil9/journal";
+import type { PermissionEngine } from "@karnevil9/permissions";
+import type { Planner, Task, ApprovalDecision, ExecutionMode, SessionLimits, PolicyProfile, JournalEvent } from "@karnevil9/schemas";
+import type { PluginRegistry } from "@karnevil9/plugins";
+import type { MetricsCollector } from "@karnevil9/metrics";
+import { createMetricsRouter } from "@karnevil9/metrics";
+import type { Scheduler } from "@karnevil9/scheduler";
+import { createSchedulerRoutes } from "@karnevil9/scheduler";
 import type { ServerResponse, Server, IncomingMessage } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import { parse as parseUrl } from "node:url";
@@ -258,7 +258,7 @@ export class ApiServer {
       const insecure = journal !== undefined ? true : (configOrRegistry as ApiServerConfig).insecure === true;
       if (!insecure) {
         throw new Error(
-          "API token is required. Set apiToken in config, JARVIS_API_TOKEN env var, or pass insecure: true (--insecure) to allow unauthenticated access."
+          "API token is required. Set apiToken in config, KARNEVIL9_API_TOKEN env var, or pass insecure: true (--insecure) to allow unauthenticated access."
         );
       }
       console.warn("[api] WARNING: Running in insecure mode — all endpoints are unauthenticated.");
@@ -342,7 +342,7 @@ export class ApiServer {
   }
 
   listen(port: number): Server {
-    this.httpServer = this.app.listen(port, () => { console.log(`Jarvis API listening on http://localhost:${port}`); });
+    this.httpServer = this.app.listen(port, () => { console.log(`KarnEvil9 API listening on http://localhost:${port}`); });
     // Prune rate limiter entries every 60 seconds
     this.rateLimiterPruneInterval = setInterval(() => this.rateLimiter.prune(), 60000);
     this.rateLimiterPruneInterval.unref();

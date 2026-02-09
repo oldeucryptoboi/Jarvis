@@ -5,8 +5,8 @@ import {
   Histogram,
   collectDefaultMetrics,
 } from "prom-client";
-import type { Journal } from "@jarvis/journal";
-import type { JournalEvent } from "@jarvis/schemas";
+import type { Journal } from "@karnevil9/journal";
+import type { JournalEvent } from "@karnevil9/schemas";
 
 export interface MetricsCollectorConfig {
   registry?: Registry;
@@ -57,7 +57,7 @@ export class MetricsCollector {
 
   constructor(config?: MetricsCollectorConfig) {
     this.registry = config?.registry ?? new Registry();
-    this.prefix = config?.prefix ?? "jarvis_";
+    this.prefix = config?.prefix ?? "karnevil9_";
 
     if (config?.collectDefault !== false) {
       collectDefaultMetrics({ register: this.registry, prefix: this.prefix });

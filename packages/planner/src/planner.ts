@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
-import type { Task, Plan, PlanResult, Planner, ToolSchemaForPlanner, UsageMetrics } from "@jarvis/schemas";
-import { validatePlanData } from "@jarvis/schemas";
+import type { Task, Plan, PlanResult, Planner, ToolSchemaForPlanner, UsageMetrics } from "@karnevil9/schemas";
+import { validatePlanData } from "@karnevil9/schemas";
 
 // ─── Prompt Injection Mitigations ──────────────────────────────────
 // Untrusted data (task text, constraints, tool outputs, memory lessons)
@@ -46,7 +46,7 @@ function buildSystemPrompt(
   toolSchemas: ToolSchemaForPlanner[],
   constraints: Record<string, unknown>
 ): string {
-  return `You are an execution planner for Jarvis, a deterministic agent runtime.
+  return `You are an execution planner for KarnEvil9, a deterministic agent runtime.
 
 Your job: given a task, produce a structured JSON plan that uses ONLY the available tools.
 
@@ -103,7 +103,7 @@ function buildAgenticSystemPrompt(
   toolSchemas: ToolSchemaForPlanner[],
   constraints: Record<string, unknown>
 ): string {
-  return `You are an iterative execution planner for Jarvis, a deterministic agent runtime.
+  return `You are an iterative execution planner for KarnEvil9, a deterministic agent runtime.
 
 You operate in a feedback loop: you produce a few steps, the runtime executes them, and you see the results before deciding what to do next.
 

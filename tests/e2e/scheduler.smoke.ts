@@ -3,16 +3,16 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { rm, readFile } from "node:fs/promises";
 import { v4 as uuid } from "uuid";
-import { Journal } from "@jarvis/journal";
-import { ToolRegistry, ToolRuntime } from "@jarvis/tools";
-import { PermissionEngine } from "@jarvis/permissions";
-import { MockPlanner } from "@jarvis/planner";
-import { Kernel } from "@jarvis/kernel";
-import { ApiServer } from "@jarvis/api";
-import { PluginRegistry } from "@jarvis/plugins";
-import { ScheduleStore, Scheduler } from "@jarvis/scheduler";
-import type { SessionFactory } from "@jarvis/scheduler";
-import type { Task, Schedule } from "@jarvis/schemas";
+import { Journal } from "@karnevil9/journal";
+import { ToolRegistry, ToolRuntime } from "@karnevil9/tools";
+import { PermissionEngine } from "@karnevil9/permissions";
+import { MockPlanner } from "@karnevil9/planner";
+import { Kernel } from "@karnevil9/kernel";
+import { ApiServer } from "@karnevil9/api";
+import { PluginRegistry } from "@karnevil9/plugins";
+import { ScheduleStore, Scheduler } from "@karnevil9/scheduler";
+import type { SessionFactory } from "@karnevil9/scheduler";
+import type { Task, Schedule } from "@karnevil9/schemas";
 
 const ROOT = resolve(import.meta.dirname ?? ".", "../..");
 const TOOLS_DIR = join(ROOT, "tools/examples");
@@ -25,7 +25,7 @@ describe("Scheduler Smoke Tests", () => {
   let runtime: ToolRuntime;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `jarvis-e2e-scheduler-${uuid()}`);
+    testDir = join(tmpdir(), `karnevil9-e2e-scheduler-${uuid()}`);
     journal = new Journal(join(testDir, "journal.jsonl"), { fsync: false, redact: false });
     await journal.init();
     registry = new ToolRegistry();

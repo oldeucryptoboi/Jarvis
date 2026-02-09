@@ -24,7 +24,7 @@ const QUIET_EVENTS = new Set([
 ]);
 
 export function chatPrompt(running: boolean): string {
-  return running ? `${dim("[running]")} jarvis> ` : "jarvis> ";
+  return running ? `${dim("[running]")} karnevil9> ` : "karnevil9> ";
 }
 
 export function colorForType(type: string): (s: string) => string {

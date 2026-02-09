@@ -2,8 +2,8 @@ import { readFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import yaml from "js-yaml";
-import type { ToolManifest, ToolSchemaForPlanner } from "@jarvis/schemas";
-import { validateToolManifestData } from "@jarvis/schemas";
+import type { ToolManifest, ToolSchemaForPlanner } from "@karnevil9/schemas";
+import { validateToolManifestData } from "@karnevil9/schemas";
 
 export class ToolRegistry {
   private tools = new Map<string, ToolManifest>();

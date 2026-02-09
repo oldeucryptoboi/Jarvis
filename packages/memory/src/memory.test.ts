@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { v4 as uuid } from "uuid";
 import { TaskStateManager, WorkingMemoryManager, LongTermMemory } from "./memory.js";
-import type { Plan, StepResult } from "@jarvis/schemas";
+import type { Plan, StepResult } from "@karnevil9/schemas";
 
 describe("TaskStateManager", () => {
   const makePlan = (): Plan => ({

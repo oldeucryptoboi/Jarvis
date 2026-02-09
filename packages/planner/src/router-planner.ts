@@ -1,4 +1,4 @@
-import type { PlanResult, Planner, Task, ToolSchemaForPlanner } from "@jarvis/schemas";
+import type { PlanResult, Planner, Task, ToolSchemaForPlanner } from "@karnevil9/schemas";
 
 export type TaskDomain = "file_ops" | "network" | "code_gen" | "shell" | "general";
 

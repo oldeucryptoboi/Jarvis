@@ -198,20 +198,20 @@ describe("validateJournalEventData", () => {
   });
 });
 
-describe("JarvisError", () => {
+describe("KarnEvil9Error", () => {
   it("has correct code, message, and data", async () => {
-    const { JarvisError, ErrorCodes } = await import("./types.js");
-    const err = new JarvisError("POLICY_VIOLATION", "test message", { detail: 42 });
+    const { KarnEvil9Error, ErrorCodes } = await import("./types.js");
+    const err = new KarnEvil9Error("POLICY_VIOLATION", "test message", { detail: 42 });
     expect(err.code).toBe(ErrorCodes.POLICY_VIOLATION);
     expect(err.message).toBe("test message");
     expect(err.data).toEqual({ detail: 42 });
-    expect(err.name).toBe("JarvisError");
+    expect(err.name).toBe("KarnEvil9Error");
     expect(err instanceof Error).toBe(true);
   });
 
   it("works without data parameter", async () => {
-    const { JarvisError } = await import("./types.js");
-    const err = new JarvisError("TIMEOUT", "timed out");
+    const { KarnEvil9Error } = await import("./types.js");
+    const err = new KarnEvil9Error("TIMEOUT", "timed out");
     expect(err.code).toBe("TIMEOUT");
     expect(err.data).toBeUndefined();
   });

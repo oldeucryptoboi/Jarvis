@@ -35,11 +35,11 @@ describe("chatPrompt", () => {
   it("shows [running] prefix when active", () => {
     const p = chatPrompt(true);
     expect(p).toContain("[running]");
-    expect(p).toContain("jarvis> ");
+    expect(p).toContain("karnevil9> ");
   });
 
   it("shows bare prompt when idle", () => {
-    expect(chatPrompt(false)).toBe("jarvis> ");
+    expect(chatPrompt(false)).toBe("karnevil9> ");
   });
 });
 
