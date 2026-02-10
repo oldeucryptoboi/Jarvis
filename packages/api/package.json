@@ -18,6 +18,7 @@
     "@karnevil9/permissions": "workspace:*",
     "@karnevil9/plugins": "workspace:*",
     "@karnevil9/scheduler": "workspace:*",
+    "@karnevil9/swarm": "workspace:*",
     "@karnevil9/schemas": "workspace:*",
     "@karnevil9/tools": "workspace:*",
     "express": "^5.0.0",

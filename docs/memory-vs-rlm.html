@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory-Assisted Learning vs Recursive Language Modeling: An Empirical Study</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #bc8cff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --orange: #db6d28;
+    --cyan: #39d2c0;
+    --pink: #f778ba;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 17px;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* ── Header ── */
+  .paper-header {
+    text-align: center;
+    padding: 4rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+  .paper-header .label {
+    display: inline-block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+  .paper-header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .paper-header .subtitle {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    max-width: 650px;
+    margin: 0 auto 1.5rem;
+  }
+  .paper-header .meta {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .paper-header .meta span { margin: 0 0.5rem; }
+
+  /* ── Sections ── */
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 3rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: var(--accent2);
+  }
+  p { margin-bottom: 1rem; }
+  strong { color: #fff; }
+
+  /* ── Abstract Box ── */
+  .abstract {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+  }
+  .abstract .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .abstract p { color: var(--text-dim); margin-bottom: 0; }
+
+  /* ── Key Finding Callout ── */
+  .callout {
+    background: linear-gradient(135deg, rgba(88,166,255,0.05), rgba(188,140,255,0.05));
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .callout.green { border-left-color: var(--green); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.yellow { border-left-color: var(--yellow); }
+  .callout p { margin-bottom: 0; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+  th, td {
+    padding: 0.65rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--surface);
+  }
+  td { color: var(--text-dim); }
+  tr:hover td { color: var(--text); background: rgba(88,166,255,0.03); }
+  .win { color: var(--green); font-weight: 600; }
+  .loss { color: var(--red); font-weight: 600; }
+  .draw { color: var(--yellow); font-weight: 600; }
+
+  /* ── Charts ── */
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+  .chart-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  /* ── SVG Chart Styles ── */
+  svg text { font-family: inherit; }
+  .axis-label { fill: var(--text-dim); font-size: 11px; }
+  .axis-line { stroke: var(--border); stroke-width: 1; }
+  .grid-line { stroke: var(--border); stroke-width: 0.5; stroke-dasharray: 3,3; opacity: 0.5; }
+
+  /* ── Diagram Boxes ── */
+  .diagram {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+  .diagram-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    min-width: 180px;
+    flex: 1;
+  }
+  .diagram-box .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .diagram-box .name { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+  .diagram-box .desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 1.5rem;
+    min-width: 40px;
+    flex: 0;
+  }
+
+  /* ── Code ── */
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: var(--surface);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--cyan);
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── Footnotes ── */
+  .footnotes {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .footnotes p { margin-bottom: 0.5rem; }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  .toc .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+  .toc ol { padding-left: 1.25rem; }
+  .toc li { margin-bottom: 0.35rem; }
+  .toc a { color: var(--text-dim); text-decoration: none; }
+  .toc a:hover { color: var(--accent); }
+
+  /* ── Lesson Cards ── */
+  .lesson-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  @media (max-width: 640px) { .lesson-grid { grid-template-columns: 1fr; } }
+  .lesson-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .lesson-card .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    margin-bottom: 0.35rem;
+  }
+  .lesson-card .tag.loss { background: rgba(248,81,73,0.15); color: var(--red); }
+  .lesson-card .tag.win { background: rgba(63,185,80,0.15); color: var(--green); }
+  .lesson-card .tag.draw { background: rgba(210,153,34,0.15); color: var(--yellow); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .paper-header h1 { font-size: 1.75rem; }
+    .container { padding: 1rem; }
+    .diagram { flex-direction: column; align-items: center; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- HEADER                                                            -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<header class="paper-header">
+  <div class="label">Technical Report</div>
+  <h1>Memory-Assisted Learning vs Recursive Language Modeling</h1>
+  <p class="subtitle">
+    Can an LLM improve at a game by reading its own past failures?
+    An empirical comparison of two learning paradigms using a swarm-based tic-tac-toe testbed.
+  </p>
+  <div class="meta">
+    <span>February 2026</span> &middot;
+    <span>KarnEvil9 Project</span> &middot;
+    <span>72 games &middot; 36 lessons &middot; 6 experimental runs</span>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- ABSTRACT                                                          -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="abstract">
+  <div class="label">Abstract</div>
+  <p>
+    We compare two approaches for enabling a large language model (LLM) to improve at a strategic game
+    without any weight updates. <strong>Memory-Assisted Learning (MAL)</strong> combines an LLM with a persistent
+    lesson store and programmatic rules that activate once sufficient experience accumulates.
+    <strong>Recursive Language Modeling (RLM)</strong> relies solely on the LLM reading its own prior outputs&mdash;lessons
+    it generated from past games&mdash;as input context for future decisions.
+    Over 72 tic-tac-toe games across 6 runs, MAL achieved a <strong>0-loss steady state</strong> by its third run,
+    while pure RLM reduced losses by 40% but could not fully eliminate them. We analyze the convergence
+    characteristics, failure modes, and implications of each approach for agentic AI systems.
+  </p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS                                                 -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <div class="label">Contents</div>
+  <ol>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#definitions">Definitions: MAL vs RLM</a></li>
+    <li><a href="#testbed">Experimental Testbed</a></li>
+    <li><a href="#methodology">Methodology</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#analysis">Analysis</a></li>
+    <li><a href="#lesson-evolution">Lesson Evolution</a></li>
+    <li><a href="#implications">Implications for Agentic Systems</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ol>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 1. INTRODUCTION                                                   -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="introduction">1. Introduction</h2>
+
+<p>
+  Large language models have demonstrated remarkable few-shot learning capabilities, but a fundamental
+  question remains: <strong>can an LLM improve at a task over time without changing its weights?</strong>
+  Traditional reinforcement learning updates model parameters through reward signals. But LLMs operate
+  with frozen weights at inference time. Any "learning" must happen through their input context.
+</p>
+
+<p>
+  This creates two possible approaches. The first augments the LLM with external memory and programmatic
+  scaffolding&mdash;using structured systems to store, retrieve, and act on past experience. The second
+  takes a more radical approach: feed the model its own prior outputs and see if self-generated context
+  alone drives improvement.
+</p>
+
+<p>
+  We tested both approaches using a deliberately simple domain: tic-tac-toe. A game with solved optimal play
+  lets us measure exactly how far each approach gets from perfect, and where it fails.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 2. DEFINITIONS                                                    -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="definitions">2. Definitions: MAL vs RLM</h2>
+
+<h3>Memory-Assisted Learning (MAL)</h3>
+<p>
+  MAL combines three components: an LLM for decision-making, a <strong>persistent memory store</strong>
+  (ActiveMemory) that accumulates lessons across sessions, and <strong>programmatic rules</strong> that
+  activate after sufficient experience. The rules are simple deterministic checks&mdash;e.g., "if opponent
+  has two in a row and the third square is empty, block it"&mdash;that encode lessons the LLM has already
+  articulated in natural language but cannot reliably execute.
+</p>
+
+<div class="diagram">
+  <div class="diagram-box">
+    <div class="icon">🤖</div>
+    <div class="name">LLM (Claude)</div>
+    <div class="desc">Strategic reasoning<br>+ lesson extraction</div>
+  </div>
+  <div class="flow-arrow">+</div>
+  <div class="diagram-box">
+    <div class="icon">🧠</div>
+    <div class="name">ActiveMemory</div>
+    <div class="desc">JSONL lesson store<br>persists across runs</div>
+  </div>
+  <div class="flow-arrow">+</div>
+  <div class="diagram-box">
+    <div class="icon">⚙️</div>
+    <div class="name">Programmatic Rules</div>
+    <div class="desc">Deterministic overrides<br>activated by lesson count</div>
+  </div>
+</div>
+
+<p>
+  The programmatic rules represent a <strong>knowledge crystallization</strong> step: once the LLM has
+  generated enough lessons about blocking (e.g., 3+ lessons mentioning threat detection), the system
+  promotes that insight from "soft" natural language guidance to "hard" code. This is analogous to how
+  humans develop automatic reflexes from repeated conscious practice.
+</p>
+
+<h3>Recursive Language Modeling (RLM)</h3>
+<p>
+  RLM strips away all programmatic scaffolding. The only input to the LLM beyond the game state is
+  its own prior outputs: lessons it previously generated by analyzing its own games. This creates a
+  <strong>recursive loop</strong>:
+</p>
+
+<div class="chart-container">
+  <svg viewBox="0 0 800 140" xmlns="http://www.w3.org/2000/svg">
+    <!-- Boxes -->
+    <rect x="20" y="40" width="150" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
+    <text x="95" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Claude plays</text>
+    <text x="95" y="85" text-anchor="middle" fill="#8b949e" font-size="11">game move</text>
+
+    <rect x="230" y="40" width="150" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
+    <text x="305" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Claude analyzes</text>
+    <text x="305" y="85" text-anchor="middle" fill="#8b949e" font-size="11">extracts lesson</text>
+
+    <rect x="440" y="40" width="150" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
+    <text x="515" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">ActiveMemory</text>
+    <text x="515" y="85" text-anchor="middle" fill="#8b949e" font-size="11">stores lesson</text>
+
+    <rect x="650" y="40" width="130" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
+    <text x="715" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Next game</text>
+    <text x="715" y="85" text-anchor="middle" fill="#8b949e" font-size="11">lessons → prompt</text>
+
+    <!-- Arrows -->
+    <line x1="170" y1="70" x2="225" y2="70" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="380" y1="70" x2="435" y2="70" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="590" y1="70" x2="645" y2="70" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- Recursive arrow -->
+    <path d="M715 100 L715 125 L95 125 L95 105" fill="none" stroke="#bc8cff" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow2)"/>
+    <text x="405" y="120" text-anchor="middle" fill="#bc8cff" font-size="10" font-style="italic">recursive feedback loop</text>
+
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
+      </marker>
+      <marker id="arrow2" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto">
+        <path d="M0,0 L4,8 L8,0" fill="none" stroke="#bc8cff" stroke-width="1.5"/>
+      </marker>
+    </defs>
+  </svg>
+</div>
+
+<p>
+  Crucially, <strong>no weights change</strong>. The model is the same frozen checkpoint throughout.
+  All improvement comes from the evolving context&mdash;the growing library of self-generated lessons
+  that shape future decisions. This is fundamentally different from reinforcement learning, which
+  updates parameters through gradient descent on reward signals.
+</p>
+
+<div class="callout">
+  <p>
+    <strong>Key distinction:</strong> In RL, learning is stored in weights. In RLM, learning is stored
+    in context. The model doesn't become better&mdash;its input becomes richer.
+  </p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 3. TESTBED                                                        -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="testbed">3. Experimental Testbed</h2>
+
+<p>
+  We built a three-node swarm using the KarnEvil9 mesh networking package. Each node runs an Express
+  server with full peer-to-peer communication over HTTP, coordinated through a referee node.
+</p>
+
+<div class="diagram">
+  <div class="diagram-box" style="border-color: var(--yellow);">
+    <div class="icon">🏟️</div>
+    <div class="name">Referee</div>
+    <div class="desc">Port 3200<br>Coordinates games<br>Delegates moves</div>
+  </div>
+  <div class="diagram-box" style="border-color: var(--red);">
+    <div class="icon">🎯</div>
+    <div class="name">Expert (X)</div>
+    <div class="desc">Port 3201<br>Minimax algorithm<br>10% blunder rate</div>
+  </div>
+  <div class="diagram-box" style="border-color: var(--accent);">
+    <div class="icon">📚</div>
+    <div class="name">Learner (O)</div>
+    <div class="desc">Port 3202<br>Claude + Memory<br>Goes first</div>
+  </div>
+</div>
+
+<h3>Expert Node</h3>
+<p>
+  The expert plays X using the minimax algorithm&mdash;provably optimal play for tic-tac-toe. To create
+  exploitable openings (simulating real-world imperfect opponents), the expert has a <strong>10% blunder
+  rate</strong>: one in ten moves is chosen randomly rather than optimally. Without this, minimax as
+  second player guarantees at least a draw, making wins impossible for O regardless of strategy.
+</p>
+
+<h3>Learner Node</h3>
+<p>
+  The learner plays O (moving first) and receives the current board state plus all accumulated lessons
+  as its prompt. After each game, a separate Claude call analyzes the game and extracts a single
+  generalizable lesson, which is appended to the persistent lesson store.
+</p>
+
+<h3>Why Tic-Tac-Toe?</h3>
+<p>
+  Tic-tac-toe was chosen for three properties: (1) it has <strong>solved optimal play</strong>, providing
+  a known ceiling for evaluation; (2) it is <strong>simple enough</strong> that individual moves and mistakes
+  are easy to attribute; (3) Claude has <strong>some prior knowledge</strong> of the game, which creates
+  a realistic starting point (the learner isn't truly blank-slate, mirroring how LLM agents typically
+  have partial domain knowledge).
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 4. METHODOLOGY                                                    -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="methodology">4. Methodology</h2>
+
+<p>We conducted six experimental runs of 12 games each, divided into two phases:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Approach</th>
+      <th>Model</th>
+      <th>Runs</th>
+      <th>Memory Persistence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Phase A</td>
+      <td>Memory-Assisted (MAL)</td>
+      <td>Claude Haiku 4.5</td>
+      <td>3 (36 games)</td>
+      <td>Lessons carry across runs</td>
+    </tr>
+    <tr>
+      <td>Phase B</td>
+      <td>Pure RLM</td>
+      <td>Claude Sonnet 4.5</td>
+      <td>3 (36 games)</td>
+      <td>Lessons carry across runs</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Phase A: Memory-Assisted Learning</h3>
+<p>
+  The MAL phase used Claude Haiku 4.5 with two programmatic rules that activated based on lesson accumulation:
+</p>
+<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
+  <li><strong>Block rule:</strong> After 3+ lessons mentioning blocking failures, automatically block any opponent two-in-a-row threats before consulting the LLM.</li>
+  <li><strong>Win rule:</strong> After 2+ lessons about winning, automatically take any available winning move.</li>
+</ul>
+
+<h3>Phase B: Pure RLM</h3>
+<p>
+  The RLM phase used Claude Sonnet 4.5 (a more capable model) with <strong>all programmatic rules removed</strong>.
+  Every move decision went through Claude, with the only aid being the accumulated lesson text in its prompt.
+  Sonnet was chosen over Haiku to give pure RLM the best possible chance, since the approach relies entirely on
+  the model's ability to extract actionable strategy from natural language.
+</p>
+
+<h3>Controls</h3>
+<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
+  <li>Memory wiped between phases (Phase B started fresh with 0 lessons)</li>
+  <li>Same expert opponent configuration (minimax + 10% blunder)</li>
+  <li>Same lesson extraction prompt</li>
+  <li>Learner always plays O, moves first</li>
+  <li>12 games per run, lessons persist across runs within each phase</li>
+</ul>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 5. RESULTS                                                        -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="results">5. Results</h2>
+
+<h3>Phase A: Memory-Assisted Learning (MAL)</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Run</th>
+      <th>Lessons In</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>Draws</th>
+      <th>Loss Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MAL-1 (fresh)</td>
+      <td>0</td>
+      <td class="win">2</td>
+      <td class="loss">5</td>
+      <td class="draw">5</td>
+      <td>41.7%</td>
+    </tr>
+    <tr>
+      <td>MAL-2</td>
+      <td>12</td>
+      <td class="win">3</td>
+      <td class="loss">1</td>
+      <td class="draw">8</td>
+      <td>8.3%</td>
+    </tr>
+    <tr>
+      <td>MAL-3</td>
+      <td>24</td>
+      <td class="win">4</td>
+      <td class="loss">0</td>
+      <td class="draw">8</td>
+      <td style="color: var(--green); font-weight: 600;">0%</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- MAL Chart -->
+<div class="chart-container">
+  <div class="chart-title">Phase A: Memory-Assisted Learning &mdash; Loss Rate by Run</div>
+  <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Grid -->
+    <line x1="80" y1="30" x2="80" y2="230" class="axis-line"/>
+    <line x1="80" y1="230" x2="720" y2="230" class="axis-line"/>
+    <line x1="80" y1="30" x2="720" y2="30" class="grid-line"/>
+    <line x1="80" y1="80" x2="720" y2="80" class="grid-line"/>
+    <line x1="80" y1="130" x2="720" y2="130" class="grid-line"/>
+    <line x1="80" y1="180" x2="720" y2="180" class="grid-line"/>
+
+    <!-- Y-axis labels -->
+    <text x="70" y="35" text-anchor="end" class="axis-label">50%</text>
+    <text x="70" y="85" text-anchor="end" class="axis-label">37.5%</text>
+    <text x="70" y="135" text-anchor="end" class="axis-label">25%</text>
+    <text x="70" y="185" text-anchor="end" class="axis-label">12.5%</text>
+    <text x="70" y="235" text-anchor="end" class="axis-label">0%</text>
+
+    <!-- Bars: Losses (red) -->
+    <rect x="130" y="63" width="60" height="167" rx="4" fill="#f85149" opacity="0.8"/>
+    <text x="160" y="55" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">5L</text>
+
+    <rect x="330" y="197" width="60" height="33" rx="4" fill="#f85149" opacity="0.8"/>
+    <text x="360" y="189" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">1L</text>
+
+    <rect x="530" y="228" width="60" height="2" rx="1" fill="#3fb950" opacity="0.8"/>
+    <text x="560" y="220" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">0L</text>
+
+    <!-- Bars: Wins (green) -->
+    <rect x="200" y="163" width="60" height="67" rx="4" fill="#3fb950" opacity="0.6"/>
+    <text x="230" y="155" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">2W</text>
+
+    <rect x="400" y="130" width="60" height="100" rx="4" fill="#3fb950" opacity="0.6"/>
+    <text x="430" y="122" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">3W</text>
+
+    <rect x="600" y="97" width="60" height="133" rx="4" fill="#3fb950" opacity="0.6"/>
+    <text x="630" y="89" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">4W</text>
+
+    <!-- X-axis labels -->
+    <text x="195" y="255" text-anchor="middle" class="axis-label">MAL-1 (0 lessons)</text>
+    <text x="395" y="255" text-anchor="middle" class="axis-label">MAL-2 (12 lessons)</text>
+    <text x="595" y="255" text-anchor="middle" class="axis-label">MAL-3 (24 lessons)</text>
+  </svg>
+</div>
+
+<div class="callout green">
+  <p>
+    <strong>MAL achieved 0 losses by run 3.</strong> The programmatic block rule, triggered after accumulated
+    blocking-related lessons, eliminated the most common failure mode: failing to block an imminent two-in-a-row threat.
+  </p>
+</div>
+
+<h3>Phase B: Pure RLM</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Run</th>
+      <th>Lessons In</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>Draws</th>
+      <th>Loss Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RLM-1 (fresh)</td>
+      <td>0</td>
+      <td class="win">1</td>
+      <td class="loss">5</td>
+      <td class="draw">6</td>
+      <td>41.7%</td>
+    </tr>
+    <tr>
+      <td>RLM-2</td>
+      <td>12</td>
+      <td class="win">2</td>
+      <td class="loss">6</td>
+      <td class="draw">4</td>
+      <td>50.0%</td>
+    </tr>
+    <tr>
+      <td>RLM-3</td>
+      <td>24</td>
+      <td class="win">1</td>
+      <td class="loss">3</td>
+      <td class="draw">8</td>
+      <td>25.0%</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- RLM Chart -->
+<div class="chart-container">
+  <div class="chart-title">Phase B: Pure RLM &mdash; Loss Rate by Run</div>
+  <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Grid -->
+    <line x1="80" y1="30" x2="80" y2="230" class="axis-line"/>
+    <line x1="80" y1="230" x2="720" y2="230" class="axis-line"/>
+    <line x1="80" y1="30" x2="720" y2="30" class="grid-line"/>
+    <line x1="80" y1="80" x2="720" y2="80" class="grid-line"/>
+    <line x1="80" y1="130" x2="720" y2="130" class="grid-line"/>
+    <line x1="80" y1="180" x2="720" y2="180" class="grid-line"/>
+
+    <!-- Y-axis labels -->
+    <text x="70" y="35" text-anchor="end" class="axis-label">50%</text>
+    <text x="70" y="85" text-anchor="end" class="axis-label">37.5%</text>
+    <text x="70" y="135" text-anchor="end" class="axis-label">25%</text>
+    <text x="70" y="185" text-anchor="end" class="axis-label">12.5%</text>
+    <text x="70" y="235" text-anchor="end" class="axis-label">0%</text>
+
+    <!-- Bars: Losses (red) -->
+    <rect x="130" y="63" width="60" height="167" rx="4" fill="#f85149" opacity="0.8"/>
+    <text x="160" y="55" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">5L</text>
+
+    <rect x="330" y="30" width="60" height="200" rx="4" fill="#f85149" opacity="0.8"/>
+    <text x="360" y="22" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">6L</text>
+
+    <rect x="530" y="130" width="60" height="100" rx="4" fill="#f85149" opacity="0.8"/>
+    <text x="560" y="122" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">3L</text>
+
+    <!-- Bars: Wins (green) -->
+    <rect x="200" y="197" width="60" height="33" rx="4" fill="#3fb950" opacity="0.6"/>
+    <text x="230" y="189" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">1W</text>
+
+    <rect x="400" y="163" width="60" height="67" rx="4" fill="#3fb950" opacity="0.6"/>
+    <text x="430" y="155" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">2W</text>
+
+    <rect x="600" y="197" width="60" height="33" rx="4" fill="#3fb950" opacity="0.6"/>
+    <text x="630" y="189" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">1W</text>
+
+    <!-- X-axis labels -->
+    <text x="195" y="255" text-anchor="middle" class="axis-label">RLM-1 (0 lessons)</text>
+    <text x="395" y="255" text-anchor="middle" class="axis-label">RLM-2 (12 lessons)</text>
+    <text x="595" y="255" text-anchor="middle" class="axis-label">RLM-3 (24 lessons)</text>
+  </svg>
+</div>
+
+<div class="callout yellow">
+  <p>
+    <strong>RLM showed improvement but with higher variance.</strong> Run 2 actually regressed (more losses
+    than run 1), though run 3 showed a strong recovery with only 3 losses and 8 draws. The non-monotonic
+    trajectory suggests that natural language lessons introduce noise alongside signal.
+  </p>
+</div>
+
+<h3>Head-to-Head Comparison</h3>
+
+<!-- Comparison chart -->
+<div class="chart-container">
+  <div class="chart-title">Loss Rate: MAL vs RLM Across Runs</div>
+  <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
+    <!-- Grid -->
+    <line x1="100" y1="30" x2="100" y2="240" class="axis-line"/>
+    <line x1="100" y1="240" x2="700" y2="240" class="axis-line"/>
+    <line x1="100" y1="30" x2="700" y2="30" class="grid-line"/>
+    <line x1="100" y1="82" x2="700" y2="82" class="grid-line"/>
+    <line x1="100" y1="135" x2="700" y2="135" class="grid-line"/>
+    <line x1="100" y1="188" x2="700" y2="188" class="grid-line"/>
+
+    <!-- Y-axis labels -->
+    <text x="90" y="35" text-anchor="end" class="axis-label">50%</text>
+    <text x="90" y="87" text-anchor="end" class="axis-label">37.5%</text>
+    <text x="90" y="140" text-anchor="end" class="axis-label">25%</text>
+    <text x="90" y="193" text-anchor="end" class="axis-label">12.5%</text>
+    <text x="90" y="245" text-anchor="end" class="axis-label">0%</text>
+
+    <!-- X-axis labels -->
+    <text x="220" y="265" text-anchor="middle" class="axis-label">Run 1 (fresh)</text>
+    <text x="400" y="265" text-anchor="middle" class="axis-label">Run 2 (12 lessons)</text>
+    <text x="580" y="265" text-anchor="middle" class="axis-label">Run 3 (24 lessons)</text>
+
+    <!-- MAL line (blue) -->
+    <polyline points="220,65 400,205 580,240" fill="none" stroke="#58a6ff" stroke-width="3"/>
+    <circle cx="220" cy="65" r="6" fill="#58a6ff"/>
+    <circle cx="400" cy="205" r="6" fill="#58a6ff"/>
+    <circle cx="580" cy="240" r="6" fill="#58a6ff"/>
+    <text x="235" y="55" fill="#58a6ff" font-size="12" font-weight="600">41.7%</text>
+    <text x="415" y="200" fill="#58a6ff" font-size="12" font-weight="600">8.3%</text>
+    <text x="595" y="236" fill="#58a6ff" font-size="12" font-weight="600">0%</text>
+
+    <!-- RLM line (purple) -->
+    <polyline points="220,65 400,30 580,135" fill="none" stroke="#bc8cff" stroke-width="3" stroke-dasharray="8,4"/>
+    <circle cx="220" cy="65" r="6" fill="#bc8cff"/>
+    <circle cx="400" cy="30" r="6" fill="#bc8cff"/>
+    <circle cx="580" cy="135" r="6" fill="#bc8cff"/>
+    <text x="205" y="80" fill="#bc8cff" font-size="12" font-weight="600">41.7%</text>
+    <text x="415" y="25" fill="#bc8cff" font-size="12" font-weight="600">50%</text>
+    <text x="595" y="128" fill="#bc8cff" font-size="12" font-weight="600">25%</text>
+
+    <!-- Legend -->
+    <line x1="250" y1="285" x2="280" y2="285" stroke="#58a6ff" stroke-width="3"/>
+    <text x="290" y="289" fill="#58a6ff" font-size="12">MAL (Memory-Assisted)</text>
+    <line x1="460" y1="285" x2="490" y2="285" stroke="#bc8cff" stroke-width="3" stroke-dasharray="8,4"/>
+    <text x="500" y="289" fill="#bc8cff" font-size="12">RLM (Pure Recursive)</text>
+  </svg>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 6. ANALYSIS                                                       -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="analysis">6. Analysis</h2>
+
+<h3>6.1 The Knowing-Doing Gap</h3>
+
+<p>
+  The most striking finding is what we call the <strong>knowing-doing gap</strong>. After just a few games,
+  both MAL and RLM learners generated lessons that correctly identified the winning strategy: "block two-in-a-row
+  threats immediately," "prioritize corners over edges," "secure opposite corners after taking center." The
+  lessons were accurate. The execution was not.
+</p>
+
+<p>
+  In the pure RLM approach, Claude would generate a lesson saying "always block when the opponent has two in a
+  row"&mdash;then fail to do exactly that in the next game. The natural language lesson is <strong>strategically
+  correct but procedurally imprecise</strong>. It doesn't tell the model "check positions [0,1,2], [3,4,5],
+  [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6] and if any pair is occupied by X with the third empty,
+  play the third." The lesson says "block threats"&mdash;a concept the model understands but doesn't always
+  translate into the correct board position.
+</p>
+
+<div class="callout red">
+  <p>
+    <strong>The knowing-doing gap:</strong> RLM lessons captured correct strategic knowledge within 3-4 games.
+    But converting that knowledge into reliable move-by-move execution required 24+ lessons and still
+    had a ~25% failure rate. MAL closed this gap by promoting key insights to deterministic code.
+  </p>
+</div>
+
+<h3>6.2 Convergence Characteristics</h3>
+
+<p>
+  MAL showed <strong>monotonic improvement</strong>: each run was strictly better than the last (5→1→0 losses).
+  This is because programmatic rules, once activated, never regress. A deterministic "if threat, block" rule
+  doesn't have off days.
+</p>
+
+<p>
+  RLM showed <strong>non-monotonic improvement</strong>: run 2 was worse than run 1 (6 losses vs 5). This is a
+  known property of context-based learning&mdash;more context doesn't always help. Contradictory or redundant
+  lessons can confuse the model. Some lessons emphasized "prioritize offense" while others emphasized "prioritize
+  defense," creating conflicting guidance that the model resolves differently across games.
+</p>
+
+<h3>6.3 Failure Mode Analysis</h3>
+
+<p>
+  We examined all losses across both phases. The primary failure mode was consistent:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Failure Mode</th>
+      <th>MAL Occurrences</th>
+      <th>RLM Occurrences</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Failed to block two-in-a-row</td>
+      <td>4 (67%)</td>
+      <td>9 (64%)</td>
+    </tr>
+    <tr>
+      <td>Fell into fork trap</td>
+      <td>1 (17%)</td>
+      <td>3 (21%)</td>
+    </tr>
+    <tr>
+      <td>Poor positional play (edges over corners)</td>
+      <td>1 (17%)</td>
+      <td>2 (14%)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  The dominant failure&mdash;not blocking an imminent threat&mdash;is precisely the one MAL's programmatic
+  rule eliminates. It's a <strong>pattern recognition task</strong> (scan 8 lines, find the threat) that
+  deterministic code handles perfectly but that an LLM, reasoning in natural language over a text board
+  representation, handles unreliably.
+</p>
+
+<h3>6.4 The Cost of Purity</h3>
+
+<p>
+  Pure RLM used Claude Sonnet 4.5 (a significantly more capable model than Haiku 4.5) yet still underperformed
+  MAL with Haiku. This suggests that the bottleneck isn't model capability&mdash;it's the
+  <strong>representation gap</strong> between natural language lessons and procedural execution. A weaker model
+  with code-level scaffolding outperforms a stronger model with only natural language self-guidance.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 7. LESSON EVOLUTION                                               -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="lesson-evolution">7. Lesson Evolution</h2>
+
+<p>
+  Examining the 36 lessons generated across the RLM phase reveals how the learner's understanding evolved:
+</p>
+
+<h3>Early Lessons (Games 1-4): Identifying Problems</h3>
+
+<div class="lesson-grid">
+  <div class="lesson-card">
+    <div class="tag loss">Game 1 &mdash; Loss</div>
+    <p>When X opens with a corner, immediately responding with center is correct, but O must then prioritize a second corner instead of an edge.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag loss">Game 2 &mdash; Loss</div>
+    <p>O must prioritize blocking the opposite corner before X can occupy it, as two opposite corners create unstoppable dual-threat scenarios.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag loss">Game 3 &mdash; Loss</div>
+    <p>O must immediately block the opposite corner to prevent X from creating a fork opportunity.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag loss">Game 4 &mdash; Loss</div>
+    <p>Prioritize taking the opposite corner immediately to maintain symmetry and defensive balance.</p>
+  </div>
+</div>
+
+<p>
+  Notice the rapid convergence on a single theme: <strong>opposite corners matter</strong>. By game 4,
+  the lesson is essentially the same as game 2, restated in different words. The model has identified
+  the problem clearly but continues to lose because identification alone doesn't guarantee execution.
+</p>
+
+<h3>Mid Lessons (Games 5-8): Refining Strategy</h3>
+
+<div class="lesson-grid">
+  <div class="lesson-card">
+    <div class="tag draw">Game 5 &mdash; Draw</div>
+    <p>Prioritize creating immediate threats over defensive blocks&mdash;corner 8 to create a fork threat rather than playing passively.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag draw">Game 6 &mdash; Draw</div>
+    <p>Block X's second corner before pursuing own threats, as two opposite corners create impossible-to-defend threats.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag draw">Game 7 &mdash; Draw</div>
+    <p>Immediately secure the opposite corner on move 3 to maintain winning chances.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag draw">Game 8 &mdash; Draw</div>
+    <p>Immediately secure a second corner after taking center to create forcing threats before the opponent builds multiple winning paths.</p>
+  </div>
+</div>
+
+<p>
+  The shift from losses to draws marks a <strong>qualitative transition</strong>. The learner's lessons
+  now include both offensive and defensive considerations. But note the tension: game 5 says "prioritize
+  offense," while game 6 says "block before pursuing threats." These contradictory signals illustrate
+  the noise that accumulates in RLM systems.
+</p>
+
+<h3>Late Lessons (Games 9-12): Consolidation</h3>
+
+<div class="lesson-grid">
+  <div class="lesson-card">
+    <div class="tag win">Game 9 &mdash; Win</div>
+    <p>Securing the center forces them into defensive mode; following up with opposite corners creates threats that overwhelm even strong opponents.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="tag draw">Game 10 &mdash; Draw</div>
+    <p>Immediately secure the opposite corner to maintain initiative and create winning threats.</p>
+  </div>
+  <div class="lesson-card">
+    <div class="lesson-card">
+    <div class="tag loss">Game 11 &mdash; Loss</div>
+    <p>Immediately block remaining corners when opponent holds two opposite corners, as the pattern creates an unstoppable double-threat.</p>
+  </div>
+  </div>
+  <div class="lesson-card">
+    <div class="tag draw">Game 12 &mdash; Draw</div>
+    <p>Secure an opposite corner on move 3 rather than an edge, as this creates more winning threat lines.</p>
+  </div>
+</div>
+
+<p>
+  By the final games, lessons are <strong>highly redundant</strong>. The same "take opposite corners"
+  insight appears in over 70% of all lessons. This redundancy is a feature for RLM (reinforcing the
+  signal) but also a limitation (it crowds out novel strategic insights about less common positions).
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 8. IMPLICATIONS                                                   -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="implications">8. Implications for Agentic Systems</h2>
+
+<h3>8.1 Hybrid Approaches Win</h3>
+
+<p>
+  The results strongly favor a <strong>hybrid MAL architecture</strong> for production agentic systems.
+  Pure RLM is elegant and demonstrates that LLMs can genuinely improve from self-generated context, but
+  it hits a reliability ceiling. The most effective pattern is:
+</p>
+
+<ol style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
+  <li><strong>RLM for exploration:</strong> Let the LLM discover patterns through self-play and self-analysis.</li>
+  <li><strong>Memory for persistence:</strong> Store lessons in a structured external memory system.</li>
+  <li><strong>Code promotion for reliability:</strong> Once a lesson reaches sufficient confidence (appears in N+ independent games), promote it from natural language context to deterministic code.</li>
+</ol>
+
+<p>
+  This mirrors how human expertise develops: deliberate practice (RLM) builds conscious understanding,
+  which through repetition becomes unconscious reflex (programmatic rules).
+</p>
+
+<h3>8.2 The Lesson Saturation Problem</h3>
+
+<p>
+  Both approaches face a <strong>lesson saturation</strong> problem at scale. By run 3, the learner had
+  36 lessons in its context window&mdash;most saying variations of the same thing. As the lesson count
+  grows, the signal-to-noise ratio may decrease. Future work should explore:
+</p>
+
+<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
+  <li><strong>Lesson consolidation:</strong> Periodically ask the LLM to synthesize N lessons into a single, concise strategy document.</li>
+  <li><strong>Relevance scoring:</strong> Weight lessons by recency and similarity to current game state.</li>
+  <li><strong>Lesson pruning:</strong> Remove lessons that have been superseded by more refined versions.</li>
+</ul>
+
+<h3>8.3 Domain Complexity and Prior Knowledge</h3>
+
+<p>
+  A significant caveat: Claude already knows tic-tac-toe. Its baseline performance (before any lessons)
+  reflects existing parametric knowledge, not true zero-shot learning. The RLM improvement we measured is
+  the delta between "Claude with prior knowledge" and "Claude with prior knowledge + self-generated lessons."
+</p>
+
+<p>
+  For a purer test of RLM, future experiments should use a <strong>novel game</strong> that doesn't appear in
+  the model's training data&mdash;ensuring that all strategic knowledge must be genuinely discovered through play
+  rather than recalled from pre-training.
+</p>
+
+<h3>8.4 Model Capability vs. Architecture</h3>
+
+<p>
+  The finding that Haiku + MAL outperforms Sonnet + RLM has significant cost implications. In production
+  systems, a <strong>smaller model with better scaffolding</strong> can outperform a larger model running
+  unassisted. This suggests that agent architecture investment (memory systems, rule promotion, structured
+  feedback loops) may yield better returns than simply scaling to more capable models.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 9. CONCLUSION                                                     -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="conclusion">9. Conclusion</h2>
+
+<p>
+  We compared two paradigms for enabling LLMs to improve at a strategic task without weight updates:
+  Memory-Assisted Learning (MAL) and pure Recursive Language Modeling (RLM).
+</p>
+
+<p>
+  <strong>RLM works.</strong> An LLM reading its own prior analyses generates genuine improvement&mdash;losses
+  decreased from 42% to 25% over three runs. The recursive feedback loop creates a form of learning
+  that is entirely contained in the model's context window, requiring no external code, no reward shaping,
+  and no human intervention.
+</p>
+
+<p>
+  <strong>MAL works better.</strong> Augmenting the same feedback loop with programmatic rules that crystallize
+  high-confidence lessons into deterministic code achieved zero losses by run 3. The hybrid approach
+  addresses the fundamental knowing-doing gap&mdash;the disconnect between an LLM's ability to articulate
+  correct strategy and its ability to reliably execute it.
+</p>
+
+<p>
+  The practical implication is clear: <strong>let LLMs discover, but let code execute.</strong> The most
+  effective agentic systems will combine the exploratory power of recursive self-improvement with the
+  reliability of structured, programmatic knowledge. Neither pure approach is sufficient alone.
+</p>
+
+<div class="callout">
+  <p>
+    <strong>In one sentence:</strong> RLM shows that LLMs can learn from their own output, but the
+    knowing-doing gap means that the most critical lessons should be promoted from context to code.
+  </p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- FOOTNOTES                                                         -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="footnotes">
+  <p><strong>Platform:</strong> KarnEvil9 v0.1.0 — deterministic agent runtime with typed tools, permissions, and replay.</p>
+  <p><strong>Infrastructure:</strong> 3-node swarm mesh (Express/HTTP), ActiveMemory (JSONL persistence), Journal (append-only event log).</p>
+  <p><strong>Models:</strong> Claude Haiku 4.5 (MAL phase), Claude Sonnet 4.5 (RLM phase) — Anthropic, February 2026.</p>
+  <p><strong>Expert opponent:</strong> Minimax with random tie-breaking and 10% uniform blunder rate.</p>
+  <p><strong>Sample size:</strong> 72 games (36 MAL + 36 RLM), 36 extracted lessons per phase.</p>
+  <p><strong>Code:</strong> Full experiment source available at <code>scripts/tic-tac-toe-swarm.ts</code>.</p>
+</div>
+
+</div><!-- .container -->
+
+</body>
+</html>

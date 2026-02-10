@@ -17,6 +17,7 @@
     { "path": "../memory" },
     { "path": "../metrics" },
     { "path": "../scheduler" },
+    { "path": "../swarm" },
     { "path": "../api" },
     { "path": "../plugins" }
   ]

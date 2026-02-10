@@ -1,0 +1,24 @@
+{
+  "name": "@karnevil9/swarm",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "lint": "biome lint src"
+  },
+  "dependencies": {
+    "@karnevil9/schemas": "workspace:*",
+    "@karnevil9/journal": "workspace:*",
+    "multicast-dns": "^7.2.5",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/multicast-dns": "^7.2.4",
+    "@types/uuid": "^10.0.0"
+  }
+}

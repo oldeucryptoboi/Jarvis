@@ -11,6 +11,7 @@ import type { MetricsCollector } from "@karnevil9/metrics";
 import { createMetricsRouter } from "@karnevil9/metrics";
 import type { Scheduler } from "@karnevil9/scheduler";
 import { createSchedulerRoutes } from "@karnevil9/scheduler";
+import type { MeshManager } from "@karnevil9/swarm";
 import type { ServerResponse, Server, IncomingMessage } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import { parse as parseUrl } from "node:url";
@@ -169,6 +170,7 @@ export interface ApiServerConfig {
   scheduler?: Scheduler;
   approvalTimeoutMs?: number;
   corsOrigins?: string | string[];
+  swarm?: MeshManager;
 }
 
 export class ApiServer {
@@ -192,6 +194,7 @@ export class ApiServer {
   private apiToken?: string;
   private metricsCollector?: MetricsCollector;
   private scheduler?: Scheduler;
+  private swarm?: MeshManager;
   private approvalTimeoutMs: number;
   private corsOrigins?: string | string[];
   private httpServer?: Server;
@@ -247,6 +250,7 @@ export class ApiServer {
       this.apiToken = config.apiToken;
       this.metricsCollector = config.metricsCollector;
       this.scheduler = config.scheduler;
+      this.swarm = config.swarm;
       this.approvalTimeoutMs = config.approvalTimeoutMs ?? 300000; // 5 minutes
       this.corsOrigins = config.corsOrigins;
       this.rateLimiter = new RateLimiter();
@@ -637,6 +641,11 @@ export class ApiServer {
           scheduler: {
             status: this.scheduler ? (this.scheduler.isRunning() ? "ok" : "stopped") : "unavailable",
             schedules: this.scheduler?.listSchedules().length ?? 0,
+          },
+          swarm: {
+            status: this.swarm ? (this.swarm.isRunning ? "ok" : "stopped") : "unavailable",
+            peers: this.swarm?.peerCount ?? 0,
+            active_peers: this.swarm?.getActivePeers().length ?? 0,
           },
         },
       });

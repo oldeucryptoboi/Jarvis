@@ -3,6 +3,7 @@ import "dotenv/config";
 import { Command } from "commander";
 import { v4 as uuid } from "uuid";
 import { resolve } from "node:path";
+import { hostname } from "node:os";
 import * as readline from "node:readline";
 import { Journal } from "@karnevil9/journal";
 import { ToolRegistry, ToolRuntime, readFileHandler, writeFileHandler, shellExecHandler, httpRequestHandler, createBrowserHandler } from "@karnevil9/tools";
@@ -15,6 +16,8 @@ import { MetricsCollector } from "@karnevil9/metrics";
 import { PluginRegistry } from "@karnevil9/plugins";
 import { ActiveMemory } from "@karnevil9/memory";
 import { ScheduleStore, Scheduler } from "@karnevil9/scheduler";
+import { MeshManager, WorkDistributor, DEFAULT_SWARM_CONFIG } from "@karnevil9/swarm";
+import type { SwarmConfig } from "@karnevil9/swarm";
 import type { Task, ApprovalDecision, PermissionRequest } from "@karnevil9/schemas";
 import type { ChatWebSocket } from "./chat-client.js";
 
@@ -284,7 +287,13 @@ program.command("server").description("Start the API server")
   .option("--insecure", "Allow running without an API token (unauthenticated)")
   .option("--no-memory", "Disable cross-session active memory")
   .option("--browser <mode>", "Browser driver: managed (in-process Playwright) or extension (HTTP relay)", "managed")
-  .action(async (opts: { port: string; pluginsDir: string; planner?: string; model?: string; agentic?: boolean; insecure?: boolean; memory?: boolean; browser: string }) => {
+  .option("--swarm", "Enable swarm mesh for P2P task distribution")
+  .option("--swarm-token <token>", "Shared secret for swarm peer auth")
+  .option("--swarm-seeds <urls>", "Comma-separated seed URLs for peer discovery")
+  .option("--swarm-name <name>", "Display name for this swarm node")
+  .option("--swarm-mdns", "Enable mDNS discovery (default: true)")
+  .option("--swarm-gossip", "Enable gossip protocol (default: true)")
+  .action(async (opts: { port: string; pluginsDir: string; planner?: string; model?: string; agentic?: boolean; insecure?: boolean; memory?: boolean; browser: string; swarm?: boolean; swarmToken?: string; swarmSeeds?: string; swarmName?: string; swarmMdns?: boolean; swarmGossip?: boolean }) => {
     // Late-binding ref: set after ApiServer is constructed
     let apiServerRef: ApiServer | null = null;
     const serverApprovalPrompt = async (request: PermissionRequest): Promise<ApprovalDecision> => {
@@ -337,6 +346,70 @@ program.command("server").description("Start the API server")
     console.log(`Scheduler started (${scheduleStore.size} schedules loaded)`);
 
     const apiToken = process.env.KARNEVIL9_API_TOKEN;
+
+    // Bootstrap swarm if enabled
+    const swarmEnabled = opts.swarm || process.env.KARNEVIL9_SWARM_ENABLED === "true";
+    let meshManager: MeshManager | undefined;
+    let workDistributor: WorkDistributor | undefined;
+    if (swarmEnabled) {
+      const swarmConfig: SwarmConfig = {
+        ...DEFAULT_SWARM_CONFIG,
+        enabled: true,
+        token: opts.swarmToken ?? process.env.KARNEVIL9_SWARM_TOKEN,
+        node_name: opts.swarmName ?? process.env.KARNEVIL9_SWARM_NODE_NAME ?? hostname(),
+        api_url: `http://localhost:${port}`,
+        seeds: (opts.swarmSeeds ?? process.env.KARNEVIL9_SWARM_SEEDS ?? "").split(",").map((s: string) => s.trim()).filter(Boolean),
+        mdns: opts.swarmMdns ?? (process.env.KARNEVIL9_SWARM_MDNS !== "false"),
+        gossip: opts.swarmGossip ?? (process.env.KARNEVIL9_SWARM_GOSSIP !== "false"),
+        max_peers: parseInt(process.env.KARNEVIL9_SWARM_MAX_PEERS ?? "50", 10),
+        capabilities: registry.list().map((t) => t.name),
+      };
+      meshManager = new MeshManager({
+        config: swarmConfig,
+        journal,
+        onTaskRequest: async (request) => {
+          // Accept and run delegated tasks
+          const task: Task = { task_id: request.task_id, text: request.task_text, created_at: new Date().toISOString() };
+          try {
+            await sharedSessionFactory(task);
+            return { accepted: true };
+          } catch (err) {
+            return { accepted: false, reason: err instanceof Error ? err.message : "Internal error" };
+          }
+        },
+      });
+      workDistributor = new WorkDistributor({
+        meshManager,
+        strategy: "round_robin",
+        delegation_timeout_ms: swarmConfig.delegation_timeout_ms,
+        max_retries: 2,
+      });
+      // Wire result handling: when mesh receives results, resolve distributor delegations
+      meshManager = new MeshManager({
+        config: swarmConfig,
+        journal,
+        onTaskRequest: async (request) => {
+          const task: Task = { task_id: request.task_id, text: request.task_text, created_at: new Date().toISOString() };
+          try {
+            await sharedSessionFactory(task);
+            return { accepted: true };
+          } catch (err) {
+            return { accepted: false, reason: err instanceof Error ? err.message : "Internal error" };
+          }
+        },
+        onTaskResult: (result) => {
+          workDistributor!.resolveTask(result);
+        },
+      });
+      // Recreate distributor with the final meshManager
+      workDistributor = new WorkDistributor({
+        meshManager,
+        strategy: "round_robin",
+        delegation_timeout_ms: swarmConfig.delegation_timeout_ms,
+        max_retries: 2,
+      });
+    }
+
     pluginRegistry = new PluginRegistry({
       journal, toolRegistry: registry, toolRuntime: runtime, permissions,
       pluginsDir,
@@ -347,6 +420,12 @@ program.command("server").description("Start the API server")
           journal,
           apiBaseUrl: `http://localhost:${port}`,
           apiToken,
+        },
+        "swarm": {
+          meshManager,
+          workDistributor,
+          sessionFactory: sharedSessionFactory,
+          journal,
         },
       },
     });
@@ -364,6 +443,7 @@ program.command("server").description("Start the API server")
       agentic: opts.agentic ?? false,
       metricsCollector,
       scheduler,
+      swarm: meshManager,
       apiToken,
       insecure: opts.insecure === true,
       corsOrigins: corsOrigins ? corsOrigins.split(",").map((s) => s.trim()) : undefined,

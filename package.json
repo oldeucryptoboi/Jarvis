@@ -30,6 +30,7 @@
     "@karnevil9/planner": "workspace:^",
     "@karnevil9/plugins": "workspace:^",
     "@karnevil9/scheduler": "workspace:^",
+    "@karnevil9/swarm": "workspace:^",
     "@karnevil9/schemas": "workspace:^",
     "@karnevil9/tools": "workspace:^",
     "@types/node": "^22.0.0",

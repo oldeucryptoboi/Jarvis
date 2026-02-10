@@ -1,0 +1,38 @@
+id: swarm
+name: Swarm Mesh
+version: "1.0.0"
+description: P2P mesh for distributing tasks across KarnEvil9 instances
+entry: index.js
+permissions:
+  - swarm:delegate:tasks
+  - swarm:read:peers
+config_schema:
+  type: object
+  properties:
+    meshManager:
+      description: MeshManager instance (injected at runtime)
+    workDistributor:
+      description: WorkDistributor instance (injected at runtime)
+    sessionFactory:
+      description: Session factory function (injected at runtime)
+    journal:
+      description: Journal instance for event subscription (injected at runtime)
+provides:
+  tools:
+    - swarm-distribute
+    - swarm-peers
+  hooks:
+    - after_session_end
+    - before_plan
+  routes:
+    - identity
+    - peers
+    - heartbeat
+    - join
+    - leave
+    - gossip
+    - task
+    - result
+    - status
+  services:
+    - swarm-mesh

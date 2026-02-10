@@ -338,7 +338,19 @@ export type JournalEventType =
   | "scheduler.schedule_created"
   | "scheduler.schedule_updated"
   | "scheduler.schedule_deleted"
-  | "scheduler.schedule_paused";
+  | "scheduler.schedule_paused"
+  | "swarm.started"
+  | "swarm.stopped"
+  | "swarm.peer_joined"
+  | "swarm.peer_left"
+  | "swarm.peer_suspected"
+  | "swarm.peer_unreachable"
+  | "swarm.task_delegated"
+  | "swarm.task_accepted"
+  | "swarm.task_result_received"
+  | "swarm.task_delegation_failed"
+  | "swarm.task_delegation_timeout"
+  | "swarm.gossip_round";
 
 // ─── Context Budget / Checkpoint ────────────────────────────────────
 
