@@ -1,2107 +1,1003 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memory-Assisted Learning vs Recursive Language Modeling: An Empirical Study</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Memory-Assisted Learning vs Recursive Language Models — An Empirical Study</title>
 
-<!-- Authorship -->
-<meta name="author" content="Laurent DeSegur">
+  <!-- Authorship -->
+  <meta name="author" content="Laurent DeSegur">
 
-<!-- SEO -->
-<meta name="description" content="An empirical comparison of Memory-Assisted Learning (MAL) and Recursive Language Modeling (RLM) for enabling LLMs to improve at strategic tasks without weight updates. 72-game tic-tac-toe experiment using a 3-node swarm mesh, demonstrating that hybrid memory+code architectures eliminate losses while pure self-referential learning hits a reliability ceiling.">
-<meta name="keywords" content="LLM learning, recursive language modeling, memory-assisted learning, agentic AI, self-improving AI, tic-tac-toe AI, knowing-doing gap, Claude, Anthropic, swarm agents, multi-agent systems, in-context learning, AI memory systems, KarnEvil9, prompt engineering, AI architecture, token economics, LLM cost optimization, context window scaling">
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-<link rel="canonical" href="https://github.com/oldeucryptoboi/KarnEvil9/blob/master/docs/memory-vs-rlm.html">
+  <!-- SEO -->
+  <meta name="description" content="An empirical comparison of Memory-Assisted Learning (MAL) and prompt-recursive lesson injection for enabling LLMs to improve at strategic tasks without weight updates. 72-game tic-tac-toe experiment using a 3-node swarm mesh demonstrates that hybrid memory+code architectures eliminate losses while pure prompt-recursive learning hits a reliability ceiling.">
+  <meta name="keywords" content="LLM learning, recursive language modeling, memory-assisted learning, agentic AI, self-improving AI, tic-tac-toe AI, knowing-doing gap, Claude, Anthropic, swarm agents, multi-agent systems, in-context learning, AI memory systems, KarnEvil9, prompt engineering, AI architecture, token economics, LLM cost optimization, context window scaling, Reflexion, prompt-recursive learning">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="canonical" href="https://github.com/oldeucryptoboi/KarnEvil9/blob/master/docs/memory-vs-rlm.html">
 
-<!-- Open Graph / Social -->
-<meta property="og:type" content="article">
-<meta property="og:title" content="Memory-Assisted Learning vs Recursive Language Modeling">
-<meta property="og:description" content="Can an LLM improve at a game by reading its own past failures? An empirical comparison using a swarm-based tic-tac-toe testbed shows hybrid memory+code beats pure recursive self-improvement.">
-<meta property="og:site_name" content="KarnEvil9 Project">
-<meta property="article:author" content="Laurent DeSegur">
-<meta property="article:published_time" content="2026-02-09">
-<meta property="article:section" content="AI Research">
-<meta property="article:tag" content="LLM">
-<meta property="article:tag" content="Recursive Language Modeling">
-<meta property="article:tag" content="Memory-Assisted Learning">
-<meta property="article:tag" content="Agentic AI">
-<meta property="article:tag" content="Multi-Agent Systems">
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Memory-Assisted Learning vs Recursive Language Models">
+  <meta property="og:description" content="Can an LLM improve at a game by reading its own past failures? An empirical comparison using a swarm-based tic-tac-toe testbed shows hybrid memory+code beats pure prompt-recursive self-improvement.">
+  <meta property="og:site_name" content="KarnEvil9 Project">
+  <meta property="article:author" content="Laurent DeSegur">
+  <meta property="article:published_time" content="2026-02-09">
+  <meta property="article:section" content="AI Research">
+  <meta property="article:tag" content="LLM">
+  <meta property="article:tag" content="Recursive Language Modeling">
+  <meta property="article:tag" content="Memory-Assisted Learning">
+  <meta property="article:tag" content="Agentic AI">
+  <meta property="article:tag" content="Multi-Agent Systems">
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Memory-Assisted Learning vs Recursive Language Modeling">
-<meta name="twitter:description" content="Can an LLM improve at a game by reading its own past failures? 72-game empirical study comparing two learning paradigms for LLMs without weight updates.">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Memory-Assisted Learning vs Recursive Language Models">
+  <meta name="twitter:description" content="Can an LLM improve at a game by reading its own past failures? 72-game empirical study comparing two learning paradigms for LLMs without weight updates.">
 
-<!-- Generative Engine Optimization (GEO) -->
-<meta name="citation_title" content="Memory-Assisted Learning vs Recursive Language Modeling: An Empirical Study">
-<meta name="citation_author" content="Laurent DeSegur">
-<meta name="citation_date" content="2026-02-09">
-<meta name="citation_journal_title" content="KarnEvil9 Technical Reports">
+  <!-- Generative Engine Optimization (GEO) -->
+  <meta name="citation_title" content="Memory-Assisted Learning vs Recursive Language Models: An Empirical Study">
+  <meta name="citation_author" content="Laurent DeSegur">
+  <meta name="citation_date" content="2026-02-09">
+  <meta name="citation_journal_title" content="KarnEvil9 Technical Reports">
 
-<!-- Schema.org structured data for GEO -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": "Memory-Assisted Learning vs Recursive Language Modeling: An Empirical Study",
-  "alternativeHeadline": "Can an LLM improve at a game by reading its own past failures?",
-  "author": {
-    "@type": "Person",
-    "name": "Laurent DeSegur"
-  },
-  "datePublished": "2026-02-09",
-  "description": "An empirical comparison of Memory-Assisted Learning (MAL) and Recursive Language Modeling (RLM) for enabling LLMs to improve at strategic tasks without weight updates. Using a 3-node swarm mesh tic-tac-toe testbed, we demonstrate that MAL achieves zero losses by run 3 while pure RLM hits a reliability ceiling due to the knowing-doing gap.",
-  "keywords": ["LLM learning", "recursive language modeling", "memory-assisted learning", "agentic AI", "self-improving AI", "knowing-doing gap", "multi-agent systems", "in-context learning", "token economics", "LLM cost optimization"],
-  "about": [
-    {"@type": "Thing", "name": "Large Language Models"},
-    {"@type": "Thing", "name": "Machine Learning"},
-    {"@type": "Thing", "name": "Artificial Intelligence"},
-    {"@type": "Thing", "name": "Multi-Agent Systems"}
-  ],
-  "isPartOf": {
-    "@type": "SoftwareSourceCode",
-    "name": "KarnEvil9",
-    "codeRepository": "https://github.com/oldeucryptoboi/KarnEvil9"
-  },
-  "mainEntityOfPage": {
-    "@type": "WebPage"
-  },
-  "proficiencyLevel": "Expert",
-  "dependencies": "Claude Haiku 4.5, Claude Sonnet 4.5, KarnEvil9 Swarm Package",
-  "abstract": "We compare two approaches for enabling a large language model to improve at a strategic game without weight updates: Memory-Assisted Learning (MAL), which augments an LLM with persistent external memory and programmatic rules derived from accumulated lessons, and Recursive Language Modeling (RLM), a pure self-referential loop where the model's own analytical outputs feed back into its prompt context. The LLM plays first (O) against a deterministic minimax opponent (X) with a 10% random blunder rate—the only exploitable weakness. Over 72 games, MAL learns to reliably capitalize on those blunders, achieving zero losses by run 3, while pure RLM reduces losses but cannot eliminate them, revealing a fundamental knowing-doing gap in LLM reasoning."
-}
-</script>
-<style>
-  :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1c2333;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-dim: #8b949e;
-    --accent: #58a6ff;
-    --accent2: #bc8cff;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --orange: #db6d28;
-    --cyan: #39d2c0;
-    --pink: #f778ba;
+  <!-- Schema.org structured data for GEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Memory-Assisted Learning vs Recursive Language Models: An Empirical Study",
+    "alternativeHeadline": "Can an LLM improve at a game by reading its own past failures?",
+    "author": {
+      "@type": "Person",
+      "name": "Laurent DeSegur"
+    },
+    "datePublished": "2026-02-09",
+    "description": "An empirical comparison of Memory-Assisted Learning (MAL) and prompt-recursive lesson injection for enabling LLMs to improve at strategic tasks without weight updates. The LLM plays first (O) against a deterministic minimax opponent (X) with a 10% random blunder rate. Over 72 games, MAL learns to reliably capitalize on those blunders, achieving zero losses by run 3, while prompt-recursive learning reduces losses but cannot eliminate them, revealing a fundamental knowing-doing gap in LLM reasoning.",
+    "keywords": ["LLM learning", "recursive language modeling", "memory-assisted learning", "agentic AI", "self-improving AI", "knowing-doing gap", "multi-agent systems", "in-context learning", "token economics", "LLM cost optimization", "prompt-recursive learning"],
+    "about": [
+      {"@type": "Thing", "name": "Large Language Models"},
+      {"@type": "Thing", "name": "Machine Learning"},
+      {"@type": "Thing", "name": "Artificial Intelligence"},
+      {"@type": "Thing", "name": "Multi-Agent Systems"}
+    ],
+    "isPartOf": {
+      "@type": "SoftwareSourceCode",
+      "name": "KarnEvil9",
+      "codeRepository": "https://github.com/oldeucryptoboi/KarnEvil9"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage"
+    },
+    "proficiencyLevel": "Expert",
+    "dependencies": "Claude Haiku 4.5, Claude Sonnet 4.5, KarnEvil9 Swarm Package",
+    "abstract": "We compare two approaches for enabling a large language model to improve at a strategic game without weight updates: Memory-Assisted Learning (MAL), which augments an LLM with persistent external memory and programmatic rules derived from accumulated lessons, and prompt-recursive lesson injection, where the model's own prior analytical outputs feed back into its prompt context. The LLM plays first (O) against a deterministic minimax opponent (X) with a 10% random blunder rate. Over 72 games, MAL achieves zero losses by run 3, while prompt-recursive learning reduces losses but cannot eliminate them, revealing a fundamental knowing-doing gap."
   }
+  </script>
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    font-size: 17px;
-  }
-
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-  }
-
-  /* ── Header ── */
-  .paper-header {
-    text-align: center;
-    padding: 4rem 0 3rem;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 3rem;
-  }
-  .paper-header .label {
-    display: inline-block;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    background: rgba(88,166,255,0.1);
-    border: 1px solid rgba(88,166,255,0.2);
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    margin-bottom: 1.5rem;
-  }
-  .paper-header h1 {
-    font-size: 2.4rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .paper-header .subtitle {
-    font-size: 1.15rem;
-    color: var(--text-dim);
-    max-width: 650px;
-    margin: 0 auto 1.5rem;
-  }
-  .paper-header .author {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 0.5rem;
-  }
-  .paper-header .meta {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-  }
-  .paper-header .meta span { margin: 0 0.5rem; }
-
-  /* ── Sections ── */
-  h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 3rem 0 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
-    color: var(--accent);
-  }
-  h3 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 2rem 0 0.75rem;
-    color: var(--accent2);
-  }
-  p { margin-bottom: 1rem; }
-  strong { color: #fff; }
-
-  /* ── Abstract Box ── */
-  .abstract {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.5rem 2rem;
-    margin: 2rem 0;
-  }
-  .abstract .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-  .abstract p { color: var(--text-dim); margin-bottom: 0; }
-
-  /* ── Key Finding Callout ── */
-  .callout {
-    background: linear-gradient(135deg, rgba(88,166,255,0.05), rgba(188,140,255,0.05));
-    border-left: 3px solid var(--accent);
-    padding: 1rem 1.5rem;
-    margin: 1.5rem 0;
-    border-radius: 0 8px 8px 0;
-  }
-  .callout.green { border-left-color: var(--green); }
-  .callout.red { border-left-color: var(--red); }
-  .callout.yellow { border-left-color: var(--yellow); }
-  .callout p { margin-bottom: 0; }
-
-  /* ── Tables ── */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.5rem 0;
-    font-size: 0.95rem;
-  }
-  th, td {
-    padding: 0.65rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-  th {
-    font-weight: 600;
-    color: var(--accent);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    background: var(--surface);
-  }
-  td { color: var(--text-dim); }
-  tr:hover td { color: var(--text); background: rgba(88,166,255,0.03); }
-  .win { color: var(--green); font-weight: 600; }
-  .loss { color: var(--red); font-weight: 600; }
-  .draw { color: var(--yellow); font-weight: 600; }
-
-  /* ── Charts ── */
-  .chart-container {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin: 2rem 0;
-    overflow-x: auto;
-  }
-  .chart-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-
-  /* ── SVG Chart Styles ── */
-  svg text { font-family: inherit; }
-  .axis-label { fill: var(--text-dim); font-size: 11px; }
-  .axis-line { stroke: var(--border); stroke-width: 1; }
-  .grid-line { stroke: var(--border); stroke-width: 0.5; stroke-dasharray: 3,3; opacity: 0.5; }
-
-  /* ── Diagram Boxes ── */
-  .diagram {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-    margin: 2rem 0;
-  }
-  .diagram-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    text-align: center;
-    min-width: 180px;
-    flex: 1;
-  }
-  .diagram-box .name { font-weight: 600; font-size: 0.95rem; color: var(--text); }
-  .diagram-box .desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem; }
-
-  .flow-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--accent);
-    font-size: 1.5rem;
-    min-width: 40px;
-    flex: 0;
-  }
-
-  /* ── Code ── */
-  code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    background: var(--surface);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: var(--cyan);
-  }
-  pre {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    overflow-x: auto;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    margin: 1rem 0;
-  }
-  pre code { background: none; padding: 0; }
-
-  /* ── Terminal Output ── */
-  .terminal {
-    background: #0a0e14;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin: 1.5rem 0;
-    overflow-x: auto;
-    position: relative;
-  }
-  .terminal-header {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-dim);
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .terminal-header .dots {
-    display: flex;
-    gap: 6px;
-  }
-  .terminal-header .dots span {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .terminal-header .dots .d-r { background: #f85149; }
-  .terminal-header .dots .d-y { background: #d29922; }
-  .terminal-header .dots .d-g { background: #3fb950; }
-  .terminal pre {
-    margin: 0;
-    padding: 1rem 1.25rem;
-    background: none;
-    border: none;
-    border-radius: 0;
-    font-size: 0.78rem;
-    line-height: 1.65;
-    color: var(--text-dim);
-  }
-  .terminal pre code { background: none; padding: 0; color: inherit; }
-  .t-dim { color: #484f58; }
-  .t-red { color: #f85149; }
-  .t-blue { color: #58a6ff; }
-  .t-green { color: #3fb950; }
-  .t-yellow { color: #d29922; }
-  .t-magenta { color: #bc8cff; }
-  .t-cyan { color: #39d2c0; }
-  .t-bold { font-weight: 700; color: #e6edf3; }
-  .t-win { color: #3fb950; font-weight: 700; }
-  .t-loss { color: #f85149; font-weight: 700; }
-  .t-draw { color: #d29922; font-weight: 700; }
-
-  /* ── GitHub Footer ── */
-  .github-footer {
-    margin-top: 3rem;
-    padding: 2rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    text-align: center;
-  }
-  .github-footer a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.1rem;
-  }
-  .github-footer a:hover { text-decoration: underline; }
-  .github-footer .gh-icon {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-    margin-right: 0.5rem;
-    fill: var(--text);
-  }
-  .github-footer .gh-desc {
-    color: var(--text-dim);
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-  }
-
-  /* ── Footnotes ── */
-  .footnotes {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--text-dim);
-  }
-  .footnotes p { margin-bottom: 0.5rem; }
-
-  /* ── TOC ── */
-  .toc {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem 1.5rem;
-    margin: 2rem 0;
-  }
-  .toc .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-  }
-  .toc ol { padding-left: 1.25rem; }
-  .toc li { margin-bottom: 0.35rem; }
-  .toc a { color: var(--text-dim); text-decoration: none; }
-  .toc a:hover { color: var(--accent); }
-
-  /* ── Lesson Cards ── */
-  .lesson-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin: 1rem 0;
-  }
-  @media (max-width: 640px) { .lesson-grid { grid-template-columns: 1fr; } }
-  .lesson-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
-  .lesson-card .tag {
-    display: inline-block;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-    margin-bottom: 0.35rem;
-  }
-  .lesson-card .tag.loss { background: rgba(248,81,73,0.15); color: var(--red); }
-  .lesson-card .tag.win { background: rgba(63,185,80,0.15); color: var(--green); }
-  .lesson-card .tag.draw { background: rgba(210,153,34,0.15); color: var(--yellow); }
-
-  /* ── Responsive ── */
-  @media (max-width: 640px) {
-    .paper-header h1 { font-size: 1.75rem; }
-    .container { padding: 1rem; }
-    .diagram { flex-direction: column; align-items: center; }
-    .flow-arrow { transform: rotate(90deg); }
-  }
-</style>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --fg:#111827;
+      --muted:#4b5563;
+      --border:#e5e7eb;
+      --codebg:#0b1020;
+      --codefg:#e5e7eb;
+      --accent:#2563eb;
+      --callout:#f3f4f6;
+      --warn:#fff7ed;
+      --warnborder:#fed7aa;
+      --good:#ecfdf5;
+      --goodborder:#a7f3d0;
+      --bad:#fef2f2;
+      --badborder:#fecaca;
+    }
+    html,body{background:var(--bg); color:var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; line-height:1.55; margin:0;}
+    main{max-width: 980px; margin: 0 auto; padding: 28px 18px 80px;}
+    h1,h2,h3{line-height:1.25; margin: 1.2em 0 0.5em;}
+    h1{font-size: 2.05rem; margin-top: 0.2em;}
+    h2{font-size: 1.55rem; padding-top: 0.6em; border-top: 1px solid var(--border);}
+    h3{font-size: 1.18rem;}
+    p{margin: 0.6em 0;}
+    a{color:var(--accent); text-decoration: none;}
+    a:hover{text-decoration: underline;}
+    .meta{color:var(--muted); margin-top: 6px;}
+    .author{font-size: 1.1rem; font-weight: 500; margin-top: 10px;}
+    .badge{display:inline-block; padding: 2px 10px; border:1px solid var(--border); border-radius: 999px; font-size: 0.9rem; color: var(--muted);}
+    .callout{background: var(--callout); border:1px solid var(--border); border-radius: 12px; padding: 14px 14px; margin: 16px 0;}
+    .callout.warn{background: var(--warn); border-color: var(--warnborder);}
+    .callout.good{background: var(--good); border-color: var(--goodborder);}
+    .callout.bad{background: var(--bad); border-color: var(--badborder);}
+    .toc{border:1px solid var(--border); border-radius: 12px; padding: 14px 14px; background: #fafafa;}
+    .toc ol{margin: 8px 0 0 18px;}
+    .toc li{margin: 6px 0;}
+    table{width:100%; border-collapse: collapse; margin: 12px 0;}
+    th,td{border:1px solid var(--border); padding: 10px 10px; vertical-align: top;}
+    th{background:#fafafa; text-align:left;}
+    .small{font-size: 0.95rem; color: var(--muted);}
+    .kpi{display:flex; gap:12px; flex-wrap: wrap; margin: 10px 0 0;}
+    .kpi .card{flex:1 1 220px; border:1px solid var(--border); border-radius: 12px; padding: 12px 12px; background:#fff;}
+    .kpi .label{font-size: 0.9rem; color: var(--muted);}
+    .kpi .value{font-size: 1.35rem; font-weight: 700; margin-top: 2px;}
+    code, pre{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    pre{background: var(--codebg); color: var(--codefg); padding: 14px; border-radius: 12px; overflow:auto; border: 1px solid #111827;}
+    .pill{display:inline-block; padding: 2px 8px; border:1px solid var(--border); border-radius: 999px; font-size: 0.85rem; color: var(--muted); margin-left: 6px;}
+    .barwrap{border:1px solid var(--border); border-radius: 12px; padding: 14px; background:#fff;}
+    .barrow{display:flex; align-items:center; gap:10px; margin: 9px 0;}
+    .barlabel{width: 215px; font-size: 0.95rem; color: var(--muted);}
+    .bar{height: 14px; border-radius: 999px; background:#e5e7eb; flex: 1;}
+    .bar > span{display:block; height: 14px; border-radius: 999px; background: #111827;}
+    .barvalue{width: 86px; text-align:right; font-variant-numeric: tabular-nums;}
+    .hr{height:1px; background:var(--border); margin: 18px 0;}
+    .footnotes{font-size: 0.95rem; color: var(--muted);}
+    .ref li{margin: 10px 0;}
+    .nowrap{white-space: nowrap;}
+    .gh-footer{text-align:center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border);}
+    .gh-footer a{font-weight: 600; font-size: 1.1rem;}
+    .gh-footer .gh-desc{font-size: 0.9rem; color: var(--muted); margin-top: 6px;}
+    .gh-footer .gh-desc a{font-weight: normal; font-size: inherit;}
+  </style>
 </head>
+
 <body>
+<main>
+  <header>
+    <div class="badge">Peer-reviewed revision</div>
+    <h1>Memory-Assisted Learning vs Recursive Language Models</h1>
+    <p class="meta">
+      An empirical study in Tic-Tac-Toe with an LLM learner, a minimax opponent, and a lessons buffer.
+    </p>
+    <div class="author">Laurent DeSegur</div>
+    <p class="small">February 2026 &middot; KarnEvil9 Project &middot; 72 games &middot; 72 lessons (36/phase) &middot; 6 experimental runs</p>
 
-<div class="container">
+    <div class="callout warn">
+      <strong>Terminology update (important):</strong>
+      In recent literature, <em>Recursive Language Models (RLMs)</em> refers to an inference paradigm where an LLM treats the prompt as an external environment and can programmatically inspect, decompose, and recursively invoke sub-calls over slices of the input (Zhang, Kraska, Khattab 2025). This report's Phase B is a simplified <em>prompt-recursive lesson injection</em> baseline, not a full implementation of the MIT CSAIL RLM framework.
+      <div class="small" style="margin-top:8px;">
+        See: <a href="https://arxiv.org/abs/2512.24601">arXiv:2512.24601</a> and the reference list for details.
+      </div>
+    </div>
 
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- HEADER                                                            -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<header class="paper-header">
-  <div class="label">Technical Report</div>
-  <h1>Memory-Assisted Learning vs Recursive Language Modeling</h1>
-  <p class="subtitle">
-    Can an LLM improve at a game by reading its own past failures?
-    An empirical comparison of two learning paradigms using a swarm-based tic-tac-toe testbed.
-  </p>
-  <div class="author">Laurent DeSegur</div>
-  <div class="meta">
-    <span>February 2026</span> &middot;
-    <span>KarnEvil9 Project</span> &middot;
-    <span>72 games &middot; 72 lessons (36/phase) &middot; 6 experimental runs</span>
+    <nav class="toc" aria-label="Table of contents">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#abstract">Abstract</a></li>
+        <li><a href="#background">Background and related work</a></li>
+        <li><a href="#setup">Experimental setup</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#analysis">Analysis and interpretation</a></li>
+        <li><a href="#economics">Token economics and scaling behavior</a></li>
+        <li><a href="#failure-modes">Failure modes</a></li>
+        <li><a href="#validity">Threats to validity</a></li>
+        <li><a href="#lessons">Lessons learned</a></li>
+        <li><a href="#next">What's next</a></li>
+        <li><a href="#repro">Reproducibility checklist</a></li>
+        <li><a href="#refs">References</a></li>
+      </ol>
+    </nav>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 1. ABSTRACT                                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="abstract">
+    <h2>1. Abstract</h2>
+    <p>
+      This report compares two ways of improving an LLM agent's performance via iterative self-generated learning signals while playing Tic-Tac-Toe against a strong (minimax) opponent with a small blunder rate:
+      <strong>(A) Memory-Assisted Learning (MAL)</strong>, where lessons are distilled into deterministic code rules that can override the LLM for specific decision classes, and
+      <strong>(B) Prompt-recursive lessons</strong>, where the LLM's own lessons are appended back into its prompt and all decisions remain natural-language mediated.
+    </p>
+
+    <div class="kpi">
+      <div class="card">
+        <div class="label">MAL loss rate</div>
+        <div class="value">41.7% &rarr; 0%</div>
+        <div class="small">Run 1 to Run 3 (36 games total)</div>
+      </div>
+      <div class="card">
+        <div class="label">Prompt-recursive loss rate</div>
+        <div class="value">41.7% &rarr; 25.0%</div>
+        <div class="small">Run 1 to Run 3 (36 games total)</div>
+      </div>
+      <div class="card">
+        <div class="label">Dominant failure mode</div>
+        <div class="value">Missed blocks</div>
+        <div class="small">Two-in-a-row threats not blocked</div>
+      </div>
+    </div>
+
+    <p>
+      Key finding: both approaches quickly produce <em>correct strategic statements</em> (for example, "block two-in-a-row threats"),
+      but prompt-only recursion struggles to turn those statements into reliable move-level procedures.
+      MAL closes this "knowing-doing gap" by promoting stable insights into deterministic code, yielding monotonic improvement and lower token cost once rules activate.
+    </p>
+
+    <div class="callout good">
+      <strong>Key distinction:</strong>
+      In RL, learning is stored in weights. In prompt-recursive learning, learning is stored in context.
+      The model doesn't become better&mdash;its input becomes richer. No weights change at any point in either phase.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 2. BACKGROUND                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="background">
+    <h2>2. Background and related work</h2>
+    <p>
+      This experiment sits at the intersection of three themes in modern LLM systems:
+      external memory and retrieval, agentic tool use, and inference-time scaffolding for long context.
+      Below are a few relevant research threads to contextualize this study.
+    </p>
+
+    <h3>Memory augmentation and retrieval</h3>
+    <ul>
+      <li>
+        <strong>Retrieval-Augmented Generation (RAG):</strong> combines parametric memory with retrieved documents as non-parametric memory for knowledge-intensive tasks.
+        <span class="pill">Lewis et al. 2020</span>
+      </li>
+      <li>
+        <strong>kNN-LMs and RETRO:</strong> retrieval-augmented language modeling via nearest-neighbor datastores or large retrieval corpora.
+        <span class="pill">Khandelwal et al. 2020</span>
+        <span class="pill">Borgeaud et al. 2022</span>
+      </li>
+      <li>
+        <strong>Agent memory hierarchies:</strong> systems that manage memory tiers and decide what to page in/out of context.
+        <span class="pill">Packer et al. 2023 (MemGPT)</span>
+      </li>
+    </ul>
+
+    <h3>Language feedback loops and agentic learning without weight updates</h3>
+    <ul>
+      <li>
+        <strong>Reflexion:</strong> improves agents using verbal reflection stored in an episodic memory buffer, not by updating weights.
+        <span class="pill">Shinn et al. 2023</span>
+      </li>
+      <li>
+        <strong>Generative Agents:</strong> structured memory plus reflection to support long-horizon behavior in simulations.
+        <span class="pill">Park et al. 2023</span>
+      </li>
+    </ul>
+
+    <h3>Tool use, reasoning-and-acting, and programmatic scaffolds</h3>
+    <ul>
+      <li>
+        <strong>ReAct:</strong> interleaves reasoning traces with actions that query external environments.
+        <span class="pill">Yao et al. 2022</span>
+      </li>
+      <li>
+        <strong>Toolformer:</strong> trains LMs to decide when to call external tools and incorporate results.
+        <span class="pill">Schick et al. 2023</span>
+      </li>
+    </ul>
+
+    <h3>Long-context limitations and newer RLM work</h3>
+    <ul>
+      <li>
+        <strong>Context degradation ("context rot"):</strong> empirical evidence that performance degrades with increasing input length in non-uniform ways, even when the context fits.
+        <span class="pill">Chroma Research 2025</span>
+      </li>
+      <li>
+        <strong>RULER:</strong> a benchmark that extends needle-in-a-haystack style tests into multi-hop and aggregation tasks, showing large drops as context grows.
+        <span class="pill">Hsieh et al. 2024</span>
+      </li>
+      <li>
+        <strong>Interactive reading:</strong> treating the model as an agent that decides how to read long contexts via iterative prompting (MemWalker).
+        <span class="pill">Chen et al. 2023</span>
+      </li>
+      <li>
+        <strong>Recursive Language Models (RLMs):</strong> an inference strategy that treats long prompts as an external environment and allows programmatic decomposition and recursive sub-calls.
+        <span class="pill">Zhang, Kraska, Khattab 2025</span>
+      </li>
+    </ul>
+
+    <div class="callout">
+      <strong>Where this study fits:</strong>
+      MAL is best understood as a light-weight agent architecture: the LLM creates and updates a natural-language memory, but deterministic code executes critical subroutines.
+      Phase B is closer to "reflection-in-context" (prompt-recursive learning) than to the 2025 MIT CSAIL RLM definition.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 3. EXPERIMENTAL SETUP                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="setup">
+    <h2>3. Experimental setup</h2>
+
+    <h3>Task</h3>
+    <p>
+      Tic-Tac-Toe is used as a controlled environment where optimal play is known and failure modes are easy to classify.
+      The learner always plays <strong>O</strong> and <strong>moves first</strong>&mdash;a deliberate design choice
+      that gives Claude the theoretical first-mover advantage. The opponent plays X (second) using a <strong>deterministic
+      minimax</strong> algorithm with a <strong>10% random blunder rate</strong>: on any given move there is a 1-in-10
+      chance the expert picks a random legal square instead of the optimal one. This is the <em>only</em> weakness in the
+      opponent&mdash;a narrow, stochastic window that the learner must learn to exploit.
+    </p>
+
+    <p>
+      The experimental setup thus asks a precise question: <strong>given first-move advantage and a near-perfect opponent
+      with a known 10% weak spot, can an LLM learn to reliably exploit that weakness through accumulated experience?</strong>
+    </p>
+
+    <h3>Agent testbed</h3>
+    <p>
+      The system is a three-node KarnEvil9 swarm mesh that runs repeated games and extracts lessons after each game:
+    </p>
+    <ul>
+      <li><strong>Learner agent (O):</strong> chooses moves; receives accumulated lesson text. Moves first (advantage).</li>
+      <li><strong>Opponent agent (X):</strong> deterministic minimax policy with 10% random blunder. Moves second.</li>
+      <li><strong>Referee node:</strong> coordinates games, delegates moves, extracts lessons from transcripts.</li>
+    </ul>
+
+    <h3>Phases</h3>
+
+    <h4>Phase A: Memory-Assisted Learning (MAL)</h4>
+    <p>
+      The MAL phase uses an LLM for general reasoning and lesson generation, but introduces
+      <strong>programmatic rules</strong> that can bypass the model when certain conditions are met
+      (for example, immediate win opportunities or mandatory blocks).
+      The intent is to convert reliable high-level insights into deterministic execution.
+    </p>
+
+    <h4>Phase B: Prompt-recursive lessons (simplified baseline)</h4>
+    <p>
+      The Phase B baseline removes the programmatic rule layer. Every learner move is produced by the LLM,
+      guided only by the accumulated lesson text in its prompt.
+      The original experiment used a stronger model in this phase (Claude Sonnet 4.5) to give the prompt-only approach the best chance.
+    </p>
+
+    <h3>Controls</h3>
+    <ul>
+      <li>Memory wiped between phases (Phase B starts with 0 lessons).</li>
+      <li>Same opponent configuration (deterministic minimax + 10% random blunder).</li>
+      <li>Same lesson extraction prompt.</li>
+      <li>Learner always plays O and moves first.</li>
+      <li>12 games per run, lessons persist across runs within each phase.</li>
+    </ul>
+
+    <h3>Evaluation metrics</h3>
+    <ul>
+      <li><strong>Win / loss / draw counts</strong> per run.</li>
+      <li><strong>Loss rate</strong> (losses / 12 games) per run.</li>
+      <li><strong>Failure mode labeling</strong> for each loss (missed block, fork trap, etc.).</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 4. RESULTS                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="results">
+    <h2>4. Results</h2>
+
+    <h3>Phase A: Memory-Assisted Learning (MAL)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th class="nowrap">Lessons in</th>
+          <th>Wins</th>
+          <th>Losses</th>
+          <th>Draws</th>
+          <th class="nowrap">Loss rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MAL-1 (fresh)</td><td>0</td><td>2</td><td>5</td><td>5</td><td>41.7%</td>
+        </tr>
+        <tr>
+          <td>MAL-2</td><td>12</td><td>3</td><td>1</td><td>8</td><td>8.3%</td>
+        </tr>
+        <tr>
+          <td>MAL-3</td><td>24</td><td>4</td><td>0</td><td>8</td><td>0%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="barwrap" aria-label="MAL loss rate by run">
+      <strong>MAL loss rate by run</strong>
+      <div class="barrow">
+        <div class="barlabel">MAL-1 (0 lessons)</div>
+        <div class="bar"><span style="width:41.7%"></span></div>
+        <div class="barvalue">41.7%</div>
+      </div>
+      <div class="barrow">
+        <div class="barlabel">MAL-2 (12 lessons)</div>
+        <div class="bar"><span style="width:8.3%"></span></div>
+        <div class="barvalue">8.3%</div>
+      </div>
+      <div class="barrow">
+        <div class="barlabel">MAL-3 (24 lessons)</div>
+        <div class="bar"><span style="width:0%"></span></div>
+        <div class="barvalue">0%</div>
+      </div>
+      <div class="small" style="margin-top:8px;">
+        MAL reaches 0 losses by run 3. This coincides with activation of deterministic block logic that prevents missed two-in-a-row defenses.
+      </div>
+    </div>
+
+    <h3>Phase B: Prompt-recursive lessons baseline</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th class="nowrap">Lessons in</th>
+          <th>Wins</th>
+          <th>Losses</th>
+          <th>Draws</th>
+          <th class="nowrap">Loss rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>B-1 (fresh)</td><td>0</td><td>1</td><td>5</td><td>6</td><td>41.7%</td>
+        </tr>
+        <tr>
+          <td>B-2</td><td>12</td><td>2</td><td>6</td><td>4</td><td>50.0%</td>
+        </tr>
+        <tr>
+          <td>B-3</td><td>24</td><td>1</td><td>3</td><td>8</td><td>25.0%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="barwrap" aria-label="Prompt-recursive loss rate by run">
+      <strong>Prompt-recursive loss rate by run</strong>
+      <div class="barrow">
+        <div class="barlabel">B-1 (0 lessons)</div>
+        <div class="bar"><span style="width:41.7%"></span></div>
+        <div class="barvalue">41.7%</div>
+      </div>
+      <div class="barrow">
+        <div class="barlabel">B-2 (12 lessons)</div>
+        <div class="bar"><span style="width:50.0%"></span></div>
+        <div class="barvalue">50.0%</div>
+      </div>
+      <div class="barrow">
+        <div class="barlabel">B-3 (24 lessons)</div>
+        <div class="bar"><span style="width:25.0%"></span></div>
+        <div class="barvalue">25.0%</div>
+      </div>
+      <div class="small" style="margin-top:8px;">
+        Note the non-monotonic trajectory: more lessons can help, but can also add noise or conflicting guidance.
+      </div>
+    </div>
+
+    <h3>Head-to-head comparison</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th class="nowrap">MAL loss rate</th>
+          <th class="nowrap">Prompt-recursive loss rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Run 1 (fresh)</td><td>41.7%</td><td>41.7%</td></tr>
+        <tr><td>Run 2 (12 lessons)</td><td>8.3%</td><td>50.0%</td></tr>
+        <tr><td>Run 3 (24 lessons)</td><td>0%</td><td>25.0%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Failure mode breakdown</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Failure mode (losses only)</th>
+          <th>MAL occurrences</th>
+          <th>Prompt-recursive occurrences</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Failed to block a two-in-a-row threat</td>
+          <td>4 (67%)</td>
+          <td>9 (64%)</td>
+        </tr>
+        <tr>
+          <td>Fell into a fork trap</td>
+          <td>1 (17%)</td>
+          <td>3 (21%)</td>
+        </tr>
+        <tr>
+          <td>Poor positional play (edges over corners)</td>
+          <td>1 (17%)</td>
+          <td>2 (14%)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 5. ANALYSIS                                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="analysis">
+    <h2>5. Analysis and interpretation</h2>
+
+    <h3>The knowing-doing gap</h3>
+    <p>
+      After only a few games, both systems produced lessons that describe correct strategy:
+      "block two-in-a-row threats immediately", "prioritize corners over edges", "avoid fork setups".
+      The surprise is that the prompt-recursive baseline still repeatedly failed at the simplest procedural task:
+      reliably <em>detecting</em> and <em>blocking</em> imminent threats on the board.
+    </p>
+
+    <p>
+      A natural-language lesson like "always block when the opponent has two in a row" is correct but underspecified as an algorithm.
+      It does not force an explicit scan over all eight winning lines or a deterministic mapping from board state to block action.
+      In other words, the lesson is <em>strategic</em> but not <em>procedural</em>.
+      MAL reduces this gap by compiling the strategy into deterministic control logic.
+    </p>
+
+    <h3>Convergence characteristics</h3>
+    <p>
+      MAL improves monotonically (5 &rarr; 1 &rarr; 0 losses), consistent with the idea that deterministic rules do not regress once enabled.
+      The prompt-recursive baseline is non-monotonic (5 &rarr; 6 &rarr; 3 losses): adding more lesson text can introduce conflict,
+      redundancy, or prompt drift, which is consistent with broader observations that longer contexts do not guarantee better performance.
+    </p>
+
+    <div class="callout">
+      <strong>Connection to long-context research:</strong>
+      While this experiment is small, the non-monotonic behavior aligns with findings from long-context evaluation work showing
+      that performance often degrades as context grows, and that naive "just add more context" approaches are brittle.
+      See Chroma's Context Rot report and the RULER benchmark in the references.
+    </div>
+
+    <h3>Purity vs practicality</h3>
+    <p>
+      The prompt-recursive baseline is attractive because it is simple: no special tooling and no hand-written heuristics.
+      However, in environments where correctness depends on exact symbolic checks (like threat detection),
+      handing control back to deterministic code can be a large win in both reliability and compute.
+    </p>
+
+    <p>
+      The prompt-recursive approach used Claude Sonnet 4.5 (a significantly more capable model than Haiku 4.5) yet still
+      underperformed MAL with Haiku. This suggests that the bottleneck isn't model capability&mdash;it's the
+      <strong>representation gap</strong> between natural language lessons and procedural execution. A weaker model
+      with code-level scaffolding outperforms a stronger model with only natural language self-guidance.
+    </p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 6. TOKEN ECONOMICS                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="economics">
+    <h2>6. Token economics and scaling behavior</h2>
+
+    <h3>Per-move token growth</h3>
+    <p>
+      Both approaches inject lessons into the learner prompt, so input tokens grow approximately linearly with the number of lessons:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Lessons in memory</th>
+          <th>Estimated input tokens per move</th>
+          <th>Where observed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>~300</td><td>Run 1, game 1</td></tr>
+        <tr><td>12</td><td>~660</td><td>Run 2, game 1</td></tr>
+        <tr><td>24</td><td>~1,020</td><td>Run 3, game 1</td></tr>
+        <tr><td>36</td><td>~1,380</td><td>Run 3, game 12</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Decomposing the cost advantage</h3>
+    <p>
+      Once deterministic rules are active, MAL reduces the number of LLM calls per game by bypassing the model
+      for forced tactical decisions (immediate wins and mandatory blocks):
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>MAL (Run 3)</th>
+          <th>Prompt-recursive (Run 3)</th>
+          <th>Prompt-recursive (same model)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>LLM calls per game</strong></td><td>~3.5</td><td>~6</td><td>~6</td></tr>
+        <tr><td><strong>Total tokens per game</strong></td><td>~3,100</td><td>~5,800</td><td>~5,800</td></tr>
+        <tr><td><strong>Estimated per run (12 games)</strong></td><td>~37,000</td><td>~70,000</td><td>~70,000</td></tr>
+        <tr><td><strong>Model</strong></td><td>Haiku 4.5</td><td>Sonnet 4.5</td><td>Haiku 4.5</td></tr>
+        <tr><td><strong>Estimated cost per run</strong></td><td>~$0.03</td><td>~$0.25</td><td>~$0.06</td></tr>
+      </tbody>
+    </table>
+
+    <p>
+      The headline comparison&mdash;MAL at ~$0.03 vs prompt-recursive at ~$0.25&mdash;is ~8&times;, but this conflates two independent variables:
+    </p>
+
+    <ol>
+      <li><strong>Architectural advantage (~2&times;):</strong> MAL's programmatic rules bypass Claude for
+      ~50% of moves. This savings is intrinsic to the architecture&mdash;code execution is always cheaper
+      than LLM inference, regardless of which model you use.</li>
+      <li><strong>Model pricing advantage (~4&times;):</strong> MAL used Haiku ($0.80/M input) while Phase B
+      used Sonnet ($3/M input). This was a deliberate experimental choice&mdash;MAL's scaffolding
+      compensates for a weaker model&mdash;but it's a design decision, not an inherent property of MAL.</li>
+    </ol>
+
+    <p>
+      The third column shows the fair apples-to-apples comparison: prompt-recursive on the same Haiku model would cost
+      ~$0.06 per run, making MAL only ~2&times; cheaper. The architectural token savings is real but modest.
+      The larger implication is that MAL <strong>enables the use of cheaper models</strong> by offloading
+      critical decisions to code, while prompt-recursive learning demands a more capable (and more expensive) model because
+      every decision flows through the LLM.
+    </p>
+
+    <h3>Scaling: neither has infinite context</h3>
+
+    <p>
+      A natural question is whether the prompt-recursive approach offers a scaling advantage through "infinite context."
+      This is a misconception. <strong>Both approaches are bounded by the context window</strong>, and MAL actually scales better:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Scaling property</th>
+          <th>MAL</th>
+          <th>Prompt-recursive</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Knowledge in context</strong></td>
+          <td>Only unpromoted lessons</td>
+          <td>All lessons (entire history)</td>
+        </tr>
+        <tr>
+          <td><strong>Knowledge in code</strong></td>
+          <td>Promoted rules (zero tokens)</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td><strong>Context pressure at scale</strong></td>
+          <td>Low (lessons graduate to code)</td>
+          <td>High (all lessons stay in prompt)</td>
+        </tr>
+        <tr>
+          <td><strong>Cost trajectory</strong></td>
+          <td>Flattens as rules absorb patterns</td>
+          <td>Grows linearly with experience</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      In MAL, high-confidence lessons are <strong>promoted to deterministic code</strong>, removing them
+      from the context window entirely. MAL's context pressure <em>decreases</em> as the system matures,
+      while prompt-recursive context pressure only grows.
+    </p>
+
+    <div class="callout warn">
+      <strong>Note:</strong> cost values are estimates that depend on provider pricing, tokenization details, and exact prompts.
+      Use them as order-of-magnitude guidance, not a guaranteed bill.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 7. FAILURE MODES                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="failure-modes">
+    <h2>7. Failure modes</h2>
+
+    <h3>Training signals for recursive control</h3>
+
+    <p>
+      Our experiment fixed the recursion structure externally: 12 games per run, 3 runs per phase, one lesson
+      per game. A full recursive system would need the model to control its own recursion&mdash;deciding <em>when</em>
+      to recurse deeper, <em>when</em> to consolidate, and <em>when</em> to stop. The data suggests three
+      training signals that would be needed:
+    </p>
+
+    <p>
+      <strong>Lesson similarity as a halt signal.</strong> By run 3, over 70% of lessons were restatements of
+      "take opposite corners" and "block two-in-a-row." A system measuring semantic similarity between new
+      and existing lessons could detect this saturation. Signal: <em>if the last K lessons have cosine similarity
+      &gt; 0.85 with existing lessons, stop recursing and synthesize.</em>
+    </p>
+
+    <p>
+      <strong>Performance plateau as a depth signal.</strong> Phase B run 2 performed <em>worse</em> than run 1
+      despite twice the lessons. A system monitoring its own win/loss rate across iterations could
+      detect this regression. Signal: <em>if loss rate hasn't decreased over N iterations, change the recursion
+      strategy rather than continuing the current one.</em>
+    </p>
+
+    <p>
+      <strong>Contradiction detection as a consolidation trigger.</strong> Our data shows directly contradictory
+      lessons accumulating: game 5 says "prioritize offense over defense," game 6 says "block before pursuing
+      threats." Signal: <em>if lessons contain opposing directives for the same game state, recurse into a
+      consolidation pass before continuing play.</em>
+    </p>
+
+    <p>
+      These signals point toward a <strong>meta-recursive architecture</strong>: the outer loop generates
+      experience, an inner loop monitors the quality of that experience, and a control layer decides whether
+      to continue, consolidate, or terminate. The performance regression in Phase B run 2 is exactly what
+      happens without it.
+    </p>
+
+    <h3>Looping hallucinations</h3>
+
+    <p>
+      The self-referential feedback loop creates a specific failure mode that traditional RL systems
+      don't face: <strong>looping hallucinations</strong>, where the model's own incorrect outputs compound
+      through iterations, creating a degenerative spiral.
+    </p>
+
+    <p>
+      We observed a mild form in our data. The learner generated contradictory lessons across games 5-6:
+      one advocating offense, the other defense. In subsequent games the model oscillated between them,
+      unable to determine which applies to the current board state because the lessons lack
+      conditional specificity to disambiguate.
+    </p>
+
+    <div class="callout bad">
+      <strong>Degenerative loop:</strong> Model produces incorrect analysis &rarr; incorrect analysis
+      becomes a lesson &rarr; lesson biases future reasoning &rarr; biased reasoning produces more
+      incorrect analysis &rarr; each iteration reinforces the error. Unlike RL, where gradient updates
+      can correct course through reward signals, prompt-recursive learning has <strong>no error-correction
+      mechanism</strong>. A bad lesson persists in the context window indefinitely.
+    </div>
+
+    <p>
+      In our experiment, this was bounded by tic-tac-toe's simplicity. In open-ended domains (code generation,
+      strategic planning, research synthesis), a looping hallucination could be catastrophic: the model
+      confidently generates an incorrect pattern, encodes it as a lesson, and applies it to every subsequent
+      task, each application generating a new lesson that further reinforces the mistake.
+    </p>
+
+    <p><strong>Mitigations:</strong></p>
+    <ul>
+      <li><strong>External validation:</strong> ground-truth checks on lesson accuracy before they enter the store.</li>
+      <li><strong>Lesson decay:</strong> reduce weight of older lessons, allowing the system to "forget" early mistakes.</li>
+      <li><strong>Adversarial self-critique:</strong> ask the model to argue against each new lesson before accepting it.</li>
+      <li><strong>Promotion to code (MAL's approach):</strong> code is verifiable in ways that natural language lessons are not.</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 8. THREATS TO VALIDITY                                         -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="validity">
+    <h2>8. Threats to validity</h2>
+    <ul>
+      <li>
+        <strong>Model mismatch across phases:</strong> the prompt-recursive baseline used a stronger model (Sonnet) than MAL (Haiku).
+        This makes the result conservative in MAL's favor on reliability, but it complicates attributing differences solely to architecture.
+      </li>
+      <li>
+        <strong>Small sample size:</strong> 36 games per phase is enough to observe large effect sizes (like 0 vs non-zero losses),
+        but not enough to precisely estimate variance or small differences.
+      </li>
+      <li>
+        <strong>Non-independence:</strong> lessons accumulate across runs within a phase, so runs are not independent trials.
+      </li>
+      <li>
+        <strong>Opponent stochasticity:</strong> a 10% blunder rate adds variance; some wins/losses may be opponent noise rather than learner improvement.
+      </li>
+      <li>
+        <strong>Prior knowledge:</strong> LLMs likely have pretraining exposure to Tic-Tac-Toe optimal strategy.
+        Measured improvements are about <em>execution consistency</em> given a prompt and scaffolding, not about learning the game from scratch.
+      </li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 9. LESSONS LEARNED                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="lessons">
+    <h2>9. Lessons learned</h2>
+
+    <p>
+      This toy domain is small enough to make failure modes legible, and that is the point.
+      The experiments suggest a few practical lessons about "learning without weight updates" in LLM agents.
+    </p>
+
+    <ul>
+      <li>
+        <strong>Natural-language advice is not a procedure.</strong>
+        The agent can often verbalize correct strategy while still failing to execute the corresponding scan-and-act routine.
+        Reliability improves when the strategy is compiled into an explicit algorithm.
+      </li>
+      <li>
+        <strong>Memory helps until it becomes clutter.</strong>
+        Accumulating lessons can improve behavior, but it can also introduce redundancy, conflict, and prompt drift.
+        Without deduplication and consolidation, longer lesson buffers can be non-monotonic in performance.
+      </li>
+      <li>
+        <strong>Deterministic promotion yields monotonicity.</strong>
+        Once a rule is expressed as code, it does not "forget" or regress, and it lowers variance introduced by sampling.
+      </li>
+      <li>
+        <strong>Benchmarks must separate policy improvement from opponent randomness.</strong>
+        A blunder-rate opponent is a reasonable way to avoid draw-only play, but it injects variance.
+        Reporting random seeds, realized blunders, and confidence intervals matters even in small domains.
+      </li>
+      <li>
+        <strong>Terminology needs to match the current literature.</strong>
+        "Recursive Language Models" has a specific meaning in recent long-context work.
+        If the system is a lesson-injection loop rather than a full prompt-as-environment recursive decomposition framework, naming it explicitly prevents confusion.
+      </li>
+    </ul>
+
+    <div class="callout good">
+      <strong>Design pattern:</strong>
+      Use the LLM to explore, hypothesize, and summarize.
+      Use deterministic code to execute the parts that demand perfect precision or exhaustive checks.
+      Treat promotion-to-code as a reliability and cost optimization, not as a retreat from learning.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 10. WHAT'S NEXT                                                -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="next">
+    <h2>10. What's next</h2>
+
+    <p>
+      The current results are useful as a mechanistic demonstration, but they are not yet strong evidence about general learning dynamics.
+      The most valuable follow-ups fall into three buckets: tightening evaluation, strengthening the memory loop, and testing generality.
+    </p>
+
+    <h3>Tighten the evaluation</h3>
+    <ol>
+      <li>
+        <strong>Remove the model confound:</strong> run both conditions on the same base model (and ideally on at least two models) to isolate architecture from capability.
+      </li>
+      <li>
+        <strong>Add a true no-learning baseline:</strong> same prompts and model, but with lessons disabled and no deterministic rules.
+      </li>
+      <li>
+        <strong>Increase sample size and control randomness:</strong> run more games per condition, fix opponent seeds, and report confidence intervals for loss rates and key failure modes.
+      </li>
+      <li>
+        <strong>Measure tokens and latency:</strong> replace estimated token counts with measured input-output token logs per call, per game, and per run.
+      </li>
+    </ol>
+
+    <h3>Strengthen the learning loop</h3>
+    <ol>
+      <li>
+        <strong>Lesson consolidation:</strong> deduplicate and merge lessons into a small canonical set, with explicit conflict detection and versioning.
+      </li>
+      <li>
+        <strong>Verification gates:</strong> before accepting a lesson, test it against a verifier or simulator.
+        For Tic-Tac-Toe this can be exact: validate that a proposed rule never increases loss probability against minimax.
+      </li>
+      <li>
+        <strong>Structured lessons:</strong> experiment with JSON schemas or checklists (for example, "scan all 8 lines, block if any has 2 opponent marks and 1 empty").
+        This tests whether failures are due to language ambiguity or due to attention and execution.
+      </li>
+      <li>
+        <strong>Full RLM-style scaffolding:</strong> implement a prompt-as-environment REPL workflow and recursive sub-calls to align with modern RLM definitions in the literature.
+      </li>
+    </ol>
+
+    <h3>Test generality beyond Tic-Tac-Toe</h3>
+    <ol>
+      <li>
+        <strong>Harder games:</strong> small board games with larger state spaces and more tactical patterns (for example, Connect Four) will stress both search and memory.
+      </li>
+      <li>
+        <strong>Long-context tasks:</strong> apply the same MAL vs prompt-recursive baseline to long-document QA, codebase navigation, or deep-research benchmarks.
+      </li>
+      <li>
+        <strong>Agentic workflows:</strong> evaluate whether promotion-to-code improves stability in multi-step tool-use tasks, where verbal plans often fail at execution details.
+      </li>
+    </ol>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 11. REPRODUCIBILITY CHECKLIST                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="repro">
+    <h2>11. Reproducibility checklist</h2>
+
+    <div class="callout">
+      <strong>Code location:</strong> <a href="https://github.com/oldeucryptoboi/KarnEvil9">github.com/oldeucryptoboi/KarnEvil9</a>
+      <br />
+      <span class="small">Experiment driver: <a href="https://github.com/oldeucryptoboi/KarnEvil9/blob/master/scripts/tic-tac-toe-swarm.ts"><code>scripts/tic-tac-toe-swarm.ts</code></a></span>
+    </div>
+
+    <ul>
+      <li><strong>Models:</strong> Claude Haiku 4.5 (Phase A), Claude Sonnet 4.5 (Phase B).</li>
+      <li><strong>Opponent policy:</strong> deterministic minimax + 10% random blunder rate.</li>
+      <li><strong>Runs:</strong> 3 runs per phase, 12 games per run.</li>
+      <li><strong>Lesson persistence:</strong> within-phase accumulation (0 &rarr; 12 &rarr; 24 lessons).</li>
+      <li><strong>Key prompts:</strong> system prompt for the learner, and the post-game lesson extraction prompt.</li>
+      <li><strong>Random seeds:</strong> record and fix seeds for opponent blunders and any sampling (if applicable).</li>
+      <li><strong>Logging:</strong> store full game transcripts and lessons per game.</li>
+    </ul>
+
+    <p class="small">
+      If you are publishing results, consider adding: exact model versions, temperature/top-p settings, max tokens, and a reproducible environment lockfile.
+    </p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 12. REFERENCES                                                 -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <section id="refs">
+    <h2>12. References</h2>
+    <ol class="ref">
+      <li>
+        Zhang, A. L., Kraska, T., Khattab, O. (2025). <em>Recursive Language Models</em>. arXiv:2512.24601.
+        <a href="https://arxiv.org/abs/2512.24601">arXiv</a>,
+        <a href="https://arxiv.org/pdf/2512.24601">PDF</a>,
+        <a href="https://github.com/alexzhang13/rlm">code</a>.
+      </li>
+      <li>
+        Lewis, P. et al. (2020). <em>Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</em>. arXiv:2005.11401.
+        <a href="https://arxiv.org/abs/2005.11401">arXiv</a>.
+      </li>
+      <li>
+        Khandelwal, U. et al. (2020). <em>Generalization through Memorization: Nearest Neighbor Language Models</em>. ICLR 2020. arXiv:1911.00172.
+        <a href="https://arxiv.org/abs/1911.00172">arXiv</a>.
+      </li>
+      <li>
+        Borgeaud, S. et al. (2022). <em>Improving Language Models by Retrieving from Trillions of Tokens</em>. ICML 2022. arXiv:2112.04426.
+        <a href="https://arxiv.org/abs/2112.04426">arXiv</a>.
+      </li>
+      <li>
+        Packer, C. et al. (2023). <em>MemGPT: Towards LLMs as Operating Systems</em>. arXiv:2310.08560.
+        <a href="https://arxiv.org/abs/2310.08560">arXiv</a>.
+      </li>
+      <li>
+        Shinn, N. et al. (2023). <em>Reflexion: Language Agents with Verbal Reinforcement Learning</em>. arXiv:2303.11366.
+        <a href="https://arxiv.org/abs/2303.11366">arXiv</a>.
+      </li>
+      <li>
+        Park, J. S. et al. (2023). <em>Generative Agents: Interactive Simulacra of Human Behavior</em>. arXiv:2304.03442.
+        <a href="https://arxiv.org/abs/2304.03442">arXiv</a>.
+      </li>
+      <li>
+        Yao, S. et al. (2022). <em>ReAct: Synergizing Reasoning and Acting in Language Models</em>. arXiv:2210.03629.
+        <a href="https://arxiv.org/abs/2210.03629">arXiv</a>.
+      </li>
+      <li>
+        Schick, T. et al. (2023). <em>Toolformer: Language Models Can Teach Themselves to Use Tools</em>. arXiv:2302.04761.
+        <a href="https://arxiv.org/abs/2302.04761">arXiv</a>.
+      </li>
+      <li>
+        Chroma Research (2025). <em>Context Rot: How Increasing Input Tokens Impacts LLM Performance</em>.
+        <a href="https://research.trychroma.com/context-rot">report</a>.
+      </li>
+      <li>
+        Hsieh, C.-P. et al. (2024). <em>RULER: What's the Real Context Size of Your Long-Context Language Models?</em> arXiv:2404.06654.
+        <a href="https://arxiv.org/abs/2404.06654">arXiv</a>.
+      </li>
+      <li>
+        Chen, H. et al. (2023). <em>Walking Down the Memory Maze: Beyond Context Limit through Interactive Reading</em>. arXiv:2310.05029.
+        <a href="https://arxiv.org/abs/2310.05029">arXiv</a>.
+      </li>
+      <li>
+        Chen, Z. et al. (2025). <em>BrowseComp-Plus: A More Fair and Transparent Evaluation Benchmark of Deep-Research Agent</em>. arXiv:2508.06600.
+        <a href="https://arxiv.org/abs/2508.06600">arXiv</a>.
+      </li>
+    </ol>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- GITHUB FOOTER                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="gh-footer">
+    <a href="https://github.com/oldeucryptoboi/KarnEvil9" target="_blank" rel="noopener">
+      github.com/oldeucryptoboi/KarnEvil9
+    </a>
+    <div class="gh-desc">
+      Full source code, swarm package, demo scripts, and this paper &mdash;
+      <a href="https://github.com/oldeucryptoboi/KarnEvil9/blob/master/scripts/tic-tac-toe-swarm.ts" target="_blank" rel="noopener">tic-tac-toe experiment</a> &middot;
+      <a href="https://github.com/oldeucryptoboi/KarnEvil9/tree/master/packages/swarm" target="_blank" rel="noopener">swarm package</a> &middot;
+      <a href="https://github.com/oldeucryptoboi/KarnEvil9/tree/master/packages/memory" target="_blank" rel="noopener">memory package</a>
+    </div>
   </div>
-</header>
 
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- ABSTRACT                                                          -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<div class="abstract">
-  <div class="label">Abstract</div>
-  <p>
-    We compare two approaches for enabling a large language model (LLM) to improve at a strategic game
-    without any weight updates. <strong>Memory-Assisted Learning (MAL)</strong> combines an LLM with a persistent
-    lesson store and programmatic rules that activate once sufficient experience accumulates.
-    <strong>Recursive Language Modeling (RLM)</strong>&mdash;specifically, the self-referential context feedback
-    loop, where the LLM's own prior analytical outputs are injected back as input for future
-    decisions. No weights change; the model doesn't become better&mdash;its input becomes richer.
-    Over 72 tic-tac-toe games across 6 runs, MAL achieved a <strong>0-loss steady state</strong> by its third run,
-    while pure RLM reduced losses by 40% but could not fully eliminate them. We analyze the convergence
-    characteristics, token economics, failure modes, and implications of each approach for agentic AI systems.
-  </p>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- TABLE OF CONTENTS                                                 -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<div class="toc">
-  <div class="label">Contents</div>
-  <ol>
-    <li><a href="#introduction">Introduction</a></li>
-    <li><a href="#definitions">Definitions: MAL vs RLM</a></li>
-    <li><a href="#testbed">Experimental Testbed</a></li>
-    <li><a href="#methodology">Methodology</a></li>
-    <li><a href="#results">Results</a></li>
-    <li><a href="#analysis">Analysis</a></li>
-    <li><a href="#token-economics">Token Economics</a></li>
-    <li><a href="#lesson-evolution">Lesson Evolution</a></li>
-    <li><a href="#output">Raw Experimental Output</a></li>
-    <li><a href="#implications">Implications for Agentic Systems</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
-  </ol>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 1. INTRODUCTION                                                   -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="introduction">1. Introduction</h2>
-
-<p>
-  Large language models have demonstrated remarkable few-shot learning capabilities, but a fundamental
-  question remains: <strong>can an LLM improve at a task over time without changing its weights?</strong>
-  Traditional reinforcement learning updates model parameters through reward signals. But LLMs operate
-  with frozen weights at inference time. Any "learning" must happen through their input context.
-</p>
-
-<p>
-  This creates two possible approaches. The first augments the LLM with external memory and programmatic
-  scaffolding&mdash;using structured systems to store, retrieve, and act on past experience. The second
-  takes a more radical approach: feed the model its own prior outputs and see if self-generated context
-  alone drives improvement. We call this second approach <strong>Recursive Language Modeling (RLM)</strong>,
-  though our experiment tests a specific, narrow form of it: the self-referential context feedback loop,
-  stripped of the richer recursive machinery (model-controlled decomposition, structured state, learned
-  halting) that a full RLM system might entail.
-</p>
-
-<p>
-  We tested both approaches using a deliberately simple domain: tic-tac-toe. A game with solved optimal play
-  lets us measure exactly how far each approach gets from perfect, and where it fails.
-</p>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 2. DEFINITIONS                                                    -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="definitions">2. Definitions: MAL vs RLM</h2>
-
-<h3>Memory-Assisted Learning (MAL)</h3>
-<p>
-  MAL combines three components: an LLM for decision-making, a <strong>persistent memory store</strong>
-  (ActiveMemory) that accumulates lessons across sessions, and <strong>programmatic rules</strong> that
-  activate after sufficient experience. The rules are simple deterministic checks&mdash;e.g., "if opponent
-  has two in a row and the third square is empty, block it"&mdash;that encode lessons the LLM has already
-  articulated in natural language but cannot reliably execute.
-</p>
-
-<div class="diagram">
-  <div class="diagram-box">
-
-    <div class="name">LLM (Claude)</div>
-    <div class="desc">Strategic reasoning<br>+ lesson extraction</div>
-  </div>
-  <div class="flow-arrow">+</div>
-  <div class="diagram-box">
-
-    <div class="name">ActiveMemory</div>
-    <div class="desc">JSONL lesson store<br>persists across runs</div>
-  </div>
-  <div class="flow-arrow">+</div>
-  <div class="diagram-box">
-
-    <div class="name">Programmatic Rules</div>
-    <div class="desc">Deterministic overrides<br>activated by lesson count</div>
-  </div>
-</div>
-
-<p>
-  The programmatic rules represent a <strong>knowledge crystallization</strong> step: once the LLM has
-  generated enough lessons about blocking (e.g., 3+ lessons mentioning threat detection), the system
-  promotes that insight from "soft" natural language guidance to "hard" code. This is analogous to how
-  humans develop automatic reflexes from repeated conscious practice.
-</p>
-
-<h3>Recursive Language Modeling (RLM)</h3>
-
-<p>
-  In its fullest form, RLM describes a system where a language model <strong>operates on its own prior
-  outputs</strong> to progressively refine its behavior. The complete recursive machinery includes:
-</p>
-
-<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>Self-application over prior context:</strong> The model's outputs from one iteration become inputs to the next.</li>
-  <li><strong>Structured working state:</strong> The model maintains and updates an explicit internal representation between iterations.</li>
-  <li><strong>Model-controlled decomposition:</strong> The model itself decides how to break problems into subproblems.</li>
-  <li><strong>Learned halting:</strong> The model determines when to stop iterating&mdash;not an external protocol.</li>
-  <li><strong>Dynamic recursion depth:</strong> Depth varies based on problem complexity, chosen by the model at runtime.</li>
-</ul>
-
-<p>
-  <strong>What we tested is a deliberate subset.</strong> Our experiment implements only the first
-  element&mdash;self-application over prior context&mdash;in its simplest form: a flat loop where
-  lessons extracted from prior games are injected back into the prompt for future games.
-</p>
-
-<div class="chart-container">
-  <svg viewBox="0 0 800 140" xmlns="http://www.w3.org/2000/svg">
-    <!-- Boxes -->
-    <rect x="20" y="40" width="150" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
-    <text x="95" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Claude plays</text>
-    <text x="95" y="85" text-anchor="middle" fill="#8b949e" font-size="11">game move</text>
-
-    <rect x="230" y="40" width="150" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
-    <text x="305" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Claude analyzes</text>
-    <text x="305" y="85" text-anchor="middle" fill="#8b949e" font-size="11">extracts lesson</text>
-
-    <rect x="440" y="40" width="150" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
-    <text x="515" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Lesson store</text>
-    <text x="515" y="85" text-anchor="middle" fill="#8b949e" font-size="11">append-only JSONL</text>
-
-    <rect x="650" y="40" width="130" height="60" rx="8" fill="#1c2333" stroke="#30363d"/>
-    <text x="715" y="67" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Next game</text>
-    <text x="715" y="85" text-anchor="middle" fill="#8b949e" font-size="11">lessons &#x2192; prompt</text>
-
-    <!-- Arrows -->
-    <line x1="170" y1="70" x2="225" y2="70" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
-    <line x1="380" y1="70" x2="435" y2="70" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
-    <line x1="590" y1="70" x2="645" y2="70" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
-
-    <!-- Recursive arrow -->
-    <path d="M715 100 L715 125 L95 125 L95 105" fill="none" stroke="#bc8cff" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow2)"/>
-    <text x="405" y="120" text-anchor="middle" fill="#bc8cff" font-size="10" font-style="italic">self-referential feedback loop</text>
-
-    <defs>
-      <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-        <path d="M0,0 L8,4 L0,8" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
-      </marker>
-      <marker id="arrow2" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto">
-        <path d="M0,0 L4,8 L8,0" fill="none" stroke="#bc8cff" stroke-width="1.5"/>
-      </marker>
-    </defs>
-  </svg>
-</div>
-
-<p>
-  Each turn is a single forward pass. The number of games, the number of runs, and when to stop are
-  all determined by the experimental protocol&mdash;not by the model. There is no recursive
-  decomposition of subproblems, no model-written control policy, and no learned termination condition.
-  The "recursion" is limited to the fact that <strong>outputs from iteration N become inputs to
-  iteration N+1</strong>.
-</p>
-
-<p>
-  This narrow scope is intentional. By isolating the self-referential context loop from the richer
-  recursive machinery, we can measure its contribution cleanly: <em>how much does feeding a model its
-  own prior analyses improve its performance, all else being equal?</em>
-</p>
-
-<p>
-  Crucially, <strong>no weights change</strong>. The model is the same frozen checkpoint throughout.
-  All improvement comes from the evolving context&mdash;the growing library of self-generated lessons
-  that shape future decisions. This is fundamentally different from reinforcement learning, which
-  updates parameters through gradient descent on reward signals.
-</p>
-
-<div class="callout">
-  <p>
-    <strong>Key distinction:</strong> In RL, learning is stored in weights. In RLM, learning is stored
-    in context. The model doesn't become better&mdash;its input becomes richer.
-  </p>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 3. TESTBED                                                        -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="testbed">3. Experimental Testbed</h2>
-
-<p>
-  We built a three-node swarm using the KarnEvil9 mesh networking package. Each node runs an Express
-  server with full peer-to-peer communication over HTTP, coordinated through a referee node.
-</p>
-
-<div class="diagram">
-  <div class="diagram-box" style="border-color: var(--yellow);">
-
-    <div class="name">Referee</div>
-    <div class="desc">Port 3200<br>Coordinates games<br>Delegates moves</div>
-  </div>
-  <div class="diagram-box" style="border-color: var(--red);">
-
-    <div class="name">Expert (X)</div>
-    <div class="desc">Port 3201<br>Deterministic minimax<br>10% random blunder</div>
-  </div>
-  <div class="diagram-box" style="border-color: var(--accent);">
-
-    <div class="name">Learner (O)</div>
-    <div class="desc">Port 3202<br>Claude + Memory<br>Moves first (advantage)</div>
-  </div>
-</div>
-
-<h3>Expert Node</h3>
-<p>
-  The expert plays X (second) using the <strong>minimax algorithm</strong>&mdash;a deterministic, provably
-  optimal strategy for tic-tac-toe that evaluates every possible future game state and selects the move
-  that minimizes the opponent's best outcome. Against perfect play, minimax is unbeatable. However, to
-  create a learnable signal, the expert has a <strong>10% uniform blunder rate</strong>: on any given move,
-  there is a 1-in-10 chance the expert picks a random legal square instead of the optimal one. This is the
-  <em>only</em> weakness in the opponent&mdash;a narrow, stochastic window that the learner must learn to exploit.
-</p>
-
-<h3>Learner Node</h3>
-<p>
-  The learner plays O and <strong>always moves first</strong>. This is a deliberate design choice: in
-  tic-tac-toe, the first player has a theoretical advantage&mdash;with perfect play, X (first mover)
-  can force at least a draw, and against imperfect opponents can force a win. By giving Claude the
-  first-move advantage <em>and</em> providing the expert with a 10% blunder rate, the experiment creates
-  a scenario where winning is genuinely achievable but only if the learner can reliably execute correct
-  strategy. The question isn't <em>whether</em> Claude can identify winning patterns, but whether it can
-  consistently capitalize on the expert's rare mistakes when they occur.
-</p>
-
-<p>
-  On each move, the learner receives the current board state plus all accumulated lessons as its prompt.
-  After each game, a separate Claude call analyzes the complete game transcript and extracts a single
-  generalizable lesson, which is appended to the persistent lesson store. This creates a feedback loop
-  where past failures directly inform future play.
-</p>
-
-<h3>Why Tic-Tac-Toe?</h3>
-<p>
-  Tic-tac-toe was chosen for three properties: (1) it has <strong>solved optimal play</strong>, providing
-  a known ceiling for evaluation&mdash;we know exactly what perfect looks like; (2) it is <strong>simple
-  enough</strong> that individual moves and mistakes are easy to attribute (unlike chess or Go, every loss
-  can be traced to a specific blunder); (3) Claude has <strong>some prior knowledge</strong> of the game,
-  which creates a realistic starting point&mdash;the learner isn't truly blank-slate, mirroring how LLM
-  agents typically have partial domain knowledge when deployed to real-world tasks.
-</p>
-
-<p>
-  The experimental setup thus asks a precise question: <strong>given first-move advantage and a
-  near-perfect opponent with a known 10% weak spot, can an LLM learn to reliably exploit that weakness
-  through accumulated experience?</strong> MAL says yes. Pure RLM says <em>almost</em>.
-</p>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 4. METHODOLOGY                                                    -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="methodology">4. Methodology</h2>
-
-<p>We conducted six experimental runs of 12 games each, divided into two phases:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Phase</th>
-      <th>Approach</th>
-      <th>Model</th>
-      <th>Runs</th>
-      <th>Memory Persistence</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Phase A</td>
-      <td>Memory-Assisted (MAL)</td>
-      <td>Claude Haiku 4.5</td>
-      <td>3 (36 games)</td>
-      <td>Lessons carry across runs</td>
-    </tr>
-    <tr>
-      <td>Phase B</td>
-      <td>Pure RLM</td>
-      <td>Claude Sonnet 4.5</td>
-      <td>3 (36 games)</td>
-      <td>Lessons carry across runs</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3>Phase A: Memory-Assisted Learning</h3>
-<p>
-  The MAL phase used Claude Haiku 4.5 with two programmatic rules that activated based on lesson accumulation:
-</p>
-<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>Block rule:</strong> After 3+ lessons mentioning blocking failures, automatically block any opponent two-in-a-row threats before consulting the LLM.</li>
-  <li><strong>Win rule:</strong> After 2+ lessons about winning, automatically take any available winning move.</li>
-</ul>
-
-<h3>Phase B: Pure RLM</h3>
-<p>
-  The RLM phase used Claude Sonnet 4.5 (a more capable model) with <strong>all programmatic rules removed</strong>.
-  Every move decision went through Claude, with the only aid being the accumulated lesson text in its prompt.
-  Sonnet was chosen over Haiku to give pure RLM the best possible chance, since the approach relies entirely on
-  the model's ability to extract actionable strategy from natural language.
-</p>
-
-<h3>Controls</h3>
-<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li>Memory wiped between phases (Phase B started fresh with 0 lessons)</li>
-  <li>Same expert opponent configuration (minimax + 10% blunder)</li>
-  <li>Same lesson extraction prompt</li>
-  <li>Learner always plays O, moves first</li>
-  <li>12 games per run, lessons persist across runs within each phase</li>
-</ul>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 5. RESULTS                                                        -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="results">5. Results</h2>
-
-<h3>Phase A: Memory-Assisted Learning (MAL)</h3>
-
-<table>
-  <thead>
-    <tr>
-      <th>Run</th>
-      <th>Lessons In</th>
-      <th>Wins</th>
-      <th>Losses</th>
-      <th>Draws</th>
-      <th>Loss Rate</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>MAL-1 (fresh)</td>
-      <td>0</td>
-      <td class="win">2</td>
-      <td class="loss">5</td>
-      <td class="draw">5</td>
-      <td>41.7%</td>
-    </tr>
-    <tr>
-      <td>MAL-2</td>
-      <td>12</td>
-      <td class="win">3</td>
-      <td class="loss">1</td>
-      <td class="draw">8</td>
-      <td>8.3%</td>
-    </tr>
-    <tr>
-      <td>MAL-3</td>
-      <td>24</td>
-      <td class="win">4</td>
-      <td class="loss">0</td>
-      <td class="draw">8</td>
-      <td style="color: var(--green); font-weight: 600;">0%</td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- MAL Chart -->
-<div class="chart-container">
-  <div class="chart-title">Phase A: Memory-Assisted Learning &mdash; Loss Rate by Run</div>
-  <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
-    <!-- Grid -->
-    <line x1="80" y1="30" x2="80" y2="230" class="axis-line"/>
-    <line x1="80" y1="230" x2="720" y2="230" class="axis-line"/>
-    <line x1="80" y1="30" x2="720" y2="30" class="grid-line"/>
-    <line x1="80" y1="80" x2="720" y2="80" class="grid-line"/>
-    <line x1="80" y1="130" x2="720" y2="130" class="grid-line"/>
-    <line x1="80" y1="180" x2="720" y2="180" class="grid-line"/>
-
-    <!-- Y-axis labels -->
-    <text x="70" y="35" text-anchor="end" class="axis-label">50%</text>
-    <text x="70" y="85" text-anchor="end" class="axis-label">37.5%</text>
-    <text x="70" y="135" text-anchor="end" class="axis-label">25%</text>
-    <text x="70" y="185" text-anchor="end" class="axis-label">12.5%</text>
-    <text x="70" y="235" text-anchor="end" class="axis-label">0%</text>
-
-    <!-- Bars: Losses (red) -->
-    <rect x="130" y="63" width="60" height="167" rx="4" fill="#f85149" opacity="0.8"/>
-    <text x="160" y="55" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">5L</text>
-
-    <rect x="330" y="197" width="60" height="33" rx="4" fill="#f85149" opacity="0.8"/>
-    <text x="360" y="189" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">1L</text>
-
-    <rect x="530" y="228" width="60" height="2" rx="1" fill="#3fb950" opacity="0.8"/>
-    <text x="560" y="220" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">0L</text>
-
-    <!-- Bars: Wins (green) -->
-    <rect x="200" y="163" width="60" height="67" rx="4" fill="#3fb950" opacity="0.6"/>
-    <text x="230" y="155" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">2W</text>
-
-    <rect x="400" y="130" width="60" height="100" rx="4" fill="#3fb950" opacity="0.6"/>
-    <text x="430" y="122" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">3W</text>
-
-    <rect x="600" y="97" width="60" height="133" rx="4" fill="#3fb950" opacity="0.6"/>
-    <text x="630" y="89" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">4W</text>
-
-    <!-- X-axis labels -->
-    <text x="195" y="255" text-anchor="middle" class="axis-label">MAL-1 (0 lessons)</text>
-    <text x="395" y="255" text-anchor="middle" class="axis-label">MAL-2 (12 lessons)</text>
-    <text x="595" y="255" text-anchor="middle" class="axis-label">MAL-3 (24 lessons)</text>
-  </svg>
-</div>
-
-<div class="callout green">
-  <p>
-    <strong>MAL achieved 0 losses by run 3.</strong> The programmatic block rule, triggered after accumulated
-    blocking-related lessons, eliminated the most common failure mode: failing to block an imminent two-in-a-row threat.
-  </p>
-</div>
-
-<h3>Phase B: Pure RLM</h3>
-
-<table>
-  <thead>
-    <tr>
-      <th>Run</th>
-      <th>Lessons In</th>
-      <th>Wins</th>
-      <th>Losses</th>
-      <th>Draws</th>
-      <th>Loss Rate</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>RLM-1 (fresh)</td>
-      <td>0</td>
-      <td class="win">1</td>
-      <td class="loss">5</td>
-      <td class="draw">6</td>
-      <td>41.7%</td>
-    </tr>
-    <tr>
-      <td>RLM-2</td>
-      <td>12</td>
-      <td class="win">2</td>
-      <td class="loss">6</td>
-      <td class="draw">4</td>
-      <td>50.0%</td>
-    </tr>
-    <tr>
-      <td>RLM-3</td>
-      <td>24</td>
-      <td class="win">1</td>
-      <td class="loss">3</td>
-      <td class="draw">8</td>
-      <td>25.0%</td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- RLM Chart -->
-<div class="chart-container">
-  <div class="chart-title">Phase B: Pure RLM &mdash; Loss Rate by Run</div>
-  <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
-    <!-- Grid -->
-    <line x1="80" y1="30" x2="80" y2="230" class="axis-line"/>
-    <line x1="80" y1="230" x2="720" y2="230" class="axis-line"/>
-    <line x1="80" y1="30" x2="720" y2="30" class="grid-line"/>
-    <line x1="80" y1="80" x2="720" y2="80" class="grid-line"/>
-    <line x1="80" y1="130" x2="720" y2="130" class="grid-line"/>
-    <line x1="80" y1="180" x2="720" y2="180" class="grid-line"/>
-
-    <!-- Y-axis labels -->
-    <text x="70" y="35" text-anchor="end" class="axis-label">50%</text>
-    <text x="70" y="85" text-anchor="end" class="axis-label">37.5%</text>
-    <text x="70" y="135" text-anchor="end" class="axis-label">25%</text>
-    <text x="70" y="185" text-anchor="end" class="axis-label">12.5%</text>
-    <text x="70" y="235" text-anchor="end" class="axis-label">0%</text>
-
-    <!-- Bars: Losses (red) -->
-    <rect x="130" y="63" width="60" height="167" rx="4" fill="#f85149" opacity="0.8"/>
-    <text x="160" y="55" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">5L</text>
-
-    <rect x="330" y="30" width="60" height="200" rx="4" fill="#f85149" opacity="0.8"/>
-    <text x="360" y="22" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">6L</text>
-
-    <rect x="530" y="130" width="60" height="100" rx="4" fill="#f85149" opacity="0.8"/>
-    <text x="560" y="122" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">3L</text>
-
-    <!-- Bars: Wins (green) -->
-    <rect x="200" y="197" width="60" height="33" rx="4" fill="#3fb950" opacity="0.6"/>
-    <text x="230" y="189" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">1W</text>
-
-    <rect x="400" y="163" width="60" height="67" rx="4" fill="#3fb950" opacity="0.6"/>
-    <text x="430" y="155" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">2W</text>
-
-    <rect x="600" y="197" width="60" height="33" rx="4" fill="#3fb950" opacity="0.6"/>
-    <text x="630" y="189" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">1W</text>
-
-    <!-- X-axis labels -->
-    <text x="195" y="255" text-anchor="middle" class="axis-label">RLM-1 (0 lessons)</text>
-    <text x="395" y="255" text-anchor="middle" class="axis-label">RLM-2 (12 lessons)</text>
-    <text x="595" y="255" text-anchor="middle" class="axis-label">RLM-3 (24 lessons)</text>
-  </svg>
-</div>
-
-<div class="callout yellow">
-  <p>
-    <strong>RLM showed improvement but with higher variance.</strong> Run 2 actually regressed (more losses
-    than run 1), though run 3 showed a strong recovery with only 3 losses and 8 draws. The non-monotonic
-    trajectory suggests that natural language lessons introduce noise alongside signal.
-  </p>
-</div>
-
-<h3>Head-to-Head Comparison</h3>
-
-<!-- Comparison chart -->
-<div class="chart-container">
-  <div class="chart-title">Loss Rate: MAL vs RLM Across Runs</div>
-  <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
-    <!-- Grid -->
-    <line x1="100" y1="30" x2="100" y2="240" class="axis-line"/>
-    <line x1="100" y1="240" x2="700" y2="240" class="axis-line"/>
-    <line x1="100" y1="30" x2="700" y2="30" class="grid-line"/>
-    <line x1="100" y1="82" x2="700" y2="82" class="grid-line"/>
-    <line x1="100" y1="135" x2="700" y2="135" class="grid-line"/>
-    <line x1="100" y1="188" x2="700" y2="188" class="grid-line"/>
-
-    <!-- Y-axis labels -->
-    <text x="90" y="35" text-anchor="end" class="axis-label">50%</text>
-    <text x="90" y="87" text-anchor="end" class="axis-label">37.5%</text>
-    <text x="90" y="140" text-anchor="end" class="axis-label">25%</text>
-    <text x="90" y="193" text-anchor="end" class="axis-label">12.5%</text>
-    <text x="90" y="245" text-anchor="end" class="axis-label">0%</text>
-
-    <!-- X-axis labels -->
-    <text x="220" y="265" text-anchor="middle" class="axis-label">Run 1 (fresh)</text>
-    <text x="400" y="265" text-anchor="middle" class="axis-label">Run 2 (12 lessons)</text>
-    <text x="580" y="265" text-anchor="middle" class="axis-label">Run 3 (24 lessons)</text>
-
-    <!-- MAL line (blue) -->
-    <polyline points="220,65 400,205 580,240" fill="none" stroke="#58a6ff" stroke-width="3"/>
-    <circle cx="220" cy="65" r="6" fill="#58a6ff"/>
-    <circle cx="400" cy="205" r="6" fill="#58a6ff"/>
-    <circle cx="580" cy="240" r="6" fill="#58a6ff"/>
-    <text x="235" y="55" fill="#58a6ff" font-size="12" font-weight="600">41.7%</text>
-    <text x="415" y="200" fill="#58a6ff" font-size="12" font-weight="600">8.3%</text>
-    <text x="595" y="236" fill="#58a6ff" font-size="12" font-weight="600">0%</text>
-
-    <!-- RLM line (purple) -->
-    <polyline points="220,65 400,30 580,135" fill="none" stroke="#bc8cff" stroke-width="3" stroke-dasharray="8,4"/>
-    <circle cx="220" cy="65" r="6" fill="#bc8cff"/>
-    <circle cx="400" cy="30" r="6" fill="#bc8cff"/>
-    <circle cx="580" cy="135" r="6" fill="#bc8cff"/>
-    <text x="205" y="80" fill="#bc8cff" font-size="12" font-weight="600">41.7%</text>
-    <text x="415" y="25" fill="#bc8cff" font-size="12" font-weight="600">50%</text>
-    <text x="595" y="128" fill="#bc8cff" font-size="12" font-weight="600">25%</text>
-
-    <!-- Legend -->
-    <line x1="250" y1="285" x2="280" y2="285" stroke="#58a6ff" stroke-width="3"/>
-    <text x="290" y="289" fill="#58a6ff" font-size="12">MAL (Memory-Assisted)</text>
-    <line x1="460" y1="285" x2="490" y2="285" stroke="#bc8cff" stroke-width="3" stroke-dasharray="8,4"/>
-    <text x="500" y="289" fill="#bc8cff" font-size="12">RLM (Pure Recursive)</text>
-  </svg>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 6. ANALYSIS                                                       -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="analysis">6. Analysis</h2>
-
-<h3>6.1 The Knowing-Doing Gap</h3>
-
-<p>
-  The most striking finding is what we call the <strong>knowing-doing gap</strong>. After just a few games,
-  both MAL and RLM learners generated lessons that correctly identified the winning strategy: "block two-in-a-row
-  threats immediately," "prioritize corners over edges," "secure opposite corners after taking center." The
-  lessons were accurate. The execution was not.
-</p>
-
-<p>
-  In the pure RLM approach, Claude would generate a lesson saying "always block when the opponent has two in a
-  row"&mdash;then fail to do exactly that in the next game. The natural language lesson is <strong>strategically
-  correct but procedurally imprecise</strong>. It doesn't tell the model "check positions [0,1,2], [3,4,5],
-  [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6] and if any pair is occupied by X with the third empty,
-  play the third." The lesson says "block threats"&mdash;a concept the model understands but doesn't always
-  translate into the correct board position.
-</p>
-
-<div class="callout red">
-  <p>
-    <strong>The knowing-doing gap:</strong> RLM lessons captured correct strategic knowledge within 3-4 games.
-    But converting that knowledge into reliable move-by-move execution required 24+ lessons and still
-    had a ~25% failure rate. MAL closed this gap by promoting key insights to deterministic code.
-  </p>
-</div>
-
-<h3>6.2 Convergence Characteristics</h3>
-
-<p>
-  MAL showed <strong>monotonic improvement</strong>: each run was strictly better than the last (5&#x2192;1&#x2192;0 losses).
-  This is because programmatic rules, once activated, never regress. A deterministic "if threat, block" rule
-  doesn't have off days.
-</p>
-
-<p>
-  RLM showed <strong>non-monotonic improvement</strong>: run 2 was worse than run 1 (6 losses vs 5). This is a
-  known property of context-based learning&mdash;more context doesn't always help. Contradictory or redundant
-  lessons can confuse the model. Some lessons emphasized "prioritize offense" while others emphasized "prioritize
-  defense," creating conflicting guidance that the model resolves differently across games.
-</p>
-
-<h3>6.3 Failure Mode Analysis</h3>
-
-<p>
-  We examined all losses across both phases. The primary failure mode was consistent:
-</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Failure Mode</th>
-      <th>MAL Occurrences</th>
-      <th>RLM Occurrences</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Failed to block two-in-a-row</td>
-      <td>4 (67%)</td>
-      <td>9 (64%)</td>
-    </tr>
-    <tr>
-      <td>Fell into fork trap</td>
-      <td>1 (17%)</td>
-      <td>3 (21%)</td>
-    </tr>
-    <tr>
-      <td>Poor positional play (edges over corners)</td>
-      <td>1 (17%)</td>
-      <td>2 (14%)</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>
-  The dominant failure&mdash;not blocking an imminent threat&mdash;is precisely the one MAL's programmatic
-  rule eliminates. It's a <strong>pattern recognition task</strong> (scan 8 lines, find the threat) that
-  deterministic code handles perfectly but that an LLM, reasoning in natural language over a text board
-  representation, handles unreliably.
-</p>
-
-<h3>6.4 The Cost of Purity</h3>
-
-<p>
-  Pure RLM used Claude Sonnet 4.5 (a significantly more capable model than Haiku 4.5) yet still underperformed
-  MAL with Haiku. This suggests that the bottleneck isn't model capability&mdash;it's the
-  <strong>representation gap</strong> between natural language lessons and procedural execution. A weaker model
-  with code-level scaffolding outperforms a stronger model with only natural language self-guidance.
-</p>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 7. TOKEN ECONOMICS                                                -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="token-economics">7. Token Economics</h2>
-
-<p>
-  A critical but often overlooked dimension of learning architectures is <strong>token cost</strong>.
-  Every Claude API call consumes input and output tokens, and the two approaches have fundamentally
-  different consumption profiles.
-</p>
-
-<h3>7.1 Per-Move Token Growth</h3>
-
-<p>
-  Both MAL and RLM inject accumulated lessons into the learner's prompt. As lessons grow, so does
-  the input token count for every move. The prompt for each learner move consists of:
-</p>
-
-<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>System prompt:</strong> ~150 tokens (game rules, chain-of-thought instructions)</li>
-  <li><strong>Board state + move history:</strong> ~100&ndash;150 tokens (grows through the game)</li>
-  <li><strong>Lesson block:</strong> ~30 tokens per lesson (variable)</li>
-  <li><strong>Output:</strong> ~50&ndash;80 tokens (reasoning + single digit)</li>
-</ul>
-
-<p>
-  This means input tokens per move scale linearly with lesson count:
-</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Lessons in Memory</th>
-      <th>Estimated Input / Move</th>
-      <th>Run</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>0</td><td>~300 tokens</td><td>Run 1, game 1</td></tr>
-    <tr><td>12</td><td>~660 tokens</td><td>Run 2, game 1</td></tr>
-    <tr><td>24</td><td>~1,020 tokens</td><td>Run 3, game 1</td></tr>
-    <tr><td>36</td><td>~1,380 tokens</td><td>Run 3, game 12</td></tr>
-  </tbody>
-</table>
-
-<h3>7.2 The MAL Token Advantage</h3>
-
-<p>
-  Here is where the architectures diverge. In a typical tic-tac-toe game, the learner (O) makes
-  <strong>~5 moves</strong>. RLM routes every one of them through Claude. MAL, once its programmatic
-  rules activate, <strong>bypasses Claude entirely</strong> for block and win moves&mdash;those decisions
-  are made by deterministic code at zero token cost.
-</p>
-
-<p>
-  By run 3, the block rule handles ~2 of 5 moves per game, and the win rule handles ~0.5. That
-  leaves only <strong>~2.5 Claude calls per game</strong> for MAL versus 5 for RLM&mdash;a 50%
-  reduction in API calls, each of which carries the full lesson payload.
-</p>
-
-<table>
-  <thead>
-    <tr>
-      <th></th>
-      <th>MAL (Run 3)</th>
-      <th>RLM (Run 3)</th>
-      <th>RLM (Run 3, same model)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>Claude calls per game</strong></td>
-      <td>~3.5</td>
-      <td>~6</td>
-      <td>~6</td>
-    </tr>
-    <tr>
-      <td><strong>Total tokens per game</strong></td>
-      <td>~3,100</td>
-      <td>~5,800</td>
-      <td>~5,800</td>
-    </tr>
-    <tr>
-      <td><strong>Estimated per-run (12 games)</strong></td>
-      <td>~37,000</td>
-      <td>~70,000</td>
-      <td>~70,000</td>
-    </tr>
-    <tr>
-      <td><strong>Model</strong></td>
-      <td>Haiku 4.5</td>
-      <td>Sonnet 4.5</td>
-      <td>Haiku 4.5</td>
-    </tr>
-    <tr>
-      <td><strong>Estimated cost per run</strong></td>
-      <td>~$0.03</td>
-      <td>~$0.25</td>
-      <td>~$0.06</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>
-  <strong>Decomposing the cost gap.</strong> The headline comparison&mdash;MAL at ~$0.03 vs RLM at
-  ~$0.25&mdash;is ~8&times;, but this conflates two independent variables:
-</p>
-
-<ol style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>Architectural advantage (~2&times;):</strong> MAL's programmatic rules bypass Claude for
-  ~50% of moves. This savings is intrinsic to the architecture&mdash;code execution is always cheaper
-  than LLM inference, regardless of which model you use.</li>
-  <li><strong>Model pricing advantage (~4&times;):</strong> MAL used Haiku ($0.80/M input) while RLM
-  used Sonnet ($3/M input). This was a deliberate experimental choice&mdash;MAL's scaffolding
-  compensates for a weaker model&mdash;but it's a design decision, not an inherent property of MAL.</li>
-</ol>
-
-<p>
-  The third column shows the fair apples-to-apples comparison: RLM on the same Haiku model would cost
-  ~$0.06 per run, making MAL only ~2&times; cheaper. The architectural token savings is real but modest.
-  The larger implication is that MAL <strong>enables the use of cheaper models</strong> by offloading
-  critical decisions to code, while RLM demands a more capable (and more expensive) model because
-  every decision flows through the LLM.
-</p>
-
-<div class="callout">
-  <p>
-    <strong>The honest comparison:</strong> MAL's intrinsic architectural advantage is ~2&times; fewer
-    tokens (rules bypass the LLM). The remaining cost gap comes from MAL enabling a cheaper model.
-    In production, both factors compound&mdash;but they should be understood as separate levers.
-  </p>
-</div>
-
-<p>
-  Note that our experiment tested only the simplest form of RLM (flat lesson injection). A full RLM
-  system with model-controlled recursion&mdash;meta-cognitive consolidation passes, contradiction
-  resolution, and learned halting (see &sect;10.5)&mdash;would add <em>additional</em> API calls at
-  each iteration, widening the token gap further. Every recursive pass requires a full forward pass
-  through the model with the entire accumulated context. MAL's code-level shortcuts become increasingly
-  valuable as recursion depth grows.
-</p>
-
-<h3>7.3 Scaling: Neither Has Infinite Context</h3>
-
-<p>
-  A natural question is whether RLM's pure-prompt approach offers a <strong>scaling advantage</strong>
-  through "infinite context"&mdash;the idea that lessons, being natural language, can be summarized
-  and compressed indefinitely, allowing unbounded knowledge accumulation within the context window.
-</p>
-
-<p>
-  This is a misconception. <strong>Both approaches are bounded by the context window</strong>, and
-  MAL actually scales better:
-</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Scaling Property</th>
-      <th>MAL</th>
-      <th>RLM</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>Knowledge in context</strong></td>
-      <td>Only unpromoted lessons</td>
-      <td>All lessons (entire history)</td>
-    </tr>
-    <tr>
-      <td><strong>Knowledge in code</strong></td>
-      <td>Promoted rules (zero tokens)</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td><strong>Context pressure at scale</strong></td>
-      <td>Low (lessons graduate to code)</td>
-      <td>High (all lessons stay in prompt)</td>
-    </tr>
-    <tr>
-      <td><strong>Cost trajectory</strong></td>
-      <td>Flattens as rules absorb patterns</td>
-      <td>Grows linearly with experience</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>
-  In MAL, high-confidence lessons are <strong>promoted to deterministic code</strong>, which removes them
-  from the context window entirely. The block rule, for instance, replaces dozens of "always block
-  two-in-a-row" lessons with a single programmatic check. This means MAL's context pressure
-  <em>decreases</em> as the system matures, while RLM's context pressure only grows.
-</p>
-
-<p>
-  At 36 lessons (~1,100 tokens of lesson text), neither approach is anywhere near the context limit.
-  But extrapolate to a more complex domain&mdash;chess, code review, security auditing&mdash;where
-  thousands of lessons accumulate, and the difference becomes critical. MAL offloads mature knowledge
-  to code; RLM must carry everything in the prompt forever.
-</p>
-
-<h3>7.4 RLM's Actual Advantage</h3>
-
-<p>
-  If not infinite context, what <em>is</em> RLM's advantage? Two things:
-</p>
-
-<ol style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>Zero engineering overhead.</strong> RLM requires no code changes, no rule authoring, no
-  promotion logic. The feedback loop is entirely self-contained in the prompt. This makes it trivially
-  portable to any domain.</li>
-  <li><strong>Nuance retention.</strong> Natural language lessons can express subtle, conditional,
-  context-dependent strategies that are difficult to encode as deterministic rules. "When the opponent
-  takes two opposite corners and you hold center, prioritize edges over corners" is easy to state in
-  English but non-trivial to implement as a programmatic rule.</li>
-</ol>
-
-<p>
-  The optimal architecture, then, is a <strong>hybrid</strong>: use RLM to discover and articulate patterns,
-  then promote the highest-confidence patterns to code. The prompt carries only emerging or nuanced
-  lessons; everything else runs as zero-token deterministic logic.
-</p>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 8. LESSON EVOLUTION                                               -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="lesson-evolution">8. Lesson Evolution</h2>
-
-<p>
-  Examining the 36 lessons generated across the RLM phase reveals how the learner's understanding evolved:
-</p>
-
-<h3>Early Lessons (Games 1-4): Identifying Problems</h3>
-
-<div class="lesson-grid">
-  <div class="lesson-card">
-    <div class="tag loss">Game 1 &mdash; Loss</div>
-    <p>When X opens with a corner, immediately responding with center is correct, but O must then prioritize a second corner instead of an edge.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag loss">Game 2 &mdash; Loss</div>
-    <p>O must prioritize blocking the opposite corner before X can occupy it, as two opposite corners create unstoppable dual-threat scenarios.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag loss">Game 3 &mdash; Loss</div>
-    <p>O must immediately block the opposite corner to prevent X from creating a fork opportunity.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag loss">Game 4 &mdash; Loss</div>
-    <p>Prioritize taking the opposite corner immediately to maintain symmetry and defensive balance.</p>
-  </div>
-</div>
-
-<p>
-  Notice the rapid convergence on a single theme: <strong>opposite corners matter</strong>. By game 4,
-  the lesson is essentially the same as game 2, restated in different words. The model has identified
-  the problem clearly but continues to lose because identification alone doesn't guarantee execution.
-</p>
-
-<h3>Mid Lessons (Games 5-8): Refining Strategy</h3>
-
-<div class="lesson-grid">
-  <div class="lesson-card">
-    <div class="tag draw">Game 5 &mdash; Draw</div>
-    <p>Prioritize creating immediate threats over defensive blocks&mdash;corner 8 to create a fork threat rather than playing passively.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag draw">Game 6 &mdash; Draw</div>
-    <p>Block X's second corner before pursuing own threats, as two opposite corners create impossible-to-defend threats.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag draw">Game 7 &mdash; Draw</div>
-    <p>Immediately secure the opposite corner on move 3 to maintain winning chances.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag draw">Game 8 &mdash; Draw</div>
-    <p>Immediately secure a second corner after taking center to create forcing threats before the opponent builds multiple winning paths.</p>
-  </div>
-</div>
-
-<p>
-  The shift from losses to draws marks a <strong>qualitative transition</strong>. The learner's lessons
-  now include both offensive and defensive considerations. But note the tension: game 5 says "prioritize
-  offense," while game 6 says "block before pursuing threats." These contradictory signals illustrate
-  the noise that accumulates in RLM systems.
-</p>
-
-<h3>Late Lessons (Games 9-12): Consolidation</h3>
-
-<div class="lesson-grid">
-  <div class="lesson-card">
-    <div class="tag win">Game 9 &mdash; Win</div>
-    <p>Securing the center forces them into defensive mode; following up with opposite corners creates threats that overwhelm even strong opponents.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag draw">Game 10 &mdash; Draw</div>
-    <p>Immediately secure the opposite corner to maintain initiative and create winning threats.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag loss">Game 11 &mdash; Loss</div>
-    <p>Immediately block remaining corners when opponent holds two opposite corners, as the pattern creates an unstoppable double-threat.</p>
-  </div>
-  <div class="lesson-card">
-    <div class="tag draw">Game 12 &mdash; Draw</div>
-    <p>Secure an opposite corner on move 3 rather than an edge, as this creates more winning threat lines.</p>
-  </div>
-</div>
-
-<p>
-  By the final games, lessons are <strong>highly redundant</strong>. The same "take opposite corners"
-  insight appears in over 70% of all lessons. This redundancy is a feature for RLM (reinforcing the
-  signal) but also a limitation (it crowds out novel strategic insights about less common positions).
-</p>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 9. RAW EXPERIMENTAL OUTPUT                                        -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="output">9. Raw Experimental Output</h2>
-
-<p>
-  The following excerpts show representative terminal outputs from the experimental runs (runs 1 and 3 from each phase),
-  highlighting the swarm mesh initialization, individual game play, lesson extraction, and final scoreboards.
-</p>
-
-<h3>MAL Phase &mdash; Run 1 (Fresh Start, 0 Lessons)</h3>
-
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-    $ npx tsx scripts/tic-tac-toe-swarm.ts --games 12
-  </div>
-<pre><code><span class="t-bold">&#x1f3ae; TIC-TAC-TOE LEARNING SWARM</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-
-<span class="t-bold">&#x1f9e0; Memory:</span> /tmp/karnevil9-tictactoe-lessons.jsonl
-   <span class="t-dim">No prior lessons &#x2014; starting fresh</span>
-
-<span class="t-bold">&#x1f310; Starting swarm nodes...</span>
-  &#x2713; <span class="t-red">Expert (X)</span> &#x2014; minimax, port 3201
-  &#x2713; <span class="t-blue">Learner (O)</span> &#x2014; Claude + ActiveMemory, port 3202
-  &#x2713; Referee, port 3200
-  &#x2713; Mesh formed: 3 peers
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 1 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: none</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>
-  <span class="t-blue">O</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>   <span class="t-red">X</span> &#x2192; 2 <span class="t-dim">(top-right)</span>
-  <span class="t-blue">O</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>   <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>    <span class="t-red">X</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-red">X</span> &#x2502; <span class="t-red">X</span>        &#x274c; <span class="t-loss">Expert wins (top row)</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>        <span class="t-magenta">&#x1f4dd; When X opens with a corner, immediately</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;        <span class="t-magenta">responding with center is correct, but O must</span>
-   <span class="t-red">X</span> &#x2502; <span class="t-dim">7</span> &#x2502; <span class="t-blue">O</span>        <span class="t-magenta">then prioritize a second corner over an edge...</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 5 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 4</span>
-     <span class="t-dim">&#x2192; When playing center first against an opponent who takes a corner,</span>
-     <span class="t-dim">  O must prioritize blocking the opposite corner... and 3 more</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>
-  <span class="t-blue">O</span> &#x2192; 2 <span class="t-dim">(top-right)</span>   <span class="t-red">X</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>
-  <span class="t-blue">O</span> &#x2192; 7 <span class="t-dim">(bot-mid)</span>     <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>    <span class="t-red">X</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>
-  <span class="t-blue">O</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>        &#x1f91d; <span class="t-draw">Draw</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>        <span class="t-magenta">&#x1f4dd; When holding the center against a corner opening,</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;        <span class="t-magenta">O must prioritize creating immediate threats over</span>
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>        <span class="t-magenta">defensive blocks...</span>
-
-<span class="t-dim">  ... games 6-12 continue ...</span>
-
-<span class="t-bold">&#x1f4ca; SCOREBOARD</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  Game  1: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  0 lessons    Game  7: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  6 lessons
-  Game  2: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  1 lesson     Game  8: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  7 lessons
-  Game  3: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  2 lessons    Game  9: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da;  8 lessons
-  Game  4: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  3 lessons    Game 10: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  9 lessons
-  Game  5: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  4 lessons    Game 11: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 10 lessons
-  Game  6: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  5 lessons    Game 12: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 11 lessons
-
-  <span class="t-red">Expert:</span>  5W 2L 5D
-  <span class="t-blue">Learner:</span> <span class="t-bold">2W 5L 5D</span>
-
-  <span class="t-magenta">&#x1f9e0; 12 total lessons in memory</span></code></pre>
-</div>
-
-<h3>MAL Phase &mdash; Run 2 (12 Prior Lessons)</h3>
-
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-    $ npx tsx scripts/tic-tac-toe-swarm.ts --games 12 (second consecutive run)
-  </div>
-<pre><code><span class="t-bold">&#x1f9e0; Memory:</span> /tmp/karnevil9-tictactoe-lessons.jsonl
-   <span class="t-green">12 lessons loaded from previous run</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 1 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 12</span>
-  <span class="t-cyan">&#x2699; Block rule active (8 block lessons) | Win rule active (3 win lessons)</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>   <span class="t-red">X</span> &#x2192; 2 <span class="t-dim">(top-right)</span>
-  <span class="t-blue">O</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>     <span class="t-cyan">&#x2190; BLOCK: X had 0,2</span>
-  <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>    <span class="t-blue">O</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>
-  <span class="t-red">X</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>   <span class="t-blue">O</span> &#x2192; 7 <span class="t-dim">(bot-mid)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>        &#x1f91d; <span class="t-draw">Draw</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 7 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 18</span>
-  <span class="t-cyan">&#x2699; Block rule active (11 block lessons) | Win rule active (5 win lessons)</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>
-  <span class="t-blue">O</span> &#x2192; 0 <span class="t-dim">(top-left)</span>    <span class="t-cyan">&#x2190; WIN: opposite corner</span>
-  <span class="t-red">X</span> &#x2192; 2 <span class="t-dim">(top-right)</span>   <span class="t-blue">O</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>
-  <span class="t-cyan">&#x2190; WIN: O wins with diagonal 0-4-8 + column 0-3-6</span>
-
-   <span class="t-blue">O</span> &#x2502; <span class="t-dim">1</span> &#x2502; <span class="t-red">X</span>        &#x1f3c6; <span class="t-win">Learner wins (fork!)</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-dim">3</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-dim">5</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-dim">7</span> &#x2502; <span class="t-red">X</span>
-
-<span class="t-dim">  ... games 8-12: draws, with one more win ...</span>
-
-<span class="t-bold">&#x1f4ca; SCOREBOARD</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  Game  1: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 12 lessons    Game  7: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 18 lessons
-  Game  2: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 13 lessons    Game  8: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 19 lessons
-  Game  3: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 14 lessons    Game  9: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 20 lessons
-  Game  4: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 15 lessons    Game 10: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 21 lessons
-  Game  5: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 16 lessons   <span class="t-cyan">&#x2190; rules missed edge case</span>
-  Game  6: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 17 lessons    Game 11: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 22 lessons
-                                        Game 12: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 23 lessons
-
-  <span class="t-red">Expert:</span>  1W 3L 8D
-  <span class="t-blue">Learner:</span> <span class="t-bold">3W 1L 8D &#x2190; one loss slipped through</span>
-
-  <span class="t-magenta">&#x1f9e0; 24 total lessons in memory</span></code></pre>
-</div>
-
-<div class="callout">
-  <p>
-    <strong>Down to 1 loss.</strong> The block rule prevented most threats, but game 5 exposed an edge case
-    where the expert created a fork from edges rather than corners&mdash;a pattern the existing block lessons
-    didn't cover. The system learned from it, adding the lesson to memory for run 3.
-  </p>
-</div>
-
-<h3>MAL Phase &mdash; Run 3 (24 Prior Lessons, Steady State)</h3>
-
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-    $ npx tsx scripts/tic-tac-toe-swarm.ts --games 12 (third consecutive run)
-  </div>
-<pre><code><span class="t-bold">&#x1f9e0; Memory:</span> /tmp/karnevil9-tictactoe-lessons.jsonl
-   <span class="t-green">24 lessons loaded from previous runs</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 1 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 24</span>
-  <span class="t-cyan">&#x2699; Block rule active (12 block lessons) | Win rule active (4 win lessons)</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 2 <span class="t-dim">(top-right)</span>
-  <span class="t-blue">O</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>    <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>     <span class="t-cyan">&#x2190; BLOCK: X had 0,2</span>
-  <span class="t-red">X</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>   <span class="t-blue">O</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>
-  <span class="t-red">X</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>    <span class="t-blue">O</span> &#x2192; 7 <span class="t-dim">(bot-mid)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>        &#x1f91d; <span class="t-draw">Draw</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>
-
-<span class="t-dim">  ... games 2-12 continue ...</span>
-
-<span class="t-bold">&#x1f4ca; SCOREBOARD</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  Game  1: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 24 lessons    Game  7: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 30 lessons
-  Game  2: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 25 lessons    Game  8: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 31 lessons
-  Game  3: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 26 lessons    Game  9: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 32 lessons
-  Game  4: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 27 lessons    Game 10: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 33 lessons
-  Game  5: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 28 lessons    Game 11: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 34 lessons
-  Game  6: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 29 lessons    Game 12: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 35 lessons
-
-  <span class="t-red">Expert:</span>  0W 4L 8D
-  <span class="t-blue">Learner:</span> <span class="t-win">4W 0L 8D &#x2190; Expert can no longer win</span>
-
-  <span class="t-magenta">&#x1f9e0; 36 total lessons in memory</span></code></pre>
-</div>
-
-<div class="callout green">
-  <p>
-    <strong>Zero losses.</strong> The block rule caught every two-in-a-row threat the expert created.
-    The 4 wins came from exploiting the expert's 10% blunder rate with learned offensive patterns.
-  </p>
-</div>
-
-<h3>RLM Phase &mdash; Run 1 (Fresh Start, Pure Recursive)</h3>
-
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-    $ npx tsx scripts/tic-tac-toe-swarm.ts --games 12 --model claude-sonnet-4-5-20250929 (pure RLM, no rules)
-  </div>
-<pre><code><span class="t-bold">&#x1f3ae; TIC-TAC-TOE LEARNING SWARM</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-
-<span class="t-bold">&#x1f9e0; Memory:</span> /tmp/karnevil9-tictactoe-lessons.jsonl
-   <span class="t-dim">No prior lessons &#x2014; starting fresh</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 1 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: none</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>
-  <span class="t-blue">O</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>   <span class="t-red">X</span> &#x2192; 2 <span class="t-dim">(top-right)</span>
-  <span class="t-blue">O</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>   <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>    <span class="t-red">X</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-red">X</span> &#x2502; <span class="t-red">X</span>        &#x274c; <span class="t-loss">Expert wins (top row)</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>        <span class="t-magenta">&#x1f4dd; When X opens with a corner, immediately</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;        <span class="t-magenta">responding with center is correct, but O must</span>
-   <span class="t-red">X</span> &#x2502; <span class="t-dim">7</span> &#x2502; <span class="t-blue">O</span>        <span class="t-magenta">then prioritize a second corner over an edge...</span>
-
-<span class="t-dim">  ... games 2-4: losses continue (no lessons yet) ...</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 5 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 4</span>
-     <span class="t-dim">&#x2192; When playing center first against an opponent who takes a corner,</span>
-     <span class="t-dim">  prioritize blocking the opposite corner...</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>   <span class="t-cyan">&#x2190; learned: take opposite corner!</span>
-  <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>    <span class="t-blue">O</span> &#x2192; 2 <span class="t-dim">(top-right)</span>
-  <span class="t-red">X</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>     <span class="t-blue">O</span> &#x2192; 7 <span class="t-dim">(bot-mid)</span>
-  <span class="t-red">X</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>   <span class="t-blue">O</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span>        &#x1f91d; <span class="t-draw">Draw &#x2190; inflection point: first draw streak begins</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>
-
-<span class="t-dim">  ... games 6-8: three more draws ...</span>
-
-<span class="t-bold">&#x1f4ca; SCOREBOARD</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  Game  1: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  0 lessons    Game  7: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  6 lessons
-  Game  2: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  1 lesson     Game  8: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  7 lessons
-  Game  3: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  2 lessons    Game  9: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da;  8 lessons
-  Game  4: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  3 lessons    Game 10: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da;  9 lessons
-  Game  5: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  4 lessons   <span class="t-cyan">&#x2190; inflection</span>
-  Game  6: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da;  5 lessons    Game 11: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 10 lessons
-                                        Game 12: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 11 lessons
-
-  <span class="t-red">Expert:</span>  5W 1L 6D
-  <span class="t-blue">Learner:</span> <span class="t-bold">1W 5L 6D</span>
-
-  <span class="t-magenta">&#x1f9e0; 12 total lessons in memory</span>
-  <span class="t-dim">Run again to see continued improvement!</span></code></pre>
-</div>
-
-<h3>RLM Phase &mdash; Run 2 (12 Prior Lessons)</h3>
-
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-    $ npx tsx scripts/tic-tac-toe-swarm.ts --games 12 --model claude-sonnet-4-5-20250929 (second run, 12 lessons)
-  </div>
-<pre><code><span class="t-bold">&#x1f9e0; Memory:</span> /tmp/karnevil9-tictactoe-lessons.jsonl
-   <span class="t-green">12 lessons loaded from previous run</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 1 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 12</span>
-     <span class="t-dim">&#x2192; Prioritize blocking the opposite corner when opponent opens corner...</span>
-     <span class="t-dim">  and 11 more lessons</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-  <span class="t-blue">O</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>   <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>
-  <span class="t-blue">O</span> &#x2192; 2 <span class="t-dim">(top-right)</span>   <span class="t-red">X</span> &#x2192; 1 <span class="t-dim">(top-mid)</span>
-  <span class="t-blue">O</span> &#x2192; 7 <span class="t-dim">(bot-mid)</span>     <span class="t-red">X</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>
-  <span class="t-blue">O</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span>        &#x1f91d; <span class="t-draw">Draw</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 6 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 17</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 2 <span class="t-dim">(top-right)</span>
-  <span class="t-blue">O</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>    <span class="t-red">X</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>
-  <span class="t-blue">O</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>   <span class="t-cyan">&#x2190; should have blocked position 0!</span>
-  <span class="t-red">X</span> &#x2192; 0 <span class="t-dim">(top-left)</span>
-
-   <span class="t-red">X</span> &#x2502; <span class="t-dim">1</span> &#x2502; <span class="t-red">X</span>        &#x274c; <span class="t-loss">Expert wins (diagonal)</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-dim">3</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span>        <span class="t-magenta">&#x1f4dd; When the opponent holds two corners in the same</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;        <span class="t-magenta">diagonal, blocking the third corner is critical...</span>
-   <span class="t-blue">O</span> &#x2502; <span class="t-dim">7</span> &#x2502; <span class="t-red">X</span>
-
-<span class="t-dim">  ... games 7-12: mix of losses and draws ...</span>
-
-<span class="t-bold">&#x1f4ca; SCOREBOARD</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  Game  1: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 12 lessons    Game  7: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 18 lessons
-  Game  2: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 13 lessons    Game  8: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 19 lessons
-  Game  3: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 14 lessons    Game  9: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 20 lessons
-  Game  4: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 15 lessons    Game 10: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 21 lessons
-  Game  5: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 16 lessons    Game 11: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 22 lessons
-  Game  6: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 17 lessons   <span class="t-cyan">&#x2190; knowing-doing gap</span>
-                                        Game 12: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 23 lessons
-
-  <span class="t-red">Expert:</span>  6W 2L 4D
-  <span class="t-blue">Learner:</span> <span class="t-bold">2W 6L 4D &#x2190; lessons haven't helped yet</span>
-
-  <span class="t-magenta">&#x1f9e0; 24 total lessons in memory</span></code></pre>
-</div>
-
-<div class="callout red">
-  <p>
-    <strong>Worse than run 1.</strong> Despite having 12 prior lessons, the pure RLM learner actually lost
-    <em>more</em> games (6 vs 5). The lessons correctly identify blocking as critical, but Claude still fails
-    to execute&mdash;choosing edges over corners in key moments. This is the knowing-doing gap at its starkest:
-    more knowledge, worse performance.
-  </p>
-</div>
-
-<h3>RLM Phase &mdash; Run 3 (24 Prior Lessons)</h3>
-
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-    $ npx tsx scripts/tic-tac-toe-swarm.ts --games 12 (third consecutive run, 24 lessons in memory)
-  </div>
-<pre><code><span class="t-bold">&#x1f9e0; Memory:</span> /tmp/karnevil9-tictactoe-lessons.jsonl
-   <span class="t-green">24 lessons loaded from previous runs</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 1 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 24</span>
-     <span class="t-dim">&#x2192; When playing center first against an expert opponent who takes a corne...</span>
-     <span class="t-dim">&#x2192; When your opponent takes the center, prioritize corners to create mult...</span>
-     <span class="t-dim">&#x2192; When the opponent takes center, prioritize corners over edges to maint...</span>
-     <span class="t-dim">&#x2192; When the opponent takes two corners on the same edge (like positions 6...</span>
-     <span class="t-dim">&#x2192; When the opponent takes a corner, prioritize controlling the center an...</span>
-     <span class="t-dim">  ... and 19 more</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 5 <span class="t-dim">(mid-right)</span>
-  <span class="t-blue">O</span> &#x2192; 0 <span class="t-dim">(top-left)</span>    <span class="t-red">X</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>
-  <span class="t-blue">O</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>
-
-   <span class="t-blue">O</span> &#x2502; <span class="t-dim">1</span> &#x2502; <span class="t-dim">2</span>        &#x1f3c6; <span class="t-win">Learner wins! (diagonal &#x2198;)</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-red">X</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-red">X</span>        <span class="t-magenta">&#x1f4dd; When the opponent takes an edge position after</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;        <span class="t-magenta">you claim the center, prioritize taking corners</span>
-   <span class="t-dim">6</span> &#x2502; <span class="t-dim">7</span> &#x2502; <span class="t-blue">O</span>        <span class="t-magenta">to create multiple winning threats simultaneously...</span>
-
-<span class="t-bold">&#x2501;&#x2501;&#x2501; GAME 4 of 12 &#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  <span class="t-magenta">&#x1f4da; Lessons: 27</span>
-
-  <span class="t-blue">O</span> &#x2192; 4 <span class="t-dim">(center)</span>      <span class="t-red">X</span> &#x2192; 6 <span class="t-dim">(bot-left)</span>
-  <span class="t-blue">O</span> &#x2192; 2 <span class="t-dim">(top-right)</span>   <span class="t-red">X</span> &#x2192; 8 <span class="t-dim">(bot-right)</span>
-  <span class="t-blue">O</span> &#x2192; 3 <span class="t-dim">(mid-left)</span>    <span class="t-cyan">&#x2190; should have blocked position 7!</span>
-  <span class="t-red">X</span> &#x2192; 7 <span class="t-dim">(bot-mid)</span>
-
-   <span class="t-dim">0</span> &#x2502; <span class="t-dim">1</span> &#x2502; <span class="t-blue">O</span>        &#x274c; <span class="t-loss">Expert wins (bottom row)</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;
-   <span class="t-blue">O</span> &#x2502; <span class="t-blue">O</span> &#x2502; <span class="t-dim">5</span>        <span class="t-magenta">&#x1f4dd; When the opponent takes two opposite corners,</span>
-  &#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;&#x253c;&#x2500;&#x2500;&#x2500;        <span class="t-magenta">immediately block the third corner before placing</span>
-   <span class="t-red">X</span> &#x2502; <span class="t-red">X</span> &#x2502; <span class="t-red">X</span>        <span class="t-magenta">elsewhere...</span>
-
-<span class="t-dim">  ... games 5-12: mostly draws, occasional losses ...</span>
-
-<span class="t-bold">&#x1f4ca; SCOREBOARD</span>
-<span class="t-dim">&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;&#x2501;</span>
-  Game  1: <span class="t-win">&#x1f3c6; Win </span>  &#x2502; &#x1f4da; 24 lessons    Game  7: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 30 lessons
-  Game  2: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 25 lessons    Game  8: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 31 lessons   <span class="t-cyan">&#x2190; missed block again</span>
-  Game  3: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 26 lessons    Game  9: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 32 lessons
-  Game  4: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 27 lessons   <span class="t-cyan">&#x2190; knowing-doing gap</span>
-  Game  5: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 28 lessons    Game 10: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 33 lessons
-  Game  6: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 29 lessons    Game 11: <span class="t-loss">&#x274c; Loss</span>  &#x2502; &#x1f4da; 34 lessons   <span class="t-cyan">&#x2190; edge vs corner mistake</span>
-                                        Game 12: <span class="t-draw">&#x1f91d; Draw</span>  &#x2502; &#x1f4da; 35 lessons
-
-  <span class="t-red">Expert:</span>  3W 1L 8D
-  <span class="t-blue">Learner:</span> <span class="t-bold">1W 3L 8D &#x2190; improved, but can't reach 0 losses</span>
-
-  <span class="t-magenta">&#x1f9e0; 36 total lessons in memory</span></code></pre>
-</div>
-
-<div class="callout red">
-  <p>
-    <strong>The knowing-doing gap in action.</strong> Game 4 illustrates it perfectly: 27 lessons in memory,
-    multiple explicitly saying "block two-in-a-row threats immediately"&mdash;yet Claude played position 3
-    instead of blocking position 7 where X had corners 6 and 8. The lesson was correct. The execution failed.
-    MAL's programmatic block rule would have caught this automatically.
-  </p>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 10. IMPLICATIONS                                                  -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="implications">10. Implications for Agentic Systems</h2>
-
-<h3>10.1 Hybrid Approaches Win</h3>
-
-<p>
-  The results strongly favor a <strong>hybrid MAL architecture</strong> for production agentic systems.
-  Pure RLM is elegant and demonstrates that LLMs can genuinely improve from self-generated context, but
-  it hits a reliability ceiling. The most effective pattern is:
-</p>
-
-<ol style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>RLM for exploration:</strong> Let the LLM discover patterns through self-play and self-analysis.</li>
-  <li><strong>Memory for persistence:</strong> Store lessons in a structured external memory system.</li>
-  <li><strong>Code promotion for reliability:</strong> Once a lesson reaches sufficient confidence (appears in N+ independent games), promote it from natural language context to deterministic code.</li>
-</ol>
-
-<p>
-  This mirrors how human expertise develops: deliberate practice (RLM) builds conscious understanding,
-  which through repetition becomes unconscious reflex (programmatic rules).
-</p>
-
-<h3>10.2 The Lesson Saturation Problem</h3>
-
-<p>
-  Both approaches face a <strong>lesson saturation</strong> problem at scale. By run 3, the learner had
-  36 lessons in its context window&mdash;most saying variations of the same thing. As the lesson count
-  grows, the signal-to-noise ratio may decrease. Future work should explore:
-</p>
-
-<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>Lesson consolidation:</strong> Periodically ask the LLM to synthesize N lessons into a single, concise strategy document.</li>
-  <li><strong>Relevance scoring:</strong> Weight lessons by recency and similarity to current game state.</li>
-  <li><strong>Lesson pruning:</strong> Remove lessons that have been superseded by more refined versions.</li>
-</ul>
-
-<h3>10.3 Domain Complexity and Prior Knowledge</h3>
-
-<p>
-  A significant caveat: Claude already knows tic-tac-toe. Its baseline performance (before any lessons)
-  reflects existing parametric knowledge, not true zero-shot learning. The RLM improvement we measured is
-  the delta between "Claude with prior knowledge" and "Claude with prior knowledge + self-generated lessons."
-</p>
-
-<p>
-  For a purer test of RLM, future experiments should use a <strong>novel game</strong> that doesn't appear in
-  the model's training data&mdash;ensuring that all strategic knowledge must be genuinely discovered through play
-  rather than recalled from pre-training.
-</p>
-
-<h3>10.4 Model Capability vs. Architecture</h3>
-
-<p>
-  The finding that Haiku + MAL outperforms Sonnet + RLM has significant cost implications. In production
-  systems, a <strong>smaller model with better scaffolding</strong> can outperform a larger model running
-  unassisted. This suggests that agent architecture investment (memory systems, rule promotion, structured
-  feedback loops) may yield better returns than simply scaling to more capable models.
-</p>
-
-<h3>10.5 Training Signals for Recursive Control</h3>
-
-<p>
-  Our experiment fixed the recursion structure externally: 12 games per run, 3 runs per phase, one lesson
-  per game. A full RLM system would need the model to control its own recursion&mdash;deciding <em>when</em>
-  to recurse deeper, <em>when</em> to consolidate, and <em>when</em> to stop. This requires training signals
-  that our experiment didn't provide but that the data strongly suggests are needed.
-</p>
-
-<p>
-  <strong>Lesson similarity as a halt signal.</strong> By run 3, over 70% of lessons were restatements of
-  "take opposite corners" and "block two-in-a-row." A system that measured semantic similarity between new
-  and existing lessons could detect this saturation and shift from generating more lessons to consolidating
-  existing ones. The signal: <em>if the last K lessons have cosine similarity &gt; 0.85 with existing
-  lessons, stop recursing and synthesize.</em>
-</p>
-
-<p>
-  <strong>Performance plateau as a depth signal.</strong> RLM run 2 performed <em>worse</em> than run 1
-  despite having twice the lessons. A system monitoring its own win/loss rate across iterations could
-  detect this regression and trigger a different strategy&mdash;perhaps lesson pruning, contradiction
-  resolution, or strategy reformulation rather than additional accumulation. The signal: <em>if loss rate
-  hasn't decreased over N iterations, change the recursion strategy rather than continuing the current one.</em>
-</p>
-
-<p>
-  <strong>Contradiction detection as a consolidation trigger.</strong> Our data shows directly contradictory
-  lessons accumulating: game 5 says "prioritize offense over defense," game 6 says "block before pursuing
-  threats." A full RLM system should detect when its lesson store contains contradictions and initiate a
-  meta-level reconciliation pass&mdash;asking the model to resolve the conflict into a conditional rule
-  ("block when threatened, attack when not"). The signal: <em>if lessons contain opposing directives for
-  the same game state, recurse into a consolidation pass before continuing play.</em>
-</p>
-
-<p>
-  These signals point toward a <strong>meta-recursive architecture</strong>: the outer loop generates
-  experience, an inner loop monitors the quality of that experience, and a control layer decides whether
-  to continue, consolidate, or terminate. None of this was present in our experiment&mdash;and the
-  performance regression in RLM run 2 is exactly what happens without it.
-</p>
-
-<h3>10.6 Failure Mode: Looping Hallucinations</h3>
-
-<p>
-  The self-referential feedback loop in RLM creates a specific failure mode that traditional RL systems
-  don't face: <strong>looping hallucinations</strong>, where the model's own incorrect outputs compound
-  through iterations, creating a degenerative spiral.
-</p>
-
-<p>
-  We observed a mild form of this in our data. Consider the sequence:
-</p>
-
-<ol style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li>Game 1: Claude loses, generates lesson: "prioritize taking the opposite corner."</li>
-  <li>Game 5: Claude draws (good), generates lesson: "prioritize creating immediate threats over
-  defensive blocks."</li>
-  <li>Game 6: Claude draws, generates lesson: "block X's second corner before pursuing own threats."</li>
-  <li>Games 7+: The model now has conflicting lessons. In some games it follows the offensive advice,
-  in others the defensive. It cannot reliably determine which lesson applies to the current board
-  state because the lessons lack the conditional specificity to disambiguate.</li>
-</ol>
-
-<p>
-  This is not yet a hallucination spiral&mdash;the lessons are individually reasonable. But it illustrates
-  the mechanism. In a more complex domain, the failure mode escalates:
-</p>
-
-<div class="callout red">
-  <p>
-    <strong>Degenerative loop:</strong> Model produces incorrect analysis &#x2192; incorrect analysis
-    becomes a lesson &#x2192; lesson biases future reasoning &#x2192; biased reasoning produces more
-    incorrect analysis &#x2192; each iteration reinforces the error. Unlike RL, where gradient updates
-    can correct course through reward signals, RLM has <strong>no error-correction mechanism</strong>.
-    A bad lesson persists in the context window indefinitely, biasing all subsequent iterations.
-  </p>
-</div>
-
-<p>
-  In our experiment, this was bounded by tic-tac-toe's simplicity&mdash;there are only so many wrong
-  things to say about a 9-square board. But in open-ended domains (code generation, strategic planning,
-  research synthesis), a looping hallucination could be catastrophic: the model confidently generates an
-  incorrect architectural pattern, encodes it as a lesson, and then applies it to every subsequent task,
-  each application generating a new lesson that further reinforces the mistake.
-</p>
-
-<p>
-  <strong>Mitigations:</strong>
-</p>
-
-<ul style="margin: 0.5rem 0 1rem 1.5rem; color: var(--text-dim);">
-  <li><strong>External validation:</strong> Ground-truth checks on lesson accuracy before they enter
-  the lesson store. In our experiment, the minimax opponent provides an implicit oracle&mdash;if a
-  lesson leads to a loss, the lesson may be wrong. In production, this could be unit tests, human review,
-  or a separate verification model.</li>
-  <li><strong>Lesson decay:</strong> Reduce the weight of older lessons over time, allowing the system
-  to "forget" early mistakes rather than carrying them forever.</li>
-  <li><strong>Adversarial self-critique:</strong> Before accepting a new lesson, ask the model to argue
-  against it. If the counter-argument is compelling, discard or flag the lesson.</li>
-  <li><strong>Promotion to code (MAL's approach):</strong> Once a lesson is promoted to a deterministic
-  rule, it can be tested against known correct behavior. Code is verifiable in ways that natural
-  language lessons are not.</li>
-</ul>
-
-<p>
-  This failure mode is the strongest argument for hybrid architectures: RLM for exploration and pattern
-  discovery, but with external guardrails that prevent the feedback loop from becoming self-reinforcing
-  in the wrong direction.
-</p>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- 11. CONCLUSION                                                    -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<h2 id="conclusion">11. Conclusion</h2>
-
-<p>
-  We compared two paradigms for enabling LLMs to improve at a strategic task without weight updates:
-  Memory-Assisted Learning (MAL) and pure Recursive Language Modeling (RLM).
-</p>
-
-<p>
-  <strong>RLM works.</strong> An LLM reading its own prior analyses generates genuine improvement&mdash;losses
-  decreased from 42% to 25% over three runs. The recursive feedback loop creates a form of learning
-  that is entirely contained in the model's context window, requiring no external code, no reward shaping,
-  and no human intervention.
-</p>
-
-<p>
-  <strong>MAL works better.</strong> Augmenting the same feedback loop with programmatic rules that crystallize
-  high-confidence lessons into deterministic code achieved zero losses by run 3. The hybrid approach
-  addresses the fundamental knowing-doing gap&mdash;the disconnect between an LLM's ability to articulate
-  correct strategy and its ability to reliably execute it.
-</p>
-
-<p>
-  The practical implication is clear: <strong>let LLMs discover, but let code execute.</strong> The most
-  effective agentic systems will combine the exploratory power of recursive self-improvement with the
-  reliability of structured, programmatic knowledge. Neither pure approach is sufficient alone.
-</p>
-
-<div class="callout">
-  <p>
-    <strong>In one sentence:</strong> RLM shows that LLMs can learn from their own output, but the
-    knowing-doing gap means that the most critical lessons should be promoted from context to code.
-  </p>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- FOOTNOTES                                                         -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<div class="footnotes">
-  <p><strong>Platform:</strong> KarnEvil9 v0.1.0 — deterministic agent runtime with typed tools, permissions, and replay.</p>
-  <p><strong>Infrastructure:</strong> 3-node swarm mesh (Express/HTTP), ActiveMemory (JSONL persistence), Journal (append-only event log).</p>
-  <p><strong>Models:</strong> Claude Haiku 4.5 (MAL phase), Claude Sonnet 4.5 (RLM phase) — Anthropic, February 2026.</p>
-  <p><strong>Expert opponent:</strong> Minimax with random tie-breaking and 10% uniform blunder rate.</p>
-  <p><strong>Sample size:</strong> 72 games (36 MAL + 36 RLM), 36 extracted lessons per phase.</p>
-  <p><strong>Code:</strong> Full experiment source available at <code>scripts/tic-tac-toe-swarm.ts</code>.</p>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<!-- GITHUB                                                            -->
-<!-- ════════════════════════════════════════════════════════════════════ -->
-<div class="github-footer">
-  <a href="https://github.com/oldeucryptoboi/KarnEvil9" target="_blank" rel="noopener">
-    <svg class="gh-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-    </svg>
-    github.com/oldeucryptoboi/KarnEvil9
-  </a>
-  <div class="gh-desc">
-    Full source code, swarm package, demo scripts, and this paper &mdash;
-    <a href="https://github.com/oldeucryptoboi/KarnEvil9/blob/master/scripts/tic-tac-toe-swarm.ts" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none; font-weight: normal; font-size: inherit;">tic-tac-toe experiment</a> &middot;
-    <a href="https://github.com/oldeucryptoboi/KarnEvil9/tree/master/packages/swarm" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none; font-weight: normal; font-size: inherit;">swarm package</a> &middot;
-    <a href="https://github.com/oldeucryptoboi/KarnEvil9/tree/master/packages/memory" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none; font-weight: normal; font-size: inherit;">memory package</a>
-  </div>
-</div>
-
-</div><!-- .container -->
-
+</main>
 </body>
 </html>
