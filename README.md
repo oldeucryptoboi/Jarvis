@@ -170,7 +170,7 @@ The entry module exports a `register(api)` function that can call `registerTool(
 | `slack` | Bidirectional Slack integration: receive tasks, post progress, approval buttons |
 | `swarm` | P2P mesh for distributing tasks across KarnEvil9 instances |
 
-See [docs/claude-code-hello-world.md](docs/claude-code-hello-world.md) for a walkthrough of the Claude Code plugin.
+See the [Claude Code Hello World tutorial](https://oldeucryptoboi.github.io/KarnEvil9/claude-code-hello-world.html) for a full walkthrough.
 
 ## Metrics & Monitoring
 
