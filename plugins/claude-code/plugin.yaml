@@ -1,0 +1,29 @@
+id: claude-code
+name: Claude Code Agent
+version: "1.0.0"
+description: Delegates coding tasks to Claude Code via the Anthropic agent SDK
+entry: index.js
+permissions:
+  - agent:execute:claude_code
+config_schema:
+  type: object
+  properties:
+    journal:
+      description: Journal instance for event emission (injected at runtime)
+    apiKey:
+      description: Anthropic API key (falls back to ANTHROPIC_API_KEY env var)
+    model:
+      description: Model name override (e.g. claude-sonnet-4-5-20250929)
+    maxTurns:
+      description: Maximum agentic turns per invocation
+provides:
+  tools:
+    - claude-code
+  hooks:
+    - before_plan
+    - before_tool_call
+    - after_session_end
+  routes:
+    - status
+  services:
+    - claude-code-agent

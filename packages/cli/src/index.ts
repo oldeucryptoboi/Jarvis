@@ -116,6 +116,10 @@ program.command("run").description("Run a task end-to-end").argument("<task>", "
     const pluginRegistry = new PluginRegistry({
       journal, toolRegistry: registry, toolRuntime: runtime, permissions,
       pluginsDir,
+      pluginConfigs: {
+        "claude-code": { journal, apiKey: process.env.ANTHROPIC_API_KEY, model: process.env.KARNEVIL9_CLAUDE_CODE_MODEL },
+        "openai-codex": { journal, apiKey: process.env.OPENAI_API_KEY, model: process.env.KARNEVIL9_CODEX_MODEL },
+      },
     });
     const pluginStates = await pluginRegistry.discoverAndLoadAll();
     const activePlugins = pluginStates.filter((p) => p.status === "active");
@@ -173,6 +177,10 @@ program.command("run").description("Run a task end-to-end").argument("<task>", "
       if (event.type === "context.checkpoint_saved") {
         console.log(`  Checkpoint saved: ${event.payload.checkpoint_path}`);
       }
+      if (event.type === "agent.started") console.log(`  Agent ${event.payload.agent_type} started`);
+      if (event.type === "agent.completed") console.log(`  Agent ${event.payload.agent_type} completed (${event.payload.duration_ms}ms)`);
+      if (event.type === "agent.failed") console.log(`  Agent ${event.payload.agent_type} failed: ${event.payload.error}`);
+      if (event.type === "agent.aborted") console.log(`  Agent ${event.payload.agent_type} aborted`);
     });
     console.log(`\nKarnEvil9 session starting...`);
     console.log(`Task: ${taskText}`);
@@ -427,6 +435,8 @@ program.command("server").description("Start the API server")
           sessionFactory: sharedSessionFactory,
           journal,
         },
+        "claude-code": { journal, apiKey: process.env.ANTHROPIC_API_KEY, model: process.env.KARNEVIL9_CLAUDE_CODE_MODEL, maxTurns: process.env.KARNEVIL9_CLAUDE_CODE_MAX_TURNS ? parseInt(process.env.KARNEVIL9_CLAUDE_CODE_MAX_TURNS, 10) : undefined },
+        "openai-codex": { journal, apiKey: process.env.OPENAI_API_KEY, model: process.env.KARNEVIL9_CODEX_MODEL },
       },
     });
     await pluginRegistry.discoverAndLoadAll();

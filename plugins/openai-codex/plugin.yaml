@@ -1,0 +1,27 @@
+id: openai-codex
+name: OpenAI Codex Agent
+version: "1.0.0"
+description: Delegates coding tasks to OpenAI Codex via the Codex SDK
+entry: index.js
+permissions:
+  - agent:execute:openai_codex
+config_schema:
+  type: object
+  properties:
+    journal:
+      description: Journal instance for event emission (injected at runtime)
+    apiKey:
+      description: OpenAI API key (falls back to OPENAI_API_KEY env var)
+    model:
+      description: Model name override
+provides:
+  tools:
+    - openai-codex
+  hooks:
+    - before_plan
+    - before_tool_call
+    - after_session_end
+  routes:
+    - status
+  services:
+    - openai-codex-agent

@@ -350,7 +350,13 @@ export type JournalEventType =
   | "swarm.task_result_received"
   | "swarm.task_delegation_failed"
   | "swarm.task_delegation_timeout"
-  | "swarm.gossip_round";
+  | "swarm.gossip_round"
+  | "agent.started"
+  | "agent.progress"
+  | "agent.tool_call"
+  | "agent.completed"
+  | "agent.failed"
+  | "agent.aborted";
 
 // ─── Context Budget / Checkpoint ────────────────────────────────────
 

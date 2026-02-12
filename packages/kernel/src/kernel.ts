@@ -250,6 +250,12 @@ export class Kernel {
       this.subagentFindings = null; // Consume once
     }
 
+    // Merge before_plan hook data into planner snapshot
+    const hookData = (beforePlanResult as { data?: Record<string, unknown> }).data;
+    if (hookData && typeof hookData === "object") {
+      Object.assign(enrichedSnapshot, hookData);
+    }
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       if (attempt > 1) {
         await sleep(backoff(attempt - 1));
